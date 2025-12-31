@@ -67,8 +67,8 @@ export function PolicyList() {
   const uniformPolicies = filteredPolicies.filter(p => p.type === 'uniform')
   const tieredPolicies = filteredPolicies.filter(p => p.type === 'tiered')
 
-  const handleCreate = (type: 'uniform' | 'tiered') => {
-    openModal('policy.create', { defaultType: type })
+  const handleCreate = () => {
+    openModal('policy.create', {})
   }
 
   const handleEdit = (policy: Policy) => {
@@ -145,16 +145,10 @@ export function PolicyList() {
         </div>
 
         {/* 新建按钮 */}
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => handleCreate('uniform')}>
-            <Percent className="h-4 w-4 mr-2" />
-            新建统一折扣
-          </Button>
-          <Button onClick={() => handleCreate('tiered')}>
-            <TrendingDown className="h-4 w-4 mr-2" />
-            新建阶梯折扣
-          </Button>
-        </div>
+        <Button onClick={handleCreate}>
+          <Plus className="h-4 w-4 mr-2" />
+          新建政策
+        </Button>
       </div>
 
       {/* 统一折扣 */}
