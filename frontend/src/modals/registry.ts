@@ -43,6 +43,9 @@ import { CreateEmployeeForm, type CreateEmployeeFormData } from './employee'
 import { EditEmployeeForm, type EditEmployeeFormData } from './employee'
 import { ResetPasswordForm, type ResetPasswordFormData } from './employee'
 
+// 表单组件 - 价格政策
+import { CreatePolicyForm, EditPolicyForm, CalculateForm } from './policy'
+
 // ============================================================
 // 弹窗注册表 - 所有弹窗在此注册
 // ============================================================
@@ -295,5 +298,35 @@ export const modalRegistry: ModalRegistry = {
         throw new Error(result.error?.message || '重置失败')
       }
     },
+  },
+
+  // ========== 价格政策 ==========
+  'policy.create': {
+    component: CreatePolicyForm,
+    meta: {
+      title: '新建价格政策',
+      width: '2xl',
+    },
+    // 组件内部处理提交
+    invalidateKeys: [['policies']],
+  },
+
+  'policy.edit': {
+    component: EditPolicyForm,
+    meta: {
+      title: '编辑价格政策',
+      width: '2xl',
+    },
+    // 组件内部处理提交
+    invalidateKeys: [['policies']],
+  },
+
+  'policy.calculate': {
+    component: CalculateForm,
+    meta: {
+      title: '价格计算器',
+      width: 'md',
+    },
+    // 不需要提交
   },
 }

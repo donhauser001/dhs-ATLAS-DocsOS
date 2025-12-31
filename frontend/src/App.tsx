@@ -10,7 +10,7 @@ import { ProjectList } from '@/pages/projects/ProjectList'
 import { ProjectDetail } from '@/pages/projects/ProjectDetail'
 import { TaskList } from '@/pages/tasks/TaskList'
 import { EmployeeList, DepartmentList, PositionList, CompanyProfile } from '@/pages/organization'
-import { ServiceList, ServiceDetail, ConfigList } from '@/pages/pricing'
+import { ServiceList, ServiceDetail, ConfigList, PolicyList } from '@/pages/pricing'
 import { Settings } from '@/pages/Settings'
 
 const queryClient = new QueryClient({
@@ -85,7 +85,7 @@ function App() {
             <Route path="pricing/services" element={<ServiceList />} />
             <Route path="pricing/services/:category/:name" element={<ServiceDetail />} />
             <Route path="pricing/addons" element={<ConfigList />} />
-            <Route path="pricing/policies" element={<PlaceholderPage title="价格政策" />} />
+            <Route path="pricing/policies" element={<PolicyList />} />
             <Route path="pricing/templates" element={<PlaceholderPage title="报价模板" />} />
 
             {/* Placeholder routes */}

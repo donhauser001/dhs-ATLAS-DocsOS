@@ -4,6 +4,7 @@ import { executeProjectCommand } from './handlers/project-handler.js';
 import { executeTaskCommand } from './handlers/task-handler.js';
 import { executeServiceCommand } from './handlers/service-handler.js';
 import { executeConfigCommand } from './handlers/config-handler.js';
+import { executePolicyCommand } from './handlers/policy-handler.js';
 
 export interface Operator {
   type: 'human' | 'ai';
@@ -106,6 +107,8 @@ export async function executeCommand(
       result = await executeServiceCommand(commandName, params, operator);
     } else if (commandName.startsWith('config.')) {
       result = await executeConfigCommand(commandName, params, operator);
+    } else if (commandName.startsWith('policy.')) {
+      result = await executePolicyCommand(commandName, params, operator);
     } else {
       return {
         success: false,
@@ -200,6 +203,9 @@ function generateCommitMessage(
     'config.create': '[新建配置] {name}',
     'config.update': '[更新配置] {id}',
     'config.delete': '[删除配置] {id}',
+    'policy.create': '[新建政策] {name}',
+    'policy.update': '[更新政策] {id}',
+    'policy.delete': '[删除政策] {id}',
   };
 
   const template = templates[commandName] || `[${commandName}]`;
