@@ -8,10 +8,15 @@ const API_BASE = '/api/adl';
 // 类型定义
 // ============================================================
 
+/**
+ * Query - ADL 查询
+ * 
+ * Phase 1.5: 移除 select 字段
+ * Query 只负责「定位」，不负责「取数据」
+ */
 export interface Query {
   type?: string;
   filter?: Record<string, FilterValue>;
-  select?: string[];
   limit?: number;
 }
 
@@ -33,10 +38,25 @@ export interface FilterOperator {
   $exists?: boolean;
 }
 
+/**
+ * QueryResult - 查询结果
+ * 
+ * Phase 1.5: 返回「文档定位」而非「数据替身」
+ * 
+ * 如需完整 Block 数据，请使用 fetchBlock(anchor, document)
+ */
 export interface QueryResult {
+  // 文档定位（强制）
   anchor: string;
   document: string;
-  data: Record<string, unknown>;
+  
+  // 人类可读摘要（强制）
+  heading: string;
+  title: string;
+  type: string;
+  
+  // 可选状态
+  status?: string;
 }
 
 export interface QueryResponse {

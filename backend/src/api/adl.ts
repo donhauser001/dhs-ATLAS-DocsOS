@@ -4,22 +4,27 @@
  * 提供 ADL 文档的读取、解析和操作接口
  * 
  * Phase 0.5: 使用持久化 Proposal 存储和统一配置
+ * Phase 1.5: 使用 Registry 和 Visibility Resolver
  */
 
 import { Router, Request, Response } from 'express';
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
-import { parseADL, findBlockByAnchor } from '../adl/parser.js';
 import { config, ensureDirectories } from '../config.js';
+import { findBlockByAnchor } from '../adl/parser.js';
 import {
   createProposal,
   getProposal,
   updateProposal,
   listProposals,
 } from '../adl/proposal-store.js';
-import { updateDocumentIndex, rebuildWorkspaceIndex } from '../services/workspace-service.js';
+import { updateDocumentIndex } from '../services/workspace-service.js';
 import { executeQuery, rebuildBlocksIndex, type Query } from '../services/query-service.js';
-import type { ADLDocument, Proposal, ValidationResult } from '../adl/types.js';
+// Phase 1.5: 使用 Registry 作为文档发现的唯一入口
+import { 
+  documentExists, 
+  getDocument,
+  resolveBlockByAnchor,
+} from '../services/workspace-registry.js';
+import type { Proposal } from '../adl/types.js';
 
 const router = Router();
 
@@ -29,6 +34,8 @@ ensureDirectories();
 /**
  * GET /api/adl/document
  * 获取并解析指定的 ADL 文档
+ * 
+ * Phase 1.5: 通过 Registry 获取文档
  */
 router.get('/document', (req: Request, res: Response) => {
   const { path: docPath } = req.query;
@@ -38,25 +45,23 @@ router.get('/document', (req: Request, res: Response) => {
     return;
   }
   
-  const fullPath = join(config.repositoryRoot, docPath);
+  // Phase 1.5: 使用 Registry 获取文档
+  const content = getDocument(docPath);
   
-  if (!existsSync(fullPath)) {
+  if (!content) {
     res.status(404).json({ error: 'Document not found', path: docPath });
     return;
   }
   
-  try {
-    const content = readFileSync(fullPath, 'utf-8');
-    const doc = parseADL(content, docPath);
-    res.json(doc);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to parse document', details: String(error) });
-  }
+  res.json(content.document);
 });
 
 /**
  * GET /api/adl/block/:anchor
- * 获取指定 Anchor 的 Block
+ * 获取指定 Anchor 的 Block（完整内容）
+ * 
+ * Phase 1.5: 这是获取 Block 完整数据的唯一正确方式
+ * Query 只返回定位信息，如需完整数据必须通过这个接口
  */
 router.get('/block/:anchor', (req: Request, res: Response) => {
   const { anchor } = req.params;
@@ -67,27 +72,22 @@ router.get('/block/:anchor', (req: Request, res: Response) => {
     return;
   }
   
-  const fullPath = join(config.repositoryRoot, docPath);
+  // Phase 1.5: 使用 Registry 获取文档
+  const content = getDocument(docPath);
   
-  if (!existsSync(fullPath)) {
+  if (!content) {
     res.status(404).json({ error: 'Document not found', path: docPath });
     return;
   }
   
-  try {
-    const content = readFileSync(fullPath, 'utf-8');
-    const doc = parseADL(content, docPath);
-    const block = findBlockByAnchor(doc, anchor);
-    
-    if (!block) {
-      res.status(404).json({ error: 'Block not found', anchor });
-      return;
-    }
-    
-    res.json(block);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to get block', details: String(error) });
+  const block = findBlockByAnchor(content.document, anchor);
+  
+  if (!block) {
+    res.status(404).json({ error: 'Block not found', anchor });
+    return;
   }
+  
+  res.json(block);
 });
 
 /**

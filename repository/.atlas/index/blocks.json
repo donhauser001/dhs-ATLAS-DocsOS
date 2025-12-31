@@ -3,6 +3,7 @@
     {
       "anchor": "contact-liu-ba",
       "document": "contacts/客户-刘八.md",
+      "heading": "刘八",
       "type": "contact",
       "machine": {
         "type": "contact",
@@ -18,6 +19,7 @@
     {
       "anchor": "contact-wu-yi",
       "document": "contacts/客户-吴一.md",
+      "heading": "吴一",
       "type": "contact",
       "machine": {
         "type": "contact",
@@ -33,6 +35,7 @@
     {
       "anchor": "contact-zhou-shi",
       "document": "contacts/客户-周十.md",
+      "heading": "周十",
       "type": "contact",
       "machine": {
         "type": "contact",
@@ -48,6 +51,7 @@
     {
       "anchor": "contact-sun-jiu",
       "document": "contacts/客户-孙九.md",
+      "heading": "孙九",
       "type": "contact",
       "machine": {
         "type": "contact",
@@ -63,6 +67,7 @@
     {
       "anchor": "contact-zhang-san",
       "document": "contacts/客户-张三.md",
+      "heading": "张三",
       "type": "contact",
       "machine": {
         "type": "contact",
@@ -78,6 +83,7 @@
     {
       "anchor": "contact-li-si",
       "document": "contacts/客户-李四.md",
+      "heading": "李四",
       "type": "contact",
       "machine": {
         "type": "contact",
@@ -93,6 +99,7 @@
     {
       "anchor": "contact-wang-wu",
       "document": "contacts/客户-王五.md",
+      "heading": "王五",
       "type": "contact",
       "machine": {
         "type": "contact",
@@ -108,6 +115,7 @@
     {
       "anchor": "contact-zhao-liu",
       "document": "contacts/客户-赵六.md",
+      "heading": "赵六",
       "type": "contact",
       "machine": {
         "type": "contact",
@@ -123,6 +131,7 @@
     {
       "anchor": "contact-zheng-er",
       "document": "contacts/客户-郑二.md",
+      "heading": "郑二",
       "type": "contact",
       "machine": {
         "type": "contact",
@@ -138,6 +147,7 @@
     {
       "anchor": "contact-chen-qi",
       "document": "contacts/客户-陈七.md",
+      "heading": "陈七",
       "type": "contact",
       "machine": {
         "type": "contact",
@@ -153,6 +163,7 @@
     {
       "anchor": "cat-brand-design",
       "document": "genesis/服务示例.md",
+      "heading": "品牌设计",
       "type": "category",
       "machine": {
         "type": "category",
@@ -166,6 +177,7 @@
     {
       "anchor": "cat-digital-product",
       "document": "genesis/服务示例.md",
+      "heading": "数字产品",
       "type": "category",
       "machine": {
         "type": "category",
@@ -179,6 +191,7 @@
     {
       "anchor": "svc-S-001",
       "document": "genesis/服务示例.md",
+      "heading": "S-001 品牌VI设计",
       "type": "service",
       "machine": {
         "type": "service",
@@ -197,6 +210,7 @@
     {
       "anchor": "svc-S-002",
       "document": "genesis/服务示例.md",
+      "heading": "S-002 产品界面设计",
       "type": "service",
       "machine": {
         "type": "service",
@@ -215,6 +229,7 @@
     {
       "anchor": "svc-S-003",
       "document": "genesis/服务示例.md",
+      "heading": "S-003 品牌策略咨询",
       "type": "service",
       "machine": {
         "type": "service",
@@ -233,6 +248,7 @@
     {
       "anchor": "proj-P-001",
       "document": "projects/2025/P-001/项目主文档.md",
+      "heading": "星云科技品牌升级项目",
       "type": "project",
       "machine": {
         "type": "project",
@@ -251,6 +267,7 @@
     {
       "anchor": "milestone-P-001-1",
       "document": "projects/2025/P-001/项目主文档.md",
+      "heading": "里程碑一",
       "type": "milestone",
       "machine": {
         "type": "milestone",
@@ -263,6 +280,7 @@
     {
       "anchor": "milestone-P-001-2",
       "document": "projects/2025/P-001/项目主文档.md",
+      "heading": "里程碑二",
       "type": "milestone",
       "machine": {
         "type": "milestone",
@@ -275,6 +293,7 @@
     {
       "anchor": "milestone-P-001-3",
       "document": "projects/2025/P-001/项目主文档.md",
+      "heading": "里程碑三",
       "type": "milestone",
       "machine": {
         "type": "milestone",
@@ -287,6 +306,7 @@
     {
       "anchor": "proj-P-002",
       "document": "projects/2025/P-002/项目主文档.md",
+      "heading": "蓝海集团官网重构",
       "type": "project",
       "machine": {
         "type": "project",
@@ -305,6 +325,7 @@
     {
       "anchor": "milestone-P-002-1",
       "document": "projects/2025/P-002/项目主文档.md",
+      "heading": "里程碑一",
       "type": "milestone",
       "machine": {
         "type": "milestone",
@@ -317,6 +338,7 @@
     {
       "anchor": "milestone-P-002-2",
       "document": "projects/2025/P-002/项目主文档.md",
+      "heading": "里程碑二",
       "type": "milestone",
       "machine": {
         "type": "milestone",
@@ -329,6 +351,7 @@
     {
       "anchor": "milestone-P-002-3",
       "document": "projects/2025/P-002/项目主文档.md",
+      "heading": "里程碑三",
       "type": "milestone",
       "machine": {
         "type": "milestone",
@@ -341,6 +364,7 @@
     {
       "anchor": "proj-P-003",
       "document": "projects/2025/P-003/项目主文档.md",
+      "heading": "云峰数字化转型咨询",
       "type": "project",
       "machine": {
         "type": "project",
@@ -358,6 +382,7 @@
     {
       "anchor": "milestone-P-003-1",
       "document": "projects/2025/P-003/项目主文档.md",
+      "heading": "里程碑一",
       "type": "milestone",
       "machine": {
         "type": "milestone",
@@ -370,6 +395,7 @@
     {
       "anchor": "milestone-P-003-2",
       "document": "projects/2025/P-003/项目主文档.md",
+      "heading": "里程碑二",
       "type": "milestone",
       "machine": {
         "type": "milestone",
@@ -382,6 +408,7 @@
     {
       "anchor": "milestone-P-003-3",
       "document": "projects/2025/P-003/项目主文档.md",
+      "heading": "里程碑三",
       "type": "milestone",
       "machine": {
         "type": "milestone",
@@ -392,5 +419,5 @@
       }
     }
   ],
-  "updated_at": "2025-12-31T18:42:24.580Z"
+  "updated_at": "2025-12-31T19:00:01.433Z"
 }

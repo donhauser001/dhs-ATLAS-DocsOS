@@ -2,6 +2,8 @@
  * Proposal Preview - 变更提案预览
  * 
  * 显示待提交的变更，支持校验和执行
+ * 
+ * Phase 1.5: 要求输入 reason（认知语义）
  */
 
 import { useState } from 'react';
@@ -30,17 +32,29 @@ export function ProposalPreview({ docPath, changes, onClose, onExecuted }: Propo
   const [executeResult, setExecuteResult] = useState<ExecuteResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   
+  // Phase 1.5: 认知语义字段
+  const [reason, setReason] = useState<string>('');
+  const [sourceContext, setSourceContext] = useState<string>('');
+  
   // 创建并校验提案
   async function handleValidate() {
+    // Phase 1.5: reason 必填检查
+    if (!reason.trim()) {
+      setError('请填写变更原因（reason）');
+      return;
+    }
+    
     setStep('validating');
     setError(null);
     
     try {
-      // 创建提案
+      // 创建提案（Phase 1.5: 包含认知语义）
       const createResult = await createProposal({
         proposed_by: 'usr-genesis',
         proposed_at: new Date().toISOString(),
         target_file: docPath,
+        reason: reason.trim(),
+        source_context: sourceContext.trim() || undefined,
         ops: changes,
       });
       
@@ -92,8 +106,46 @@ export function ProposalPreview({ docPath, changes, onClose, onExecuted }: Propo
         
         {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[50vh]">
+          {/* Phase 1.5: 认知语义输入 */}
+          <div className="mb-6 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                变更原因 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="例如：客户确认价格调整为 68000"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+                disabled={step !== 'preview'}
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                请说明为什么要做这个变更
+              </p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                来源上下文 <span className="text-slate-400">(可选)</span>
+              </label>
+              <input
+                type="text"
+                value={sourceContext}
+                onChange={(e) => setSourceContext(e.target.value)}
+                placeholder="例如：2025-01-01 电话沟通记录"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+                disabled={step !== 'preview'}
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                基于什么信息做出这个判断？
+              </p>
+            </div>
+          </div>
+          
           {/* Changes List */}
           <div className="space-y-3">
+            <div className="text-sm font-medium text-slate-700 mb-2">变更内容</div>
             {changes.map((change, index) => (
               <div 
                 key={index}

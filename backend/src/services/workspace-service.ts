@@ -2,18 +2,21 @@
  * Workspace Service - 工作空间索引服务
  * 
  * Phase 1: 实现多文档工作空间索引
+ * Phase 1.5: 集成 Registry，成为唯一的索引重建入口
  * 
  * 职责：
- * 1. 扫描 repository 下所有 .md 文件
+ * 1. 扫描 repository 下所有 .md 文件（唯一允许扫描的地方）
  * 2. 解析并提取文档元数据
  * 3. 生成目录树结构
  * 4. 维护 workspace.json 索引文件
+ * 5. 向 Registry 注册文档路径
  */
 
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'fs';
 import { join, relative, basename, dirname } from 'path';
 import { config, ensureDirectories } from '../config.js';
 import { parseADL } from '../adl/parser.js';
+import { registerDocument, resetRegistry } from './workspace-registry.js';
 import type { ADLDocument, Block } from '../adl/types.js';
 
 // ============================================================
@@ -104,14 +107,20 @@ export async function getWorkspaceIndex(): Promise<WorkspaceIndex> {
 
 /**
  * 重建 Workspace 索引
+ * 
+ * Phase 1.5: 这是唯一允许扫描文件系统的地方
+ * 重建时会向 Registry 注册所有文档路径
  */
 export async function rebuildWorkspaceIndex(): Promise<WorkspaceIndex> {
   ensureDirectories();
   
+  // Phase 1.5: 重置 Registry，准备重新注册
+  resetRegistry();
+  
   const documents: DocumentInfo[] = [];
   const directoriesMap = new Map<string, DirectoryInfo>();
   
-  // 扫描所有 .md 文件
+  // 扫描所有 .md 文件（唯一允许的扫描点）
   const mdFiles = scanMarkdownFiles(config.repositoryRoot);
   
   for (const filePath of mdFiles) {
@@ -130,6 +139,9 @@ export async function rebuildWorkspaceIndex(): Promise<WorkspaceIndex> {
       // 提取文档信息
       const docInfo = extractDocumentInfo(doc, relativePath, stat.mtime);
       documents.push(docInfo);
+      
+      // Phase 1.5: 向 Registry 注册文档
+      registerDocument(relativePath);
       
       // 记录目录信息
       const dirPath = dirname(relativePath);
@@ -180,6 +192,8 @@ export async function getWorkspaceTree(): Promise<TreeNode[]> {
 
 /**
  * 更新单个文档的索引
+ * 
+ * Phase 1.5: 同步更新 Registry
  */
 export async function updateDocumentIndex(relativePath: string): Promise<void> {
   const index = await getWorkspaceIndex();
@@ -188,7 +202,7 @@ export async function updateDocumentIndex(relativePath: string): Promise<void> {
   // 移除旧的文档信息
   index.documents = index.documents.filter(d => d.path !== relativePath);
   
-  // 如果文件存在，添加新的文档信息
+  // 如果文件存在，添加新的文档信息并注册到 Registry
   if (existsSync(fullPath)) {
     try {
       const content = readFileSync(fullPath, 'utf-8');
@@ -197,9 +211,16 @@ export async function updateDocumentIndex(relativePath: string): Promise<void> {
       
       const docInfo = extractDocumentInfo(doc, relativePath, stat.mtime);
       index.documents.push(docInfo);
+      
+      // Phase 1.5: 向 Registry 注册文档
+      registerDocument(relativePath);
     } catch (error) {
       console.error(`Failed to update index for ${relativePath}:`, error);
     }
+  } else {
+    // Phase 1.5: 文件不存在，从 Registry 注销
+    const { unregisterDocument } = await import('./workspace-registry.js');
+    unregisterDocument(relativePath);
   }
   
   // 重新计算统计

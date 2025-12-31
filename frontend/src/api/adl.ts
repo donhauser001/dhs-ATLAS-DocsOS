@@ -30,11 +30,23 @@ export interface ADLDocument {
   raw: string;
 }
 
+/**
+ * Proposal - 变更提案
+ * 
+ * Phase 1.5: 升级为「可审计的认知行为」
+ */
 export interface Proposal {
   id: string;
   proposed_by: string;
   proposed_at: string;
   target_file: string;
+  
+  // 认知语义（Phase 1.5 新增）
+  /** 变更原因 - 必填 */
+  reason: string;
+  /** 来源上下文 - 可选 */
+  source_context?: string;
+  
   ops: Operation[];
   status: 'pending' | 'approved' | 'rejected' | 'executed';
 }

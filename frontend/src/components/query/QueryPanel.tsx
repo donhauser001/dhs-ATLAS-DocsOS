@@ -156,6 +156,7 @@ export function QueryPanel({ open, onOpenChange }: QueryPanelProps) {
                   未找到匹配的结果
                 </div>
               ) : (
+                {/* Phase 1.5: 使用文档定位字段而非 data 替身 */}
                 <div className="border rounded-lg divide-y max-h-[400px] overflow-auto">
                   {results.results.map((result) => (
                     <button
@@ -166,14 +167,19 @@ export function QueryPanel({ open, onOpenChange }: QueryPanelProps) {
                       <FileText className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="font-medium truncate">
-                          {String(result.data.title || result.anchor)}
+                          {result.title || result.heading || result.anchor}
                         </div>
                         <div className="text-sm text-muted-foreground truncate">
                           {result.document} #{result.anchor}
+                          {result.status && (
+                            <span className="ml-2 text-xs opacity-70">
+                              [{result.status}]
+                            </span>
+                          )}
                         </div>
                       </div>
                       <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded flex-shrink-0">
-                        {String(result.data.type || 'unknown')}
+                        {result.type}
                       </span>
                     </button>
                   ))}

@@ -1,27 +1,43 @@
 /**
- * Phase 1 E2E 测试脚本
+ * Phase 1 + 1.5 E2E 测试脚本
  * 
  * 测试内容：
  * 1. Workspace 索引生成与查询
  * 2. 多文档导航
- * 3. Query 搜索
+ * 3. Query 搜索（Phase 1.5: 返回文档定位而非数据替身）
  * 4. 权限验证（admin/staff/client）
  * 5. 完整流程：登录 → 搜索 → 打开文档 → 编辑 → Proposal → 执行
+ * 6. Phase 1.5: Registry 唯一真理源
+ * 7. Phase 1.5: Proposal 认知语义（reason 必填）
+ * 8. Phase 1.5: Visibility Resolver
  * 
  * 运行方式: npx tsx scripts/phase1-e2e.ts
  */
 
 import { join } from 'path';
-import { readFileSync, existsSync } from 'fs';
+import { existsSync } from 'fs';
 import { config, ensureDirectories } from '../src/config.js';
-import { rebuildWorkspaceIndex, getWorkspaceIndex, getWorkspaceTree } from '../src/services/workspace-service.js';
+import { rebuildWorkspaceIndex, getWorkspaceTree } from '../src/services/workspace-service.js';
 import { executeQuery, rebuildBlocksIndex } from '../src/services/query-service.js';
 import { getUserByUsername, verifyPassword, checkPathPermission, toPublicUser } from '../src/services/auth-service.js';
-import { parseADL, findBlockByAnchor } from '../src/adl/parser.js';
-import { createProposal, getProposal, deleteProposal } from '../src/adl/proposal-store.js';
+import { createProposal, deleteProposal } from '../src/adl/proposal-store.js';
 import { validateProposal } from '../src/adl/validator.js';
 import { executeProposal } from '../src/adl/executor.js';
 import simpleGit from 'simple-git';
+// Phase 1.5: Registry 和 Visibility Resolver
+import {
+  documentExists,
+  getDocument,
+  resolveDocument,
+  getRegistryStats,
+  listVisibleDocuments,
+  canAccessDocument,
+} from '../src/services/workspace-registry.js';
+import {
+  checkDocumentAccess,
+  resolveVisibility,
+  checkProposalCreateAccess,
+} from '../src/services/visibility-resolver.js';
 
 // ============================================================
 // 测试辅助函数
@@ -145,21 +161,48 @@ async function testQuery() {
     `标题搜索 "品牌" 返回 ${titleSearchResults.count} 个结果`
   );
   
-  // Select 投影
-  const selectResults = await executeQuery({
+  // Phase 1.5: 验证 Query 返回文档定位而非数据替身
+  const firstResult = serviceResults.results[0];
+  assert(
+    firstResult.anchor !== undefined && firstResult.anchor !== '',
+    `Query 结果包含 anchor: ${firstResult.anchor}`
+  );
+  assert(
+    firstResult.document !== undefined && firstResult.document !== '',
+    `Query 结果包含 document: ${firstResult.document}`
+  );
+  assert(
+    firstResult.heading !== undefined,
+    `Query 结果包含 heading: ${firstResult.heading}`
+  );
+  assert(
+    firstResult.title !== undefined,
+    `Query 结果包含 title: ${firstResult.title}`
+  );
+  assert(
+    firstResult.type !== undefined,
+    `Query 结果包含 type: ${firstResult.type}`
+  );
+  // Phase 1.5: 确认不再有 data 字段（数据替身）
+  assert(
+    (firstResult as Record<string, unknown>).data === undefined,
+    `Query 结果不包含 data 字段（已移除数据替身）`
+  );
+  
+  // Limit 测试
+  const limitResults = await executeQuery({
     type: 'service',
-    select: ['id', 'title'],
-    limit: 5,
+    limit: 3,
   });
   assert(
-    selectResults.results.length <= 5,
-    `Select + Limit 限制结果数量为 ${selectResults.results.length}`
+    limitResults.results.length <= 3,
+    `Limit 限制结果数量为 ${limitResults.results.length}`
   );
   
   // 检查查询时间
   assert(
-    selectResults.query_time_ms < 1000,
-    `查询时间 ${selectResults.query_time_ms}ms < 1000ms`
+    limitResults.query_time_ms < 1000,
+    `查询时间 ${limitResults.query_time_ms}ms < 1000ms`
   );
 }
 
@@ -238,26 +281,29 @@ async function testProposalWorkflow() {
   console.log('\n=== 测试 Proposal 工作流 ===');
   
   const testDocPath = 'genesis/服务示例.md';
-  const fullPath = join(config.repositoryRoot, testDocPath);
   
-  if (!existsSync(fullPath)) {
+  // Phase 1.5: 通过 Registry 获取文档
+  const docContent = getDocument(testDocPath);
+  
+  if (!docContent) {
     e2eLog('warn', `测试文档不存在: ${testDocPath}，跳过 Proposal 测试`);
     return;
   }
   
+  const doc = docContent.document;
+  
   // 1. 读取文档
-  const content = readFileSync(fullPath, 'utf-8');
-  const doc = parseADL(content, testDocPath);
   assert(
     doc.blocks.length > 0,
     `文档包含 ${doc.blocks.length} 个 blocks`
   );
   
-  // 2. 创建 Proposal
-  const proposal = createProposal({
+  // Phase 1.5: 测试无 reason 的 Proposal 应该验证失败
+  const proposalWithoutReason = createProposal({
     proposed_by: 'e2e-test',
     proposed_at: new Date().toISOString(),
     target_file: testDocPath,
+    reason: '', // 空 reason
     ops: [
       {
         op: 'update_yaml',
@@ -268,9 +314,46 @@ async function testProposalWorkflow() {
       },
     ],
   });
+  
+  const validationWithoutReason = validateProposal(proposalWithoutReason, config.repositoryRoot);
+  assert(
+    !validationWithoutReason.valid,
+    `无 reason 的 Proposal 验证失败（符合预期）`
+  );
+  assert(
+    validationWithoutReason.errors.some(e => e.rule === 'reason_required'),
+    `验证错误包含 reason_required 规则`
+  );
+  deleteProposal(proposalWithoutReason.id);
+  
+  // 2. 创建带 reason 的 Proposal（Phase 1.5）
+  // 使用一个会产生实际变化的值（在 draft 和 active 之间切换）
+  const currentStatus = doc.blocks[0].machine?.status || 'active';
+  const newStatus = currentStatus === 'active' ? 'draft' : 'active';
+  
+  const proposal = createProposal({
+    proposed_by: 'e2e-test',
+    proposed_at: new Date().toISOString(),
+    target_file: testDocPath,
+    reason: 'E2E 测试：验证 Proposal 工作流',  // Phase 1.5: 必填
+    source_context: 'phase1-e2e.ts 自动化测试',  // Phase 1.5: 可选
+    ops: [
+      {
+        op: 'update_yaml',
+        anchor: doc.blocks[0].anchor,
+        path: 'status',
+        value: newStatus,
+        old_value: currentStatus,
+      },
+    ],
+  });
   assert(
     proposal.id.length > 0,
     `Proposal 创建成功: ${proposal.id}`
+  );
+  assert(
+    proposal.reason === 'E2E 测试：验证 Proposal 工作流',
+    `Proposal 包含 reason`
   );
   
   // 3. 验证 Proposal
@@ -304,12 +387,141 @@ async function testProposalWorkflow() {
 }
 
 // ============================================================
+// Phase 1.5 测试用例
+// ============================================================
+
+async function testRegistry() {
+  console.log('\n=== 测试 Registry（Phase 1.5）===');
+  
+  // 获取 Registry 状态
+  const stats = getRegistryStats();
+  assert(
+    stats.documentCount > 0,
+    `Registry 包含 ${stats.documentCount} 个文档`
+  );
+  assert(
+    stats.initialized,
+    `Registry 已初始化`
+  );
+  
+  // 测试 documentExists
+  const testDocPath = 'genesis/服务示例.md';
+  assert(
+    documentExists(testDocPath),
+    `documentExists('${testDocPath}') 返回 true`
+  );
+  assert(
+    !documentExists('non-existent-file.md'),
+    `documentExists('non-existent-file.md') 返回 false`
+  );
+  
+  // 测试 resolveDocument
+  const handle = resolveDocument(testDocPath);
+  assert(
+    handle !== null,
+    `resolveDocument('${testDocPath}') 返回句柄`
+  );
+  assert(
+    handle !== null && handle.exists,
+    `文档句柄标记 exists=true`
+  );
+  
+  // 测试 getDocument
+  const content = getDocument(testDocPath);
+  assert(
+    content !== null,
+    `getDocument('${testDocPath}') 返回内容`
+  );
+  assert(
+    content !== null && content.document.blocks.length > 0,
+    `文档包含 ${content?.document.blocks.length || 0} 个 blocks`
+  );
+}
+
+async function testVisibilityResolver() {
+  console.log('\n=== 测试 Visibility Resolver（Phase 1.5）===');
+  
+  const admin = getUserByUsername('admin');
+  const client = getUserByUsername('client-zhang');
+  
+  if (!admin || !client) {
+    e2eLog('warn', '用户不存在，跳过 Visibility Resolver 测试');
+    return;
+  }
+  
+  const adminPublic = toPublicUser(admin);
+  const clientPublic = toPublicUser(client);
+  
+  // 测试 resolveVisibility
+  const adminVisibility = resolveVisibility(adminPublic);
+  assert(
+    adminVisibility !== null && adminVisibility.isGlobalAccess,
+    `Admin 拥有全局访问权限`
+  );
+  
+  const clientVisibility = resolveVisibility(clientPublic);
+  assert(
+    clientVisibility !== null && !clientVisibility.isGlobalAccess,
+    `Client 没有全局访问权限`
+  );
+  
+  // 测试 checkDocumentAccess
+  const adminAccess = checkDocumentAccess(adminPublic, 'genesis/服务示例.md');
+  assert(
+    adminAccess.allowed,
+    `Admin 可以访问 genesis/服务示例.md`
+  );
+  
+  const clientAccessAllowed = checkDocumentAccess(clientPublic, 'projects/2025/P-001/项目主文档.md');
+  assert(
+    clientAccessAllowed.allowed,
+    `Client 可以访问授权项目 P-001`
+  );
+  
+  const clientAccessDenied = checkDocumentAccess(clientPublic, 'projects/2025/P-002/项目主文档.md');
+  assert(
+    !clientAccessDenied.allowed,
+    `Client 不能访问未授权项目 P-002`
+  );
+  assert(
+    clientAccessDenied.reason !== undefined,
+    `拒绝访问时包含原因: ${clientAccessDenied.reason}`
+  );
+  
+  // 测试 checkProposalCreateAccess
+  const adminProposalAccess = checkProposalCreateAccess(adminPublic, 'genesis/服务示例.md');
+  assert(
+    adminProposalAccess.allowed,
+    `Admin 可以创建 Proposal`
+  );
+  
+  const clientProposalAccess = checkProposalCreateAccess(clientPublic, 'projects/2025/P-001/项目主文档.md');
+  assert(
+    !clientProposalAccess.allowed,
+    `Client 不能创建 Proposal（权限不足）`
+  );
+  
+  // 测试 listVisibleDocuments
+  const adminDocs = listVisibleDocuments(adminPublic);
+  assert(
+    adminDocs.length > 0,
+    `Admin 可见文档数: ${adminDocs.length}`
+  );
+  
+  const clientDocs = listVisibleDocuments(clientPublic);
+  assert(
+    clientDocs.length > 0 && clientDocs.length < adminDocs.length,
+    `Client 可见文档数: ${clientDocs.length}（少于 Admin）`
+  );
+}
+
+// ============================================================
 // 主测试流程
 // ============================================================
 
 async function runPhase1E2E() {
   console.log('====================================');
-  console.log('  ATLAS Phase 1 E2E 测试');
+  console.log('  ATLAS Phase 1 + 1.5 E2E 测试');
   console.log('====================================');
   console.log(`\n项目根目录: ${config.projectRoot}`);
   console.log(`仓库根目录: ${config.repositoryRoot}`);
@@ -323,6 +535,10 @@ async function runPhase1E2E() {
     await testQuery();
     await testAuthentication();
     await testPermissions();
+    // Phase 1.5 新增测试
+    await testRegistry();
+    await testVisibilityResolver();
+    // Proposal 测试（含 Phase 1.5 reason 验证）
     await testProposalWorkflow();
   } catch (error) {
     e2eLog('error', `测试过程中发生错误: ${error}`);

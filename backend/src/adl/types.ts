@@ -67,7 +67,17 @@ export interface ADLDocument {
 // ============================================================
 
 /**
+ * Proposal Status - 提案状态
+ */
+export type ProposalStatus = 'pending' | 'approved' | 'rejected' | 'executed';
+
+/**
  * Proposal - 变更提案
+ * 
+ * Phase 1.5: 升级为「可审计的认知行为」
+ * 
+ * Proposal 不是「绕过系统的写 API」，
+ * 而是「有来源、有理由、可追溯」的认知行为记录。
  */
 export interface Proposal {
   /** 提案 ID */
@@ -78,10 +88,31 @@ export interface Proposal {
   proposed_at: string;
   /** 目标文件 */
   target_file: string;
+  
+  // === 认知语义（Phase 1.5 新增） ===
+  
+  /** 
+   * 变更原因 - 必填
+   * 
+   * 回答：为什么要做这个变更？
+   * 示例："客户确认价格调整为 68000"
+   */
+  reason: string;
+  
+  /**
+   * 来源上下文 - 可选
+   * 
+   * 回答：基于什么信息做出这个判断？
+   * 示例："2025-01-01 电话沟通记录"
+   */
+  source_context?: string;
+  
+  // === 操作定义 ===
+  
   /** 操作列表 */
   ops: Operation[];
   /** 提案状态 */
-  status: 'pending' | 'approved' | 'rejected' | 'executed';
+  status: ProposalStatus;
 }
 
 /**

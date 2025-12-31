@@ -8,11 +8,14 @@
  * 2. 目标 Path 必须有效
  * 3. 新值类型必须与原值兼容
  * 4. 不允许删除必填字段（type, id, status）
+ * 
+ * Phase 1.5 新增规则：
+ * 5. Proposal 必须包含 reason（认知语义）
  */
 
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
-import { parseADL, findBlockByAnchor, getBlockValue } from './parser.js';
+import { findBlockByAnchor, getBlockValue } from './parser.js';
+// Phase 1.5: 使用 Registry 作为文档发现的唯一入口
+import { getDocument } from '../services/workspace-registry.js';
 import type { Proposal, ValidationResult, ValidationError, Operation } from './types.js';
 
 // 必填字段列表
@@ -20,13 +23,24 @@ const REQUIRED_FIELDS = ['type', 'id', 'status'];
 
 /**
  * 校验 Proposal
+ * 
+ * Phase 1.5: 使用 Registry 获取文档，并检查 reason 字段
  */
-export function validateProposal(proposal: Proposal, repositoryRoot: string): ValidationResult {
+export function validateProposal(proposal: Proposal, _repositoryRoot: string): ValidationResult {
   const errors: ValidationError[] = [];
   
-  // 检查目标文件是否存在
-  const targetPath = join(repositoryRoot, proposal.target_file);
-  if (!existsSync(targetPath)) {
+  // Phase 1.5: 检查 reason 字段（认知语义必须存在）
+  if (!proposal.reason || proposal.reason.trim() === '') {
+    errors.push({
+      op_index: -1,
+      rule: 'reason_required',
+      message: 'Proposal must include a reason explaining why this change is being made',
+    });
+  }
+  
+  // Phase 1.5: 使用 Registry 获取文档
+  const content = getDocument(proposal.target_file);
+  if (!content) {
     errors.push({
       op_index: -1,
       rule: 'file_exists',
@@ -35,9 +49,7 @@ export function validateProposal(proposal: Proposal, repositoryRoot: string): Va
     return { valid: false, errors };
   }
   
-  // 读取并解析文档
-  const content = readFileSync(targetPath, 'utf-8');
-  const doc = parseADL(content, proposal.target_file);
+  const doc = content.document;
   
   // 校验每个操作
   proposal.ops.forEach((op, index) => {
