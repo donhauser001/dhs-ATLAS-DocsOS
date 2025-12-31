@@ -53,16 +53,22 @@ export async function getPolicies(params?: {
   type?: 'uniform' | 'tiered'
   status?: 'active' | 'inactive'
 }): Promise<{ policies: Policy[]; total: number }> {
-  const result = await executeCommand('policy.list', params || {})
-  return result as { policies: Policy[]; total: number }
+  const response = await executeCommand('policy.list', params || {})
+  if (!response.success) {
+    throw new Error(response.error?.message || '获取政策列表失败')
+  }
+  return response.result as { policies: Policy[]; total: number }
 }
 
 /**
  * 获取单个政策详情
  */
 export async function getPolicy(id: string): Promise<Policy> {
-  const result = await executeCommand('policy.get', { id })
-  return (result as { policy: Policy }).policy
+  const response = await executeCommand('policy.get', { id })
+  if (!response.success) {
+    throw new Error(response.error?.message || '获取政策详情失败')
+  }
+  return (response.result as { policy: Policy }).policy
 }
 
 /**
@@ -78,8 +84,11 @@ export async function createPolicy(data: {
   applicable?: string[]
   conditions?: string[]
 }): Promise<{ id: string }> {
-  const result = await executeCommand('policy.create', data)
-  return result as { id: string }
+  const response = await executeCommand('policy.create', data)
+  if (!response.success) {
+    throw new Error(response.error?.message || '创建政策失败')
+  }
+  return response.result as { id: string }
 }
 
 /**
@@ -89,16 +98,22 @@ export async function updatePolicy(
   id: string,
   updates: Partial<Omit<Policy, 'id' | 'type' | 'created_at'>>
 ): Promise<{ updated: boolean }> {
-  const result = await executeCommand('policy.update', { id, updates })
-  return result as { updated: boolean }
+  const response = await executeCommand('policy.update', { id, updates })
+  if (!response.success) {
+    throw new Error(response.error?.message || '更新政策失败')
+  }
+  return response.result as { updated: boolean }
 }
 
 /**
  * 删除价格政策
  */
 export async function deletePolicy(id: string): Promise<{ deleted: string }> {
-  const result = await executeCommand('policy.delete', { id })
-  return result as { deleted: string }
+  const response = await executeCommand('policy.delete', { id })
+  if (!response.success) {
+    throw new Error(response.error?.message || '删除政策失败')
+  }
+  return response.result as { deleted: string }
 }
 
 /**
@@ -109,12 +124,15 @@ export async function calculatePrice(
   unitPrice: number,
   quantity: number
 ): Promise<PolicyCalculation> {
-  const result = await executeCommand('policy.calculate', {
+  const response = await executeCommand('policy.calculate', {
     policy_id: policyId,
     unit_price: unitPrice,
     quantity
   })
-  return result as PolicyCalculation
+  if (!response.success) {
+    throw new Error(response.error?.message || '计算价格失败')
+  }
+  return response.result as PolicyCalculation
 }
 
 // ============================================================
