@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { fetchDocument, type ADLDocument, type Block } from '@/api/adl';
+import { fetchDocument, type ADLDocument } from '@/api/adl';
 import { BlockRenderer } from './BlockRenderer';
 import { ProposalPreview } from './ProposalPreview';
 import type { UpdateYamlOp } from '@/api/adl';

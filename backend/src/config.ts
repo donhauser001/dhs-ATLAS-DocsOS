@@ -46,6 +46,18 @@ export const config = {
   // Proposal 存储目录
   proposalsDir: join(PROJECT_ROOT, 'repository', '.atlas', 'proposals'),
   
+  // Workspace 索引文件路径
+  workspaceIndexPath: join(PROJECT_ROOT, 'repository', '.atlas', 'workspace.json'),
+  
+  // Blocks 索引目录
+  indexDir: join(PROJECT_ROOT, 'repository', '.atlas', 'index'),
+  
+  // Blocks 索引文件路径
+  blocksIndexPath: join(PROJECT_ROOT, 'repository', '.atlas', 'index', 'blocks.json'),
+  
+  // 用户数据文件路径
+  usersPath: join(PROJECT_ROOT, 'repository', '.atlas', 'users.json'),
+  
   // 服务端口
   port: parseInt(process.env.PORT || '3000', 10),
   
@@ -67,6 +79,7 @@ export function ensureDirectories(): void {
   const dirs = [
     config.atlasDataDir,
     config.proposalsDir,
+    config.indexDir,
   ];
   
   for (const dir of dirs) {

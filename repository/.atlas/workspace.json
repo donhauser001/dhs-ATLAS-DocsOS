@@ -1,0 +1,237 @@
+{
+  "version": "1.0",
+  "generated_at": "2025-12-31T18:42:24.570Z",
+  "documents": [
+    {
+      "path": "contacts/客户-刘八.md",
+      "title": "刘八",
+      "document_type": "contact",
+      "block_count": 1,
+      "anchors": [
+        "contact-liu-ba"
+      ],
+      "types": [
+        "contact"
+      ],
+      "modified_at": "2025-12-31T18:32:33.785Z"
+    },
+    {
+      "path": "contacts/客户-吴一.md",
+      "title": "吴一",
+      "document_type": "contact",
+      "block_count": 1,
+      "anchors": [
+        "contact-wu-yi"
+      ],
+      "types": [
+        "contact"
+      ],
+      "modified_at": "2025-12-31T18:32:33.785Z"
+    },
+    {
+      "path": "contacts/客户-周十.md",
+      "title": "周十",
+      "document_type": "contact",
+      "block_count": 1,
+      "anchors": [
+        "contact-zhou-shi"
+      ],
+      "types": [
+        "contact"
+      ],
+      "modified_at": "2025-12-31T18:32:33.785Z"
+    },
+    {
+      "path": "contacts/客户-孙九.md",
+      "title": "孙九",
+      "document_type": "contact",
+      "block_count": 1,
+      "anchors": [
+        "contact-sun-jiu"
+      ],
+      "types": [
+        "contact"
+      ],
+      "modified_at": "2025-12-31T18:32:33.785Z"
+    },
+    {
+      "path": "contacts/客户-张三.md",
+      "title": "张三",
+      "document_type": "contact",
+      "block_count": 1,
+      "anchors": [
+        "contact-zhang-san"
+      ],
+      "types": [
+        "contact"
+      ],
+      "modified_at": "2025-12-31T18:32:33.784Z"
+    },
+    {
+      "path": "contacts/客户-李四.md",
+      "title": "李四",
+      "document_type": "contact",
+      "block_count": 1,
+      "anchors": [
+        "contact-li-si"
+      ],
+      "types": [
+        "contact"
+      ],
+      "modified_at": "2025-12-31T18:32:33.785Z"
+    },
+    {
+      "path": "contacts/客户-王五.md",
+      "title": "王五",
+      "document_type": "contact",
+      "block_count": 1,
+      "anchors": [
+        "contact-wang-wu"
+      ],
+      "types": [
+        "contact"
+      ],
+      "modified_at": "2025-12-31T18:32:33.785Z"
+    },
+    {
+      "path": "contacts/客户-赵六.md",
+      "title": "赵六",
+      "document_type": "contact",
+      "block_count": 1,
+      "anchors": [
+        "contact-zhao-liu"
+      ],
+      "types": [
+        "contact"
+      ],
+      "modified_at": "2025-12-31T18:32:33.785Z"
+    },
+    {
+      "path": "contacts/客户-郑二.md",
+      "title": "郑二",
+      "document_type": "contact",
+      "block_count": 1,
+      "anchors": [
+        "contact-zheng-er"
+      ],
+      "types": [
+        "contact"
+      ],
+      "modified_at": "2025-12-31T18:32:33.785Z"
+    },
+    {
+      "path": "contacts/客户-陈七.md",
+      "title": "陈七",
+      "document_type": "contact",
+      "block_count": 1,
+      "anchors": [
+        "contact-chen-qi"
+      ],
+      "types": [
+        "contact"
+      ],
+      "modified_at": "2025-12-31T18:32:33.785Z"
+    },
+    {
+      "path": "genesis/服务示例.md",
+      "title": "品牌设计",
+      "document_type": "facts",
+      "block_count": 5,
+      "anchors": [
+        "cat-brand-design",
+        "cat-digital-product",
+        "svc-S-001",
+        "svc-S-002",
+        "svc-S-003"
+      ],
+      "types": [
+        "category",
+        "service"
+      ],
+      "modified_at": "2025-12-31T18:25:06.030Z"
+    },
+    {
+      "path": "projects/2025/P-001/项目主文档.md",
+      "title": "星云科技品牌升级项目",
+      "document_type": "project",
+      "block_count": 4,
+      "anchors": [
+        "proj-P-001",
+        "milestone-P-001-1",
+        "milestone-P-001-2",
+        "milestone-P-001-3"
+      ],
+      "types": [
+        "project",
+        "milestone"
+      ],
+      "modified_at": "2025-12-31T18:32:33.784Z"
+    },
+    {
+      "path": "projects/2025/P-002/项目主文档.md",
+      "title": "蓝海集团官网重构",
+      "document_type": "project",
+      "block_count": 4,
+      "anchors": [
+        "proj-P-002",
+        "milestone-P-002-1",
+        "milestone-P-002-2",
+        "milestone-P-002-3"
+      ],
+      "types": [
+        "project",
+        "milestone"
+      ],
+      "modified_at": "2025-12-31T18:32:33.784Z"
+    },
+    {
+      "path": "projects/2025/P-003/项目主文档.md",
+      "title": "云峰数字化转型咨询",
+      "document_type": "project",
+      "block_count": 4,
+      "anchors": [
+        "proj-P-003",
+        "milestone-P-003-1",
+        "milestone-P-003-2",
+        "milestone-P-003-3"
+      ],
+      "types": [
+        "project",
+        "milestone"
+      ],
+      "modified_at": "2025-12-31T18:32:33.784Z"
+    }
+  ],
+  "directories": [
+    {
+      "path": "contacts",
+      "name": "contacts",
+      "document_count": 10
+    },
+    {
+      "path": "genesis",
+      "name": "genesis",
+      "document_count": 1
+    },
+    {
+      "path": "projects/2025/P-001",
+      "name": "P-001",
+      "document_count": 1
+    },
+    {
+      "path": "projects/2025/P-002",
+      "name": "P-002",
+      "document_count": 1
+    },
+    {
+      "path": "projects/2025/P-003",
+      "name": "P-003",
+      "document_count": 1
+    }
+  ],
+  "stats": {
+    "total_documents": 14,
+    "total_blocks": 27,
+    "total_anchors": 27
+  }
+}

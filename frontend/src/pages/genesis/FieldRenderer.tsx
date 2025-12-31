@@ -16,7 +16,7 @@ interface FieldRendererProps {
 
 export function FieldRenderer({ 
   label, 
-  path, 
+  path: _path, 
   value, 
   type, 
   options,

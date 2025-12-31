@@ -1,0 +1,48 @@
+{
+  "users": [
+    {
+      "id": "user-admin",
+      "username": "admin",
+      "password_hash": "$2b$10$DjfzRZb6sw3q4uYb6sea7OtSx3k49rhEOZayJC7ZBkhz2wL/FKO0W",
+      "role": "admin",
+      "name": "系统管理员",
+      "permissions": {
+        "paths": [
+          "**"
+        ],
+        "can_create_proposal": true,
+        "can_execute_proposal": true
+      }
+    },
+    {
+      "id": "user-staff-001",
+      "username": "designer",
+      "password_hash": "$2b$10$HbrcesTALnvIU/hE72PJ/.4wwCVRqeTiFePurexpvv6t7liH0Yen.",
+      "role": "staff",
+      "name": "设计师小王",
+      "permissions": {
+        "paths": [
+          "**"
+        ],
+        "can_create_proposal": true,
+        "can_execute_proposal": false
+      }
+    },
+    {
+      "id": "user-client-001",
+      "username": "client-zhang",
+      "password_hash": "$2b$10$AAeR2Mfeb.PmcYJ0nGLYmeNCmQPIGV.0kiIJwqlu98cXfO4/M.xme",
+      "role": "client",
+      "name": "张总",
+      "client_id": "contact-zhang-san",
+      "permissions": {
+        "paths": [
+          "projects/2025/P-001/**",
+          "contacts/客户-张三.md"
+        ],
+        "can_create_proposal": false,
+        "can_execute_proposal": false
+      }
+    }
+  ]
+}

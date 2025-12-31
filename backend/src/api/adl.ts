@@ -17,6 +17,8 @@ import {
   updateProposal,
   listProposals,
 } from '../adl/proposal-store.js';
+import { updateDocumentIndex, rebuildWorkspaceIndex } from '../services/workspace-service.js';
+import { executeQuery, rebuildBlocksIndex, type Query } from '../services/query-service.js';
 import type { ADLDocument, Proposal, ValidationResult } from '../adl/types.js';
 
 const router = Router();
@@ -184,9 +186,33 @@ router.post('/proposal/:id/execute', async (req: Request, res: Response) => {
       status: result.success ? 'executed' : 'rejected' 
     });
     
+    // 如果执行成功，更新 Workspace 索引和 Blocks 索引
+    if (result.success) {
+      await updateDocumentIndex(proposal.target_file);
+      await rebuildBlocksIndex(); // 重建 Blocks 索引
+    }
+    
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: 'Failed to execute proposal', details: String(error) });
+  }
+});
+
+// ============================================================
+// Query API
+// ============================================================
+
+/**
+ * POST /api/adl/query
+ * 执行 ADL 查询
+ */
+router.post('/query', async (req: Request, res: Response) => {
+  try {
+    const query = req.body as Query;
+    const result = await executeQuery(query);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to execute query', details: String(error) });
   }
 });
 
