@@ -1,112 +1,51 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { MainLayout } from '@/components/layout/MainLayout'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { ModalProvider } from '@/components/modal'
-import { modalRegistry } from '@/modals/registry'
-import { Login } from '@/pages/Login'
-import { Home } from '@/pages/Home'
-import { ProjectList } from '@/pages/projects/ProjectList'
-import { ProjectDetail } from '@/pages/projects/ProjectDetail'
-import { TaskList } from '@/pages/tasks/TaskList'
-import { EmployeeList, DepartmentList, PositionList, CompanyProfile } from '@/pages/organization'
-import { ServiceList, ServiceDetail, ConfigList, PolicyList } from '@/pages/pricing'
-import { Settings } from '@/pages/Settings'
+import { Routes, Route } from 'react-router-dom'
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60, // 1 minute
-      retry: 1,
-    },
-  },
-})
-
-function App() {
+function Home() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ModalProvider registry={modalRegistry}>
-      <BrowserRouter>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/login" element={<Login />} />
-
-          {/* Protected routes */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <MainLayout />
-              </ProtectedRoute>
-            }
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
+      <div className="text-center">
+        <h1 className="text-5xl font-bold text-white mb-4">ATLAS Runtime</h1>
+        <p className="text-xl text-slate-400 mb-8">ADL 语言的运行环境</p>
+        <div className="space-y-2 text-slate-500">
+          <p>Phase 0 / Genesis</p>
+          <p className="text-sm">让一份 ADL 文档完成完整闭环</p>
+        </div>
+        <div className="mt-12">
+          <a 
+            href="/genesis" 
+            className="px-6 py-3 bg-white text-slate-900 rounded-lg font-medium hover:bg-slate-100 transition-colors"
           >
-            <Route index element={<Home />} />
-            <Route path="projects" element={<ProjectList />} />
-            <Route path="projects/:id" element={<ProjectDetail />} />
-            <Route path="tasks" element={<TaskList />} />
-
-            {/* 组织管理 - 需要管理员权限 */}
-            <Route
-              path="organization/employees"
-              element={
-                <ProtectedRoute requiredRole={['admin']}>
-                  <EmployeeList />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="organization/departments"
-              element={
-                <ProtectedRoute requiredRole={['admin']}>
-                  <DepartmentList />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="organization/positions"
-              element={
-                <ProtectedRoute requiredRole={['admin']}>
-                  <PositionList />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="organization/company"
-              element={
-                <ProtectedRoute requiredRole={['admin']}>
-                  <CompanyProfile />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route path="settings" element={<Settings />} />
-
-            {/* 服务定价 */}
-            <Route path="pricing/services" element={<ServiceList />} />
-            <Route path="pricing/services/:category/:name" element={<ServiceDetail />} />
-            <Route path="pricing/addons" element={<ConfigList />} />
-            <Route path="pricing/policies" element={<PolicyList />} />
-            <Route path="pricing/templates" element={<PlaceholderPage title="报价模板" />} />
-
-            {/* Placeholder routes */}
-            <Route path="proposals" element={<PlaceholderPage title="提案管理" />} />
-            <Route path="finance" element={<PlaceholderPage title="财务管理" />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-      </ModalProvider>
-    </QueryClientProvider>
+            进入 Genesis →
+          </a>
+        </div>
+      </div>
+    </div>
   )
 }
 
-function PlaceholderPage({ title }: { title: string }) {
+function Genesis() {
   return (
-    <div className="flex items-center justify-center py-12">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold">{title}</h1>
-        <p className="text-muted-foreground mt-2">功能开发中...</p>
+    <div className="min-h-screen bg-slate-50 p-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold text-slate-900 mb-4">Genesis</h1>
+        <p className="text-slate-600 mb-8">Phase 0 - ADL 文档闭环验证</p>
+        
+        <div className="bg-white rounded-lg border border-slate-200 p-6">
+          <p className="text-slate-500 text-center py-12">
+            ADL 文档渲染器（待实现）
+          </p>
+        </div>
       </div>
     </div>
+  )
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/genesis" element={<Genesis />} />
+    </Routes>
   )
 }
 

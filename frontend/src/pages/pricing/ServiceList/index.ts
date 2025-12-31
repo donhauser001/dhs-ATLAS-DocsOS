@@ -1,2 +1,0 @@
-export { ServiceList } from './ServiceList'
-
