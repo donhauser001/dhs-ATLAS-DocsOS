@@ -50,7 +50,7 @@ const organizationItems = [
 const pricingItems = [
   { to: '/pricing/services', icon: Package, label: '服务清单' },
   { to: '/pricing/addons', icon: FileText, label: '附加项' },
-  { to: '/pricing/policies', icon: Percent, label: '价格政策', disabled: true },
+  { to: '/pricing/policies', icon: Percent, label: '价格政策' },
   { to: '/pricing/templates', icon: FileStack, label: '报价模板', disabled: true },
 ]
 
