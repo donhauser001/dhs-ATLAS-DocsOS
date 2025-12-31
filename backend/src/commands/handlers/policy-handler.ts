@@ -2,12 +2,10 @@
  * 价格政策命令处理器
  */
 
-import * as fs from 'fs'
-import * as path from 'path'
+import { writeFile, readFile } from '../../git/file-operations.js'
 import type { Operator, CommandResult } from '../command-engine.js'
 
-const WORKSPACE_PATH = path.join(process.cwd(), 'repository', 'workspace')
-const POLICY_FILE = path.join(WORKSPACE_PATH, '服务定价', '价格政策.md')
+const POLICY_FILE_PATH = 'workspace/服务定价/价格政策.md'
 
 // ============================================================
 // 类型定义
@@ -43,15 +41,15 @@ interface ParsedPolicyFile {
 // 文件解析
 // ============================================================
 
-function parsePolicyFile(): ParsedPolicyFile {
-  if (!fs.existsSync(POLICY_FILE)) {
+async function parsePolicyFile(): Promise<ParsedPolicyFile> {
+  const content = await readFile(POLICY_FILE_PATH)
+  
+  if (!content) {
     return {
       metadata: { version: '1.0', updated: new Date().toISOString().split('T')[0] },
       policies: []
     }
   }
-
-  const content = fs.readFileSync(POLICY_FILE, 'utf-8')
   const policies: Policy[] = []
   let metadata: Record<string, any> = {}
 
@@ -205,7 +203,7 @@ function parseValue(value: string): any {
 // 文件写入
 // ============================================================
 
-function writePolicyFile(metadata: Record<string, any>, policies: Policy[]): void {
+async function writePolicyFile(metadata: Record<string, any>, policies: Policy[]): Promise<void> {
   const uniformPolicies = policies.filter(p => p.type === 'uniform')
   const tieredPolicies = policies.filter(p => p.type === 'tiered')
 
@@ -262,7 +260,7 @@ policy_types:
 `
   }
 
-  fs.writeFileSync(POLICY_FILE, content, 'utf-8')
+  await writeFile(POLICY_FILE_PATH, content)
 }
 
 function generatePolicySection(policy: Policy): string {
@@ -345,17 +343,17 @@ export async function executePolicyCommand(
 ): Promise<CommandResult> {
   switch (commandName) {
     case 'policy.list':
-      return handlePolicyList(params)
+      return await handlePolicyList(params)
     case 'policy.get':
-      return handlePolicyGet(params)
+      return await handlePolicyGet(params)
     case 'policy.create':
-      return handlePolicyCreate(params)
+      return await handlePolicyCreate(params)
     case 'policy.update':
-      return handlePolicyUpdate(params)
+      return await handlePolicyUpdate(params)
     case 'policy.delete':
-      return handlePolicyDelete(params)
+      return await handlePolicyDelete(params)
     case 'policy.calculate':
-      return handlePolicyCalculate(params)
+      return await handlePolicyCalculate(params)
     default:
       return {
         success: false,
@@ -367,8 +365,8 @@ export async function executePolicyCommand(
   }
 }
 
-function handlePolicyList(params: Record<string, unknown>): CommandResult {
-  const { policies } = parsePolicyFile()
+async function handlePolicyList(params: Record<string, unknown>): Promise<CommandResult> {
+  const { policies } = await parsePolicyFile()
   
   let filtered = policies
   
@@ -389,8 +387,8 @@ function handlePolicyList(params: Record<string, unknown>): CommandResult {
   }
 }
 
-function handlePolicyGet(params: Record<string, unknown>): CommandResult {
-  const { policies } = parsePolicyFile()
+async function handlePolicyGet(params: Record<string, unknown>): Promise<CommandResult> {
+  const { policies } = await parsePolicyFile()
   const policy = policies.find(p => p.id === params.id)
 
   if (!policy) {
@@ -409,8 +407,8 @@ function handlePolicyGet(params: Record<string, unknown>): CommandResult {
   }
 }
 
-function handlePolicyCreate(params: Record<string, unknown>): CommandResult {
-  const { metadata, policies } = parsePolicyFile()
+async function handlePolicyCreate(params: Record<string, unknown>): Promise<CommandResult> {
+  const { metadata, policies } = await parsePolicyFile()
 
   // 验证
   if (policies.some(p => p.id === params.id)) {
@@ -460,7 +458,7 @@ function handlePolicyCreate(params: Record<string, unknown>): CommandResult {
   }
 
   policies.push(newPolicy)
-  writePolicyFile(metadata, policies)
+  await writePolicyFile(metadata, policies)
 
   return {
     success: true,
@@ -468,8 +466,8 @@ function handlePolicyCreate(params: Record<string, unknown>): CommandResult {
   }
 }
 
-function handlePolicyUpdate(params: Record<string, unknown>): CommandResult {
-  const { metadata, policies } = parsePolicyFile()
+async function handlePolicyUpdate(params: Record<string, unknown>): Promise<CommandResult> {
+  const { metadata, policies } = await parsePolicyFile()
   const index = policies.findIndex(p => p.id === params.id)
 
   if (index === -1) {
@@ -498,7 +496,7 @@ function handlePolicyUpdate(params: Record<string, unknown>): CommandResult {
   }
 
   policies[index] = updated
-  writePolicyFile(metadata, policies)
+  await writePolicyFile(metadata, policies)
 
   return {
     success: true,
@@ -506,8 +504,8 @@ function handlePolicyUpdate(params: Record<string, unknown>): CommandResult {
   }
 }
 
-function handlePolicyDelete(params: Record<string, unknown>): CommandResult {
-  const { metadata, policies } = parsePolicyFile()
+async function handlePolicyDelete(params: Record<string, unknown>): Promise<CommandResult> {
+  const { metadata, policies } = await parsePolicyFile()
   const index = policies.findIndex(p => p.id === params.id)
 
   if (index === -1) {
@@ -521,7 +519,7 @@ function handlePolicyDelete(params: Record<string, unknown>): CommandResult {
   }
 
   const deleted = policies.splice(index, 1)[0]
-  writePolicyFile(metadata, policies)
+  await writePolicyFile(metadata, policies)
 
   return {
     success: true,
@@ -529,8 +527,8 @@ function handlePolicyDelete(params: Record<string, unknown>): CommandResult {
   }
 }
 
-function handlePolicyCalculate(params: Record<string, unknown>): CommandResult {
-  const { policies } = parsePolicyFile()
+async function handlePolicyCalculate(params: Record<string, unknown>): Promise<CommandResult> {
+  const { policies } = await parsePolicyFile()
   const policy = policies.find(p => p.id === params.policy_id)
 
   if (!policy) {
