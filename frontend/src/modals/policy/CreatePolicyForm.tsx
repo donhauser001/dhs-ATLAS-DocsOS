@@ -7,7 +7,6 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useModal } from '@/components/modal'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { createPolicy, type PolicyTier } from '@/api/policy'
 import { Plus, Trash2, Percent, TrendingDown, GripVertical } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -27,9 +26,7 @@ export function CreatePolicyForm({ defaultType = 'uniform' }: CreatePolicyFormPr
     name: '',
     type: defaultType as 'uniform' | 'tiered',
     discount: 90,
-    description: '',
-    applicable: [] as string[],
-    conditions: [] as string[]
+    description: ''
   })
 
   const [tiers, setTiers] = useState<PolicyTier[]>([
@@ -37,9 +34,6 @@ export function CreatePolicyForm({ defaultType = 'uniform' }: CreatePolicyFormPr
     { min: 2, max: 5, rate: 80, label: '第2-5项' },
     { min: 6, max: null, rate: 70, label: '第6项及以上' }
   ])
-
-  const [newApplicable, setNewApplicable] = useState('')
-  const [newCondition, setNewCondition] = useState('')
 
   // 自动生成 ID
   const generateId = (name: string) => {
@@ -159,26 +153,6 @@ export function CreatePolicyForm({ defaultType = 'uniform' }: CreatePolicyFormPr
     setTiers(newTiers)
   }
 
-  // 添加适用范围
-  const addApplicable = () => {
-    if (!newApplicable.trim()) return
-    setForm({
-      ...form,
-      applicable: [...form.applicable, newApplicable.trim()]
-    })
-    setNewApplicable('')
-  }
-
-  // 添加条件
-  const addCondition = () => {
-    if (!newCondition.trim()) return
-    setForm({
-      ...form,
-      conditions: [...form.conditions, newCondition.trim()]
-    })
-    setNewCondition('')
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -191,9 +165,7 @@ export function CreatePolicyForm({ defaultType = 'uniform' }: CreatePolicyFormPr
         type: form.type,
         discount: form.type === 'uniform' ? form.discount : undefined,
         tiers: form.type === 'tiered' ? tiers : undefined,
-        description: form.description || undefined,
-        applicable: form.applicable.length > 0 ? form.applicable : undefined,
-        conditions: form.conditions.length > 0 ? form.conditions : undefined
+        description: form.description || undefined
       })
       
       queryClient.invalidateQueries({ queryKey: ['policies'] })
@@ -407,76 +379,6 @@ export function CreatePolicyForm({ defaultType = 'uniform' }: CreatePolicyFormPr
           placeholder="描述政策的适用场景和注意事项"
           className="w-full min-h-[80px] px-4 py-3 rounded-2xl border border-input bg-background resize-none text-sm"
         />
-      </div>
-
-      {/* 适用范围 */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium">适用范围</label>
-        <div className="flex gap-2">
-          <Input
-            value={newApplicable}
-            onChange={(e) => setNewApplicable(e.target.value)}
-            placeholder="如：封面设计、版式设计"
-            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addApplicable())}
-          />
-          <Button type="button" variant="outline" onClick={addApplicable}>
-            添加
-          </Button>
-        </div>
-        {form.applicable.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {form.applicable.map((item, index) => (
-              <Badge key={index} variant="secondary" className="rounded-full gap-1">
-                {item}
-                <button
-                  type="button"
-                  onClick={() => setForm({
-                    ...form,
-                    applicable: form.applicable.filter((_, i) => i !== index)
-                  })}
-                  className="ml-1 hover:text-destructive"
-                >
-                  ×
-                </button>
-              </Badge>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* 适用条件 */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium">适用条件</label>
-        <div className="flex gap-2">
-          <Input
-            value={newCondition}
-            onChange={(e) => setNewCondition(e.target.value)}
-            placeholder="如：订单金额≥5000元"
-            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCondition())}
-          />
-          <Button type="button" variant="outline" onClick={addCondition}>
-            添加
-          </Button>
-        </div>
-        {form.conditions.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {form.conditions.map((item, index) => (
-              <Badge key={index} variant="outline" className="rounded-full gap-1">
-                {item}
-                <button
-                  type="button"
-                  onClick={() => setForm({
-                    ...form,
-                    conditions: form.conditions.filter((_, i) => i !== index)
-                  })}
-                  className="ml-1 hover:text-destructive"
-                >
-                  ×
-                </button>
-              </Badge>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* 错误提示 */}
