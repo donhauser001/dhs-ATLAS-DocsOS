@@ -4,420 +4,356 @@
       "anchor": "contact-liu-ba",
       "document": "contacts/客户-刘八.md",
       "heading": "刘八",
+      "title": "刘八",
       "type": "contact",
-      "machine": {
-        "type": "contact",
+      "status": "active",
+      "searchable": {
         "id": "liu-ba",
-        "status": "active",
         "title": "刘八",
-        "company": "盛世传媒",
-        "role": "创意总监",
-        "phone": "13857618579",
-        "email": "liu-ba@example.com"
+        "status": "active"
       }
     },
     {
       "anchor": "contact-wu-yi",
       "document": "contacts/客户-吴一.md",
       "heading": "吴一",
+      "title": "吴一",
       "type": "contact",
-      "machine": {
-        "type": "contact",
+      "status": "active",
+      "searchable": {
         "id": "wu-yi",
-        "status": "active",
         "title": "吴一",
-        "company": "天宇教育",
-        "role": "品牌经理",
-        "phone": "13802192418",
-        "email": "wu-yi@example.com"
+        "status": "active"
       }
     },
     {
       "anchor": "contact-zhou-shi",
       "document": "contacts/客户-周十.md",
       "heading": "周十",
+      "title": "周十",
       "type": "contact",
-      "machine": {
-        "type": "contact",
+      "status": "active",
+      "searchable": {
         "id": "zhou-shi",
-        "status": "active",
         "title": "周十",
-        "company": "金鼎地产",
-        "role": "营销总监",
-        "phone": "13883841702",
-        "email": "zhou-shi@example.com"
+        "status": "active"
       }
     },
     {
       "anchor": "contact-sun-jiu",
       "document": "contacts/客户-孙九.md",
       "heading": "孙九",
+      "title": "孙九",
       "type": "contact",
-      "machine": {
-        "type": "contact",
+      "status": "active",
+      "searchable": {
         "id": "sun-jiu",
-        "status": "active",
         "title": "孙九",
-        "company": "远航物流",
-        "role": "运营总监",
-        "phone": "13855909346",
-        "email": "sun-jiu@example.com"
+        "status": "active"
       }
     },
     {
       "anchor": "contact-zhang-san",
       "document": "contacts/客户-张三.md",
       "heading": "张三",
+      "title": "张三",
       "type": "contact",
-      "machine": {
-        "type": "contact",
+      "status": "active",
+      "searchable": {
         "id": "zhang-san",
-        "status": "active",
         "title": "张三",
-        "company": "星云科技有限公司",
-        "role": "市场总监",
-        "phone": "13899213514",
-        "email": "zhang-san@example.com"
+        "status": "active"
       }
     },
     {
       "anchor": "contact-li-si",
       "document": "contacts/客户-李四.md",
       "heading": "李四",
+      "title": "李四",
       "type": "contact",
-      "machine": {
-        "type": "contact",
+      "status": "active",
+      "searchable": {
         "id": "li-si",
-        "status": "active",
         "title": "李四",
-        "company": "蓝海集团",
-        "role": "品牌经理",
-        "phone": "13867394852",
-        "email": "li-si@example.com"
+        "status": "active"
       }
     },
     {
       "anchor": "contact-wang-wu",
       "document": "contacts/客户-王五.md",
       "heading": "王五",
+      "title": "王五",
       "type": "contact",
-      "machine": {
-        "type": "contact",
+      "status": "active",
+      "searchable": {
         "id": "wang-wu",
-        "status": "active",
         "title": "王五",
-        "company": "云峰控股",
-        "role": "CEO",
-        "phone": "13852435610",
-        "email": "wang-wu@example.com"
+        "status": "active"
       }
     },
     {
       "anchor": "contact-zhao-liu",
       "document": "contacts/客户-赵六.md",
       "heading": "赵六",
+      "title": "赵六",
       "type": "contact",
-      "machine": {
-        "type": "contact",
+      "status": "active",
+      "searchable": {
         "id": "zhao-liu",
-        "status": "active",
         "title": "赵六",
-        "company": "明日科技",
-        "role": "产品总监",
-        "phone": "13873954565",
-        "email": "zhao-liu@example.com"
+        "status": "active"
       }
     },
     {
       "anchor": "contact-zheng-er",
       "document": "contacts/客户-郑二.md",
       "heading": "郑二",
+      "title": "郑二",
       "type": "contact",
-      "machine": {
-        "type": "contact",
+      "status": "active",
+      "searchable": {
         "id": "zheng-er",
-        "status": "active",
         "title": "郑二",
-        "company": "海通商贸",
-        "role": "采购经理",
-        "phone": "13822227739",
-        "email": "zheng-er@example.com"
+        "status": "active"
       }
     },
     {
       "anchor": "contact-chen-qi",
       "document": "contacts/客户-陈七.md",
       "heading": "陈七",
+      "title": "陈七",
       "type": "contact",
-      "machine": {
-        "type": "contact",
+      "status": "active",
+      "searchable": {
         "id": "chen-qi",
-        "status": "active",
         "title": "陈七",
-        "company": "华创投资",
-        "role": "投资经理",
-        "phone": "13893649480",
-        "email": "chen-qi@example.com"
+        "status": "active"
       }
     },
     {
       "anchor": "cat-brand-design",
       "document": "genesis/服务示例.md",
       "heading": "品牌设计",
+      "title": "品牌设计1",
       "type": "category",
-      "machine": {
-        "type": "category",
+      "status": "draft",
+      "searchable": {
         "id": "brand-design",
-        "status": "active",
         "title": "品牌设计1",
-        "color": "#8B5CF6",
-        "icon": "palette"
+        "status": "draft"
       }
     },
     {
       "anchor": "cat-digital-product",
       "document": "genesis/服务示例.md",
       "heading": "数字产品",
+      "title": "数字产品",
       "type": "category",
-      "machine": {
-        "type": "category",
+      "status": "active",
+      "searchable": {
         "id": "digital-product",
-        "status": "active",
         "title": "数字产品",
-        "color": "#3B82F6",
-        "icon": "monitor"
+        "status": "active"
       }
     },
     {
       "anchor": "svc-S-001",
       "document": "genesis/服务示例.md",
       "heading": "S-001 品牌VI设计",
+      "title": "品牌VI设计",
       "type": "service",
-      "machine": {
-        "type": "service",
+      "status": "active",
+      "searchable": {
         "id": "S-001",
-        "status": "active",
         "title": "品牌VI设计",
-        "category": "cat-brand-design",
-        "price": {
-          "base": 50000,
-          "unit": "项目",
-          "currency": "CNY"
-        },
-        "description": "完整的视觉识别体系设计"
+        "status": "active",
+        "category": "cat-brand-design"
       }
     },
     {
       "anchor": "svc-S-002",
       "document": "genesis/服务示例.md",
       "heading": "S-002 产品界面设计",
+      "title": "产品界面设计",
       "type": "service",
-      "machine": {
-        "type": "service",
+      "status": "active",
+      "searchable": {
         "id": "S-002",
-        "status": "active",
         "title": "产品界面设计",
-        "category": "cat-digital-product",
-        "price": {
-          "base": 800,
-          "unit": "页",
-          "currency": "CNY"
-        },
-        "description": "Web/App 界面设计服务"
+        "status": "active",
+        "category": "cat-digital-product"
       }
     },
     {
       "anchor": "svc-S-003",
       "document": "genesis/服务示例.md",
       "heading": "S-003 品牌策略咨询",
+      "title": "品牌策略咨询",
       "type": "service",
-      "machine": {
-        "type": "service",
+      "status": "draft",
+      "searchable": {
         "id": "S-003",
-        "status": "draft",
         "title": "品牌策略咨询",
-        "category": "cat-brand-design",
-        "price": {
-          "base": 30000,
-          "unit": "项目",
-          "currency": "CNY"
-        },
-        "description": "品牌定位与策略规划"
+        "status": "draft",
+        "category": "cat-brand-design"
       }
     },
     {
       "anchor": "proj-P-001",
       "document": "projects/2025/P-001/项目主文档.md",
       "heading": "星云科技品牌升级项目",
+      "title": "星云科技品牌升级项目",
       "type": "project",
-      "machine": {
-        "type": "project",
+      "status": "active",
+      "searchable": {
         "id": "P-001",
-        "status": "active",
         "title": "星云科技品牌升级项目",
-        "client": "contact-zhang-san",
-        "budget": 499678,
-        "start_date": "2025-01-13",
-        "services": [
-          "svc-S-001",
-          "svc-S-002"
-        ]
+        "status": "active"
       }
     },
     {
       "anchor": "milestone-P-001-1",
       "document": "projects/2025/P-001/项目主文档.md",
       "heading": "里程碑一",
+      "title": "项目启动与需求确认",
       "type": "milestone",
-      "machine": {
-        "type": "milestone",
+      "status": "active",
+      "searchable": {
         "id": "P-001-M1",
-        "status": "active",
         "title": "项目启动与需求确认",
-        "due_date": "2025-02-15"
+        "status": "active"
       }
     },
     {
       "anchor": "milestone-P-001-2",
       "document": "projects/2025/P-001/项目主文档.md",
       "heading": "里程碑二",
+      "title": "设计方案交付",
       "type": "milestone",
-      "machine": {
-        "type": "milestone",
+      "status": "draft",
+      "searchable": {
         "id": "P-001-M2",
-        "status": "draft",
         "title": "设计方案交付",
-        "due_date": "2025-03-15"
+        "status": "draft"
       }
     },
     {
       "anchor": "milestone-P-001-3",
       "document": "projects/2025/P-001/项目主文档.md",
       "heading": "里程碑三",
+      "title": "项目验收",
       "type": "milestone",
-      "machine": {
-        "type": "milestone",
+      "status": "draft",
+      "searchable": {
         "id": "P-001-M3",
-        "status": "draft",
         "title": "项目验收",
-        "due_date": "2025-04-30"
+        "status": "draft"
       }
     },
     {
       "anchor": "proj-P-002",
       "document": "projects/2025/P-002/项目主文档.md",
       "heading": "蓝海集团官网重构",
+      "title": "蓝海集团官网重构",
       "type": "project",
-      "machine": {
-        "type": "project",
+      "status": "active",
+      "searchable": {
         "id": "P-002",
-        "status": "active",
         "title": "蓝海集团官网重构",
-        "client": "contact-li-si",
-        "budget": 560569,
-        "start_date": "2025-01-01",
-        "services": [
-          "svc-S-002",
-          "svc-S-003"
-        ]
+        "status": "active"
       }
     },
     {
       "anchor": "milestone-P-002-1",
       "document": "projects/2025/P-002/项目主文档.md",
       "heading": "里程碑一",
+      "title": "项目启动与需求确认",
       "type": "milestone",
-      "machine": {
-        "type": "milestone",
+      "status": "active",
+      "searchable": {
         "id": "P-002-M1",
-        "status": "active",
         "title": "项目启动与需求确认",
-        "due_date": "2025-02-15"
+        "status": "active"
       }
     },
     {
       "anchor": "milestone-P-002-2",
       "document": "projects/2025/P-002/项目主文档.md",
       "heading": "里程碑二",
+      "title": "设计方案交付",
       "type": "milestone",
-      "machine": {
-        "type": "milestone",
+      "status": "draft",
+      "searchable": {
         "id": "P-002-M2",
-        "status": "draft",
         "title": "设计方案交付",
-        "due_date": "2025-03-15"
+        "status": "draft"
       }
     },
     {
       "anchor": "milestone-P-002-3",
       "document": "projects/2025/P-002/项目主文档.md",
       "heading": "里程碑三",
+      "title": "项目验收",
       "type": "milestone",
-      "machine": {
-        "type": "milestone",
+      "status": "draft",
+      "searchable": {
         "id": "P-002-M3",
-        "status": "draft",
         "title": "项目验收",
-        "due_date": "2025-04-30"
+        "status": "draft"
       }
     },
     {
       "anchor": "proj-P-003",
       "document": "projects/2025/P-003/项目主文档.md",
       "heading": "云峰数字化转型咨询",
+      "title": "云峰数字化转型咨询",
       "type": "project",
-      "machine": {
-        "type": "project",
+      "status": "active",
+      "searchable": {
         "id": "P-003",
-        "status": "active",
         "title": "云峰数字化转型咨询",
-        "client": "contact-wang-wu",
-        "budget": 317676,
-        "start_date": "2025-01-10",
-        "services": [
-          "svc-S-001"
-        ]
+        "status": "active"
       }
     },
     {
       "anchor": "milestone-P-003-1",
       "document": "projects/2025/P-003/项目主文档.md",
       "heading": "里程碑一",
+      "title": "项目启动与需求确认",
       "type": "milestone",
-      "machine": {
-        "type": "milestone",
+      "status": "active",
+      "searchable": {
         "id": "P-003-M1",
-        "status": "active",
         "title": "项目启动与需求确认",
-        "due_date": "2025-02-15"
+        "status": "active"
       }
     },
     {
       "anchor": "milestone-P-003-2",
       "document": "projects/2025/P-003/项目主文档.md",
       "heading": "里程碑二",
+      "title": "设计方案交付",
       "type": "milestone",
-      "machine": {
-        "type": "milestone",
+      "status": "draft",
+      "searchable": {
         "id": "P-003-M2",
-        "status": "draft",
         "title": "设计方案交付",
-        "due_date": "2025-03-15"
+        "status": "draft"
       }
     },
     {
       "anchor": "milestone-P-003-3",
       "document": "projects/2025/P-003/项目主文档.md",
       "heading": "里程碑三",
+      "title": "项目验收",
       "type": "milestone",
-      "machine": {
-        "type": "milestone",
+      "status": "draft",
+      "searchable": {
         "id": "P-003-M3",
-        "status": "draft",
         "title": "项目验收",
-        "due_date": "2025-04-30"
+        "status": "draft"
       }
     }
   ],
-  "updated_at": "2025-12-31T19:00:01.433Z"
+  "updated_at": "2025-12-31T19:25:40.325Z"
 }

@@ -5,6 +5,7 @@
  * 
  * Phase 0.5: 使用持久化 Proposal 存储和统一配置
  * Phase 1.5: 使用 Registry 和 Visibility Resolver
+ * Phase 2: 权限中间件全面接入
  */
 
 import { Router, Request, Response } from 'express';
@@ -23,8 +24,17 @@ import {
   documentExists, 
   getDocument,
   resolveBlockByAnchor,
+  canAccessDocument,
 } from '../services/workspace-registry.js';
+import { checkPathPermission } from '../services/auth-service.js';
 import type { Proposal } from '../adl/types.js';
+// Phase 2: 权限中间件
+import {
+  requireAuth,
+  requirePathAccess,
+  requireProposalCreate,
+  requireProposalExecute,
+} from '../middleware/permission.js';
 
 const router = Router();
 
@@ -36,12 +46,19 @@ ensureDirectories();
  * 获取并解析指定的 ADL 文档
  * 
  * Phase 1.5: 通过 Registry 获取文档
+ * Phase 2: 需要认证 + 路径权限
  */
-router.get('/document', (req: Request, res: Response) => {
+router.get('/document', requireAuth, requirePathAccess, (req: Request, res: Response) => {
   const { path: docPath } = req.query;
   
   if (!docPath || typeof docPath !== 'string') {
     res.status(400).json({ error: 'Missing document path' });
+    return;
+  }
+  
+  // Phase 2: 再次检查访问权限（防御性编程）
+  if (!canAccessDocument(req.user!, docPath)) {
+    res.status(403).json({ error: 'Access denied', path: docPath });
     return;
   }
   
@@ -62,13 +79,20 @@ router.get('/document', (req: Request, res: Response) => {
  * 
  * Phase 1.5: 这是获取 Block 完整数据的唯一正确方式
  * Query 只返回定位信息，如需完整数据必须通过这个接口
+ * Phase 2: 需要认证 + 路径权限
  */
-router.get('/block/:anchor', (req: Request, res: Response) => {
+router.get('/block/:anchor', requireAuth, requirePathAccess, (req: Request, res: Response) => {
   const { anchor } = req.params;
   const { path: docPath } = req.query;
   
   if (!docPath || typeof docPath !== 'string') {
     res.status(400).json({ error: 'Missing document path' });
+    return;
+  }
+  
+  // Phase 2: 检查访问权限
+  if (!canAccessDocument(req.user!, docPath)) {
+    res.status(403).json({ error: 'Access denied', path: docPath });
     return;
   }
   
@@ -93,11 +117,19 @@ router.get('/block/:anchor', (req: Request, res: Response) => {
 /**
  * GET /api/adl/proposals
  * 列出所有提案
+ * 
+ * Phase 2: 需要认证
  */
-router.get('/proposals', (req: Request, res: Response) => {
+router.get('/proposals', requireAuth, (req: Request, res: Response) => {
   try {
     const proposals = listProposals();
-    res.json({ proposals });
+    
+    // Phase 2: 过滤用户可访问的 proposals（按 target_file 权限）
+    const filteredProposals = proposals.filter(p => 
+      checkPathPermission(req.user!, p.target_file)
+    );
+    
+    res.json({ proposals: filteredProposals });
   } catch (error) {
     res.status(500).json({ error: 'Failed to list proposals', details: String(error) });
   }
@@ -106,11 +138,26 @@ router.get('/proposals', (req: Request, res: Response) => {
 /**
  * POST /api/adl/proposal
  * 创建变更提案（持久化到文件）
+ * 
+ * Phase 2: 需要认证 + 提案创建权限 + 目标文件路径权限
  */
-router.post('/proposal', (req: Request, res: Response) => {
+router.post('/proposal', requireAuth, requireProposalCreate, requirePathAccess, (req: Request, res: Response) => {
   try {
     const proposalData = req.body as Omit<Proposal, 'id' | 'status'>;
-    const proposal = createProposal(proposalData);
+    
+    // Phase 2: 验证目标文件的访问权限
+    if (!canAccessDocument(req.user!, proposalData.target_file)) {
+      res.status(403).json({ error: 'Access denied to target file', path: proposalData.target_file });
+      return;
+    }
+    
+    // 自动填充 proposed_by（如果未提供）
+    const enrichedProposalData = {
+      ...proposalData,
+      proposed_by: proposalData.proposed_by || req.user!.id,
+    };
+    
+    const proposal = createProposal(enrichedProposalData);
     
     res.json({ 
       success: true, 
@@ -125,13 +172,21 @@ router.post('/proposal', (req: Request, res: Response) => {
 /**
  * GET /api/adl/proposal/:id
  * 获取指定提案
+ * 
+ * Phase 2: 需要认证 + 目标文件路径权限
  */
-router.get('/proposal/:id', (req: Request, res: Response) => {
+router.get('/proposal/:id', requireAuth, (req: Request, res: Response) => {
   const { id } = req.params;
   const proposal = getProposal(id);
   
   if (!proposal) {
     res.status(404).json({ error: 'Proposal not found', id });
+    return;
+  }
+  
+  // Phase 2: 检查目标文件的访问权限
+  if (!checkPathPermission(req.user!, proposal.target_file)) {
+    res.status(403).json({ error: 'Access denied', path: proposal.target_file });
     return;
   }
   
@@ -141,8 +196,10 @@ router.get('/proposal/:id', (req: Request, res: Response) => {
 /**
  * POST /api/adl/proposal/:id/validate
  * 校验提案
+ * 
+ * Phase 2: 需要认证 + 移除 repositoryRoot 参数
  */
-router.post('/proposal/:id/validate', async (req: Request, res: Response) => {
+router.post('/proposal/:id/validate', requireAuth, async (req: Request, res: Response) => {
   const { id } = req.params;
   const proposal = getProposal(id);
   
@@ -151,9 +208,15 @@ router.post('/proposal/:id/validate', async (req: Request, res: Response) => {
     return;
   }
   
+  // Phase 2: 检查目标文件的访问权限
+  if (!checkPathPermission(req.user!, proposal.target_file)) {
+    res.status(403).json({ error: 'Access denied', path: proposal.target_file });
+    return;
+  }
+  
   // 动态导入 validator
   const { validateProposal } = await import('../adl/validator.js');
-  const result = validateProposal(proposal, config.repositoryRoot);
+  const result = validateProposal(proposal);
   
   res.json(result);
 });
@@ -161,13 +224,21 @@ router.post('/proposal/:id/validate', async (req: Request, res: Response) => {
 /**
  * POST /api/adl/proposal/:id/execute
  * 执行提案
+ * 
+ * Phase 2: 需要认证 + 执行权限 + 移除 repositoryRoot 参数
  */
-router.post('/proposal/:id/execute', async (req: Request, res: Response) => {
+router.post('/proposal/:id/execute', requireAuth, requireProposalExecute, async (req: Request, res: Response) => {
   const { id } = req.params;
   const proposal = getProposal(id);
   
   if (!proposal) {
     res.status(404).json({ error: 'Proposal not found', id });
+    return;
+  }
+  
+  // Phase 2: 检查目标文件的访问权限
+  if (!checkPathPermission(req.user!, proposal.target_file)) {
+    res.status(403).json({ error: 'Access denied', path: proposal.target_file });
     return;
   }
   
@@ -177,9 +248,9 @@ router.post('/proposal/:id/execute', async (req: Request, res: Response) => {
   }
   
   try {
-    // 动态导入 executor
+    // 动态导入 executor（Phase 2: 不再传 repositoryRoot）
     const { executeProposal } = await import('../adl/executor.js');
-    const result = await executeProposal(proposal, config.repositoryRoot);
+    const result = await executeProposal(proposal);
     
     // 更新 proposal 状态（持久化）
     updateProposal(id, { 
@@ -205,12 +276,24 @@ router.post('/proposal/:id/execute', async (req: Request, res: Response) => {
 /**
  * POST /api/adl/query
  * 执行 ADL 查询
+ * 
+ * Phase 2: 需要认证 + 结果按可见域过滤
  */
-router.post('/query', async (req: Request, res: Response) => {
+router.post('/query', requireAuth, async (req: Request, res: Response) => {
   try {
     const query = req.body as Query;
     const result = await executeQuery(query);
-    res.json(result);
+    
+    // Phase 2: 按用户可见域过滤查询结果
+    const filteredResults = result.results.filter(r => 
+      checkPathPermission(req.user!, r.document)
+    );
+    
+    res.json({
+      ...result,
+      results: filteredResults,
+      count: filteredResults.length,
+    });
   } catch (error) {
     res.status(500).json({ error: 'Failed to execute query', details: String(error) });
   }

@@ -132,7 +132,7 @@ async function runE2ETest(): Promise<boolean> {
   // Step 3: Validate Proposal
   logStep(3, 'Validating Proposal');
   
-  const validationResult = validateProposal(proposal, config.repositoryRoot);
+  const validationResult = validateProposal(proposal);
   
   if (!validationResult.valid) {
     logError('Validation failed:');
@@ -145,7 +145,7 @@ async function runE2ETest(): Promise<boolean> {
   // Step 4: Execute Proposal
   logStep(4, 'Executing Proposal');
   
-  const executeResult = await executeProposal(proposal, config.repositoryRoot);
+  const executeResult = await executeProposal(proposal);
   
   if (!executeResult.success) {
     logError(`Execution failed: ${executeResult.error}`);

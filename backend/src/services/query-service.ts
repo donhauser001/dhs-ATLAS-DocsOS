@@ -15,7 +15,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { config, ensureDirectories } from '../config.js';
 import { getWorkspaceIndex } from './workspace-service.js';
-import type { Block, MachineBlock } from '../adl/types.js';
+// Phase 2: 不再需要 MachineBlock，因为索引不存储完整 machine 数据
 
 // ============================================================
 // 类型定义
@@ -57,29 +57,54 @@ export interface FilterOperator {
 }
 
 /**
+ * 可搜索字段白名单
+ * 
+ * Phase 2: Index 去数据库化
+ * 只有这些字段可以被索引和过滤
+ */
+export interface SearchableFields {
+  id?: string;
+  title?: string;
+  status?: string;
+  category?: string;
+  // 基本元数据，不包含业务数据
+}
+
+/**
  * BlockIndexEntry - Block 索引条目
  * 
  * Phase 1.5: 增加文档定位所需的字段
+ * Phase 2: 去数据库化，只存储最小字段集合
+ * 
+ * 核心原则：Index 是「可再生的缓存」，不是「事实来源」
+ * 完整数据必须回源文档获取
  */
 export interface BlockIndexEntry {
-  // === 定位信息 ===
+  // === 定位信息（必需） ===
   
   /** Anchor - 稳定定位标识 */
   anchor: string;
   /** 文档路径 */
   document: string;
   
-  // === 人类可读信息 ===
+  // === 人类可读摘要（必需） ===
   
   /** Block 标题 */
   heading: string;
+  /** Machine title */
+  title: string;
   /** Block 类型 */
   type: string;
+  /** Block 状态 */
+  status?: string;
   
-  // === Machine 数据（用于过滤，但不直接返回） ===
+  // === 可搜索字段（白名单） ===
   
-  /** Machine 数据 */
-  machine: MachineBlock;
+  /** 可索引的字段，用于过滤查询 */
+  searchable: SearchableFields;
+  
+  // Phase 2: 不再存储 machine 全量数据
+  // 如需完整数据，必须回源文档
 }
 
 export interface BlocksIndex {
@@ -153,6 +178,7 @@ export async function getBlocksIndex(): Promise<BlocksIndex> {
  * 重建 Blocks 索引
  * 
  * Phase 1.5: 存储文档定位所需的完整信息
+ * Phase 2: 去数据库化，只存储最小字段集合
  */
 export async function rebuildBlocksIndex(): Promise<BlocksIndex> {
   ensureDirectories();
@@ -177,15 +203,26 @@ export async function rebuildBlocksIndex(): Promise<BlocksIndex> {
       
       for (const block of adlDoc.blocks) {
         if (block.machine?.type) {
+          // Phase 2: 只提取白名单字段
+          const searchable: SearchableFields = {
+            id: block.machine.id as string | undefined,
+            title: block.machine.title as string | undefined,
+            status: block.machine.status as string | undefined,
+            category: block.machine.category as string | undefined,
+          };
+          
           blocks.push({
             // 定位信息
             anchor: block.anchor,
             document: doc.path,
-            // 人类可读信息
+            // 人类可读摘要
             heading: block.heading,
+            title: (block.machine.title as string) || block.heading,
             type: block.machine.type,
-            // Machine 数据（用于过滤）
-            machine: block.machine,
+            status: block.machine.status as string | undefined,
+            // 可搜索字段（白名单）
+            searchable,
+            // Phase 2: 不再存储 machine 全量数据
           });
         }
       }
@@ -213,6 +250,7 @@ export async function rebuildBlocksIndex(): Promise<BlocksIndex> {
  * 执行查询
  * 
  * Phase 1.5: 返回文档定位，而非数据替身
+ * Phase 2: 基于 searchable 字段过滤，不再使用 machine 全量
  * 
  * Query 的职责是「定位」，不是「取数据」。
  * 如需完整数据，请使用 /api/adl/block/:anchor
@@ -229,9 +267,9 @@ export async function executeQuery(query: Query): Promise<QueryResponse> {
     results = results.filter(b => b.type === query.type);
   }
   
-  // 应用 filter（基于 machine 数据过滤，但不返回 machine 数据）
+  // Phase 2: 基于 searchable 字段过滤（只支持白名单字段）
   if (query.filter) {
-    results = results.filter(block => matchFilter(block.machine, query.filter!));
+    results = results.filter(block => matchSearchableFilter(block, query.filter!));
   }
   
   // 应用 limit
@@ -246,10 +284,10 @@ export async function executeQuery(query: Query): Promise<QueryResponse> {
     document: block.document,
     // 人类可读摘要（强制）
     heading: block.heading,
-    title: block.machine?.title || block.heading,
+    title: block.title,
     type: block.type,
     // 可选状态
-    status: block.machine?.status as string | undefined,
+    status: block.status,
   }));
   
   return {
@@ -264,11 +302,32 @@ export async function executeQuery(query: Query): Promise<QueryResponse> {
 // ============================================================
 
 /**
- * 检查对象是否匹配过滤条件
+ * Phase 2: 基于 searchable 字段过滤
+ * 
+ * 只支持白名单字段：id, title, status, category
+ * 复杂查询需回源文档
  */
-function matchFilter(machine: MachineBlock, filter: Record<string, FilterValue>): boolean {
+function matchSearchableFilter(block: BlockIndexEntry, filter: Record<string, FilterValue>): boolean {
+  // 允许过滤的字段白名单
+  const allowedFields = ['id', 'title', 'status', 'category', 'type'];
+  
   for (const [path, condition] of Object.entries(filter)) {
-    const value = getNestedValue(machine, path);
+    // Phase 2: 检查字段是否在白名单中
+    const fieldName = path.split('.')[0]; // 获取顶层字段名
+    if (!allowedFields.includes(fieldName)) {
+      console.warn(`[Query] Filter field '${path}' is not in searchable whitelist, skipping`);
+      continue;
+    }
+    
+    // 从 block 的 searchable 或顶层字段获取值
+    let value: unknown;
+    if (path === 'type') {
+      value = block.type;
+    } else if (path === 'status') {
+      value = block.status;
+    } else {
+      value = getNestedValue(block.searchable as Record<string, unknown>, path);
+    }
     
     if (!matchCondition(value, condition)) {
       return false;

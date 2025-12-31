@@ -3,6 +3,7 @@
  * 
  * Phase 1: 实现多文档工作空间索引
  * Phase 1.5: 集成 Registry，成为唯一的索引重建入口
+ * Phase 2: 添加缓存一致性校验（repo_head）
  * 
  * 职责：
  * 1. 扫描 repository 下所有 .md 文件（唯一允许扫描的地方）
@@ -10,10 +11,12 @@
  * 3. 生成目录树结构
  * 4. 维护 workspace.json 索引文件
  * 5. 向 Registry 注册文档路径
+ * 6. 检测索引是否过期（与 Git HEAD 比较）
  */
 
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'fs';
 import { join, relative, basename, dirname } from 'path';
+import simpleGit from 'simple-git';
 import { config, ensureDirectories } from '../config.js';
 import { parseADL } from '../adl/parser.js';
 import { registerDocument, resetRegistry } from './workspace-registry.js';
@@ -68,6 +71,11 @@ export interface WorkspaceIndex {
     total_blocks: number;
     total_anchors: number;
   };
+  // Phase 2: 缓存一致性
+  /** Git HEAD commit hash（用于检测索引是否过期） */
+  repo_head?: string;
+  /** 索引是否可能过期（由 getWorkspaceIndex 设置） */
+  stale?: boolean;
 }
 
 export interface TreeNode {
@@ -87,6 +95,9 @@ export interface TreeNode {
 
 /**
  * 获取 Workspace 索引
+ * 
+ * Phase 2: 添加缓存一致性检查
+ * 如果 repo_head 与当前 Git HEAD 不一致，标记 stale
  */
 export async function getWorkspaceIndex(): Promise<WorkspaceIndex> {
   ensureDirectories();
@@ -94,8 +105,26 @@ export async function getWorkspaceIndex(): Promise<WorkspaceIndex> {
   // 检查缓存
   if (existsSync(config.workspaceIndexPath)) {
     try {
-      const cached = JSON.parse(readFileSync(config.workspaceIndexPath, 'utf-8'));
-      return cached as WorkspaceIndex;
+      const cached = JSON.parse(readFileSync(config.workspaceIndexPath, 'utf-8')) as WorkspaceIndex;
+      
+      // Phase 2: 检查 repo head 一致性
+      try {
+        const git = simpleGit(config.repositoryRoot);
+        const currentHead = await git.revparse(['HEAD']);
+        
+        if (cached.repo_head && cached.repo_head !== currentHead.trim()) {
+          console.warn(`[Workspace] Index may be stale. Cached HEAD: ${cached.repo_head?.slice(0, 8)}, Current HEAD: ${currentHead.trim().slice(0, 8)}`);
+          cached.stale = true;
+        } else {
+          cached.stale = false;
+        }
+      } catch (gitError) {
+        // Git 操作失败，无法检查一致性，假设有效
+        console.warn('[Workspace] Cannot check Git HEAD, assuming cache is valid');
+        cached.stale = false;
+      }
+      
+      return cached;
     } catch {
       // 缓存损坏，重建
     }
@@ -110,6 +139,7 @@ export async function getWorkspaceIndex(): Promise<WorkspaceIndex> {
  * 
  * Phase 1.5: 这是唯一允许扫描文件系统的地方
  * 重建时会向 Registry 注册所有文档路径
+ * Phase 2: 保存 repo_head 用于缓存一致性检查
  */
 export async function rebuildWorkspaceIndex(): Promise<WorkspaceIndex> {
   ensureDirectories();
@@ -168,12 +198,25 @@ export async function rebuildWorkspaceIndex(): Promise<WorkspaceIndex> {
     total_anchors: documents.reduce((sum, d) => sum + d.anchors.length, 0),
   };
   
+  // Phase 2: 获取当前 Git HEAD
+  let repoHead: string | undefined;
+  try {
+    const git = simpleGit(config.repositoryRoot);
+    const head = await git.revparse(['HEAD']);
+    repoHead = head.trim();
+  } catch (gitError) {
+    console.warn('[Workspace] Cannot get Git HEAD:', gitError);
+  }
+  
   const index: WorkspaceIndex = {
     version: '1.0',
     generated_at: new Date().toISOString(),
     documents,
     directories: Array.from(directoriesMap.values()),
     stats,
+    // Phase 2: 保存 repo head
+    repo_head: repoHead,
+    stale: false,
   };
   
   // 写入缓存

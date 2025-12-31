@@ -7,18 +7,23 @@
  * 1. 原子写入：写到临时文件 → commit 成功后替换
  * 2. 回滚机制：commit 失败则还原原文
  * 3. 统一 YAML dump 配置，减少格式漂移
+ * 
+ * Phase 2 改进：
+ * 4. 移除 repositoryRoot 参数，强制通过 Registry 获取路径
+ * 5. 所有路径访问经过 SafePath 验证
  */
 
 import { readFileSync, writeFileSync, copyFileSync, unlinkSync, existsSync } from 'fs';
-import { join } from 'path';
 import yaml from 'js-yaml';
 import simpleGit, { SimpleGit } from 'simple-git';
 import { parseADL, findBlockByAnchor } from './parser.js';
 import { validateProposal } from './validator.js';
 import { config } from '../config.js';
 import type { Proposal, Operation, Block, MachineBlock } from './types.js';
+// Phase 2: 使用 Registry 获取安全路径
+import { resolveDocument, getSafeAbsolutePath } from '../services/workspace-registry.js';
 
-interface ExecuteResult {
+export interface ExecuteResult {
   success: boolean;
   commit_hash?: string;
   error?: string;
@@ -26,10 +31,37 @@ interface ExecuteResult {
 
 /**
  * 执行 Proposal（带原子性保证）
+ * 
+ * Phase 2: 移除 repositoryRoot 参数，强制通过 Registry 获取路径
  */
-export async function executeProposal(proposal: Proposal, repositoryRoot: string): Promise<ExecuteResult> {
-  // 先校验
-  const validation = validateProposal(proposal, repositoryRoot);
+export async function executeProposal(proposal: Proposal): Promise<ExecuteResult> {
+  // Phase 2: 通过 Registry 获取文档句柄
+  const handle = resolveDocument(proposal.target_file);
+  if (!handle) {
+    return {
+      success: false,
+      error: `Document not found in registry: ${proposal.target_file}`,
+    };
+  }
+  
+  if (!handle.exists) {
+    return {
+      success: false,
+      error: `Document does not exist: ${proposal.target_file}`,
+    };
+  }
+  
+  // Phase 2: 获取安全的绝对路径
+  const targetPath = getSafeAbsolutePath(proposal.target_file);
+  if (!targetPath) {
+    return {
+      success: false,
+      error: `Unsafe path rejected by Registry: ${proposal.target_file}`,
+    };
+  }
+  
+  // 先校验（使用安全路径）
+  const validation = validateProposal(proposal);
   if (!validation.valid) {
     return {
       success: false,
@@ -37,7 +69,6 @@ export async function executeProposal(proposal: Proposal, repositoryRoot: string
     };
   }
   
-  const targetPath = join(repositoryRoot, proposal.target_file);
   const backupPath = `${targetPath}.backup-${Date.now()}`;
   const tempPath = `${targetPath}.tmp-${Date.now()}`;
   
@@ -61,8 +92,8 @@ export async function executeProposal(proposal: Proposal, repositoryRoot: string
     // 4. 替换原文件
     copyFileSync(tempPath, targetPath);
     
-    // 5. Git commit
-    const git: SimpleGit = simpleGit(repositoryRoot);
+    // 5. Git commit（使用 config.repositoryRoot）
+    const git: SimpleGit = simpleGit(config.repositoryRoot);
     
     await git.add(proposal.target_file);
     

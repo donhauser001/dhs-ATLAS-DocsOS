@@ -11,11 +11,14 @@
  * 
  * Phase 1.5 新增规则：
  * 5. Proposal 必须包含 reason（认知语义）
+ * 
+ * Phase 2 改进：
+ * 6. 移除 repositoryRoot 参数，通过 Registry 获取文档
  */
 
 import { findBlockByAnchor, getBlockValue } from './parser.js';
-// Phase 1.5: 使用 Registry 作为文档发现的唯一入口
-import { getDocument } from '../services/workspace-registry.js';
+// Phase 1.5/2: 使用 Registry 作为文档发现的唯一入口
+import { getDocument, resolveSafePath } from '../services/workspace-registry.js';
 import type { Proposal, ValidationResult, ValidationError, Operation } from './types.js';
 
 // 必填字段列表
@@ -25,8 +28,9 @@ const REQUIRED_FIELDS = ['type', 'id', 'status'];
  * 校验 Proposal
  * 
  * Phase 1.5: 使用 Registry 获取文档，并检查 reason 字段
+ * Phase 2: 移除 repositoryRoot 参数
  */
-export function validateProposal(proposal: Proposal, _repositoryRoot: string): ValidationResult {
+export function validateProposal(proposal: Proposal): ValidationResult {
   const errors: ValidationError[] = [];
   
   // Phase 1.5: 检查 reason 字段（认知语义必须存在）
@@ -38,7 +42,18 @@ export function validateProposal(proposal: Proposal, _repositoryRoot: string): V
     });
   }
   
-  // Phase 1.5: 使用 Registry 获取文档
+  // Phase 2: 先验证路径安全性
+  const safePath = resolveSafePath(proposal.target_file);
+  if (!safePath.valid) {
+    errors.push({
+      op_index: -1,
+      rule: 'path_safe',
+      message: `Unsafe path rejected: ${safePath.error}`,
+    });
+    return { valid: false, errors };
+  }
+  
+  // Phase 1.5/2: 使用 Registry 获取文档
   const content = getDocument(proposal.target_file);
   if (!content) {
     errors.push({

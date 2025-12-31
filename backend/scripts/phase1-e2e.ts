@@ -315,7 +315,7 @@ async function testProposalWorkflow() {
     ],
   });
   
-  const validationWithoutReason = validateProposal(proposalWithoutReason, config.repositoryRoot);
+  const validationWithoutReason = validateProposal(proposalWithoutReason);
   assert(
     !validationWithoutReason.valid,
     `无 reason 的 Proposal 验证失败（符合预期）`
@@ -357,14 +357,14 @@ async function testProposalWorkflow() {
   );
   
   // 3. 验证 Proposal
-  const validation = validateProposal(proposal, config.repositoryRoot);
+  const validation = validateProposal(proposal);
   assert(
     validation.valid,
     `Proposal 验证通过${validation.errors.length > 0 ? ': ' + JSON.stringify(validation.errors) : ''}`
   );
   
   // 4. 执行 Proposal
-  const result = await executeProposal(proposal, config.repositoryRoot);
+  const result = await executeProposal(proposal);
   assert(
     result.success,
     `Proposal 执行成功${result.commit_hash ? ': ' + result.commit_hash : ''}`

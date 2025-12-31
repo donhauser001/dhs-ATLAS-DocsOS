@@ -2,22 +2,123 @@
  * Workspace Registry - 文档宇宙唯一真理源
  * 
  * Phase 1.5: 范式校正
+ * Phase 2: 路径边界硬化
  * 
  * 硬规则：
  * - 任何模块访问文档，必须先通过 Registry 确认
  * - 直接使用 existsSync() 访问 repository 是禁止行为
  * - Query / Proposal / API 都必须先过 Registry
+ * - 所有路径必须经过 SafePath 解析器验证
  * 
  * 这不是一个工具类，这是文档宇宙的唯一入口。
  */
 
-import { existsSync, readFileSync, statSync } from 'fs';
-import { join, relative } from 'path';
+import { existsSync, readFileSync, statSync, lstatSync } from 'fs';
+import { join, relative, resolve, isAbsolute, sep } from 'path';
 import { config } from '../config.js';
 import { parseADL } from '../adl/parser.js';
 import type { ADLDocument, Block } from '../adl/types.js';
 import type { PublicUser } from './auth-service.js';
 import { checkPathPermission } from './auth-service.js';
+
+// ============================================================
+// Phase 2: SafePath 解析器 - 路径边界硬化
+// ============================================================
+
+/**
+ * SafePath 解析结果
+ * 
+ * 所有路径访问必须先经过此校验
+ */
+export interface SafePathResult {
+  /** 路径是否安全有效 */
+  valid: boolean;
+  /** 规范化后的绝对路径（仅当 valid=true） */
+  resolved: string | null;
+  /** 规范化后的相对路径（仅当 valid=true） */
+  relative: string | null;
+  /** 错误信息（仅当 valid=false） */
+  error?: string;
+}
+
+/**
+ * 安全路径解析器
+ * 
+ * Phase 2 核心：防止路径穿越攻击
+ * 
+ * 检查项：
+ * 1. 拒绝绝对路径
+ * 2. 拒绝路径穿越（..）
+ * 3. 验证解析后的路径在 repository 边界内
+ * 4. 拒绝软链接（防止逃逸）
+ */
+export function resolveSafePath(relativePath: string): SafePathResult {
+  // 1. 拒绝空路径
+  if (!relativePath || relativePath.trim() === '') {
+    return { valid: false, resolved: null, relative: null, error: 'Empty path not allowed' };
+  }
+  
+  // 2. 拒绝绝对路径
+  if (isAbsolute(relativePath)) {
+    return { valid: false, resolved: null, relative: null, error: 'Absolute paths not allowed' };
+  }
+  
+  // 3. 拒绝路径穿越（粗暴但有效）
+  if (relativePath.includes('..')) {
+    return { valid: false, resolved: null, relative: null, error: 'Path traversal (..) not allowed' };
+  }
+  
+  // 4. 拒绝 URL 编码的路径穿越尝试
+  if (relativePath.includes('%2e') || relativePath.includes('%2E')) {
+    return { valid: false, resolved: null, relative: null, error: 'URL-encoded path traversal not allowed' };
+  }
+  
+  // 5. 规范化并验证边界
+  const repoRoot = resolve(config.repositoryRoot);
+  const fullPath = resolve(repoRoot, relativePath);
+  
+  // 确保解析后的路径在 repository 边界内
+  // 注意：需要加 sep 防止 /repo-other 被误认为 /repo 的子目录
+  if (!fullPath.startsWith(repoRoot + sep) && fullPath !== repoRoot) {
+    return { valid: false, resolved: null, relative: null, error: 'Path outside repository boundary' };
+  }
+  
+  // 6. 检查是否为软链接（可选的安全强化）
+  if (existsSync(fullPath)) {
+    try {
+      const stat = lstatSync(fullPath);
+      if (stat.isSymbolicLink()) {
+        return { valid: false, resolved: null, relative: null, error: 'Symbolic links not allowed' };
+      }
+    } catch {
+      // 文件不存在或无法访问，继续
+    }
+  }
+  
+  // 7. 计算规范化的相对路径
+  const normalizedRelative = relative(repoRoot, fullPath);
+  
+  // 8. 额外检查：规范化后的相对路径不应以 .. 开头
+  if (normalizedRelative.startsWith('..')) {
+    return { valid: false, resolved: null, relative: null, error: 'Normalized path escapes repository' };
+  }
+  
+  return {
+    valid: true,
+    resolved: fullPath,
+    relative: normalizedRelative,
+  };
+}
+
+/**
+ * 获取安全的绝对路径（供 Executor 使用）
+ * 
+ * 如果路径不安全，返回 null
+ */
+export function getSafeAbsolutePath(relativePath: string): string | null {
+  const result = resolveSafePath(relativePath);
+  return result.valid ? result.resolved : null;
+}
 
 // ============================================================
 // 核心类型 - 文档句柄
@@ -138,17 +239,33 @@ export function resetRegistry(): void {
  * 注册文档路径
  * 
  * 当 workspace-service 重建索引时调用
+ * 
+ * Phase 2: 使用 SafePath 解析器
  */
 export function registerDocument(relativePath: string): void {
   initializeRegistry();
-  state.knownPaths.add(relativePath);
+  
+  // Phase 2: 验证路径安全性
+  const safePath = resolveSafePath(relativePath);
+  if (!safePath.valid) {
+    console.warn(`[Registry] registerDocument rejected unsafe path: ${relativePath} - ${safePath.error}`);
+    return;
+  }
+  
+  // 使用规范化的相对路径
+  state.knownPaths.add(safePath.relative!);
 }
 
 /**
  * 注销文档路径
+ * 
+ * Phase 2: 使用 SafePath 解析器
  */
 export function unregisterDocument(relativePath: string): void {
-  state.knownPaths.delete(relativePath);
+  const safePath = resolveSafePath(relativePath);
+  if (safePath.valid && safePath.relative) {
+    state.knownPaths.delete(safePath.relative);
+  }
 }
 
 // ============================================================
@@ -159,31 +276,47 @@ export function unregisterDocument(relativePath: string): void {
  * 检查文档是否存在于工作空间
  * 
  * 这是检查文档存在性的唯一正确方式
+ * 
+ * Phase 2: 使用 SafePath 解析器
  */
 export function documentExists(relativePath: string): boolean {
   initializeRegistry();
   
-  // 首先检查 Registry
-  if (state.knownPaths.has(relativePath)) {
+  // Phase 2: 先验证路径安全性
+  const safePath = resolveSafePath(relativePath);
+  if (!safePath.valid) {
+    console.warn(`[Registry] documentExists rejected unsafe path: ${relativePath} - ${safePath.error}`);
+    return false;
+  }
+  
+  // 首先检查 Registry（使用规范化的相对路径）
+  if (state.knownPaths.has(safePath.relative!)) {
     return true;
   }
   
   // 如果 Registry 没有，检查文件系统（但不自动注册）
-  const fullPath = join(config.repositoryRoot, relativePath);
-  return existsSync(fullPath);
+  return existsSync(safePath.resolved!);
 }
 
 /**
  * 解析文档句柄
  * 
  * 返回文档的定位信息，但不加载内容
+ * 
+ * Phase 2: 使用 SafePath 解析器
  */
 export function resolveDocument(relativePath: string): DocumentHandle | null {
   initializeRegistry();
   
-  const fullPath = join(config.repositoryRoot, relativePath);
-  const fileExists = existsSync(fullPath);
-  const indexed = state.knownPaths.has(relativePath);
+  // Phase 2: 先验证路径安全性
+  const safePath = resolveSafePath(relativePath);
+  if (!safePath.valid) {
+    console.warn(`[Registry] resolveDocument rejected unsafe path: ${relativePath} - ${safePath.error}`);
+    return null;
+  }
+  
+  const fileExists = existsSync(safePath.resolved!);
+  const indexed = state.knownPaths.has(safePath.relative!);
   
   if (!fileExists && !indexed) {
     return null;
@@ -192,14 +325,14 @@ export function resolveDocument(relativePath: string): DocumentHandle | null {
   let modifiedAt: Date | null = null;
   if (fileExists) {
     try {
-      modifiedAt = statSync(fullPath).mtime;
+      modifiedAt = statSync(safePath.resolved!).mtime;
     } catch {
       // ignore
     }
   }
   
   return {
-    path: relativePath,
+    path: safePath.relative!, // 使用规范化的相对路径
     exists: fileExists,
     indexed,
     modifiedAt,
@@ -210,16 +343,23 @@ export function resolveDocument(relativePath: string): DocumentHandle | null {
  * 读取文档内容
  * 
  * 这是读取文档的唯一正确方式
+ * 
+ * Phase 2: 使用 SafePath 解析器
  */
 export function readDocument(handle: DocumentHandle): DocumentContent | null {
   if (!handle.exists) {
     return null;
   }
   
-  const fullPath = join(config.repositoryRoot, handle.path);
+  // Phase 2: 再次验证路径安全性（防止句柄被篡改）
+  const safePath = resolveSafePath(handle.path);
+  if (!safePath.valid) {
+    console.warn(`[Registry] readDocument rejected unsafe handle path: ${handle.path} - ${safePath.error}`);
+    return null;
+  }
   
   try {
-    const raw = readFileSync(fullPath, 'utf-8');
+    const raw = readFileSync(safePath.resolved!, 'utf-8');
     const document = parseADL(raw, handle.path);
     
     return {
@@ -316,6 +456,8 @@ export function listVisibleDocuments(user: PublicUser | null): DocumentHandle[] 
 
 /**
  * 检查用户是否可以访问指定文档
+ * 
+ * Phase 2: 使用 SafePath 解析器
  */
 export function canAccessDocument(user: PublicUser | null, relativePath: string): boolean {
   // 未登录用户无法访问任何文档
@@ -323,13 +465,20 @@ export function canAccessDocument(user: PublicUser | null, relativePath: string)
     return false;
   }
   
-  // 首先检查文档是否存在
-  if (!documentExists(relativePath)) {
+  // Phase 2: 先验证路径安全性
+  const safePath = resolveSafePath(relativePath);
+  if (!safePath.valid) {
+    console.warn(`[Registry] canAccessDocument rejected unsafe path: ${relativePath} - ${safePath.error}`);
     return false;
   }
   
-  // 然后检查权限
-  return checkPathPermission(user, relativePath);
+  // 检查文档是否存在（使用规范化路径）
+  if (!documentExists(safePath.relative!)) {
+    return false;
+  }
+  
+  // 然后检查权限（使用规范化路径）
+  return checkPathPermission(user, safePath.relative!);
 }
 
 // ============================================================
