@@ -3,20 +3,19 @@
  * 
  * 职责：应用 Proposal 并生成 Git Commit
  * 
- * Phase 0 实现：
- * 1. 读取原文档
- * 2. 定位目标 Block
- * 3. 修改 Machine Zone YAML
- * 4. 保持 Human Zone 不变
- * 5. 原子写入 + Git Commit
+ * Phase 0.5 改进：
+ * 1. 原子写入：写到临时文件 → commit 成功后替换
+ * 2. 回滚机制：commit 失败则还原原文
+ * 3. 统一 YAML dump 配置，减少格式漂移
  */
 
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync, copyFileSync, unlinkSync, existsSync } from 'fs';
 import { join } from 'path';
 import yaml from 'js-yaml';
 import simpleGit, { SimpleGit } from 'simple-git';
 import { parseADL, findBlockByAnchor } from './parser.js';
 import { validateProposal } from './validator.js';
+import { config } from '../config.js';
 import type { Proposal, Operation, Block, MachineBlock } from './types.js';
 
 interface ExecuteResult {
@@ -26,7 +25,7 @@ interface ExecuteResult {
 }
 
 /**
- * 执行 Proposal
+ * 执行 Proposal（带原子性保证）
  */
 export async function executeProposal(proposal: Proposal, repositoryRoot: string): Promise<ExecuteResult> {
   // 先校验
@@ -39,21 +38,30 @@ export async function executeProposal(proposal: Proposal, repositoryRoot: string
   }
   
   const targetPath = join(repositoryRoot, proposal.target_file);
+  const backupPath = `${targetPath}.backup-${Date.now()}`;
+  const tempPath = `${targetPath}.tmp-${Date.now()}`;
+  
+  let backupCreated = false;
   
   try {
-    // 读取原文档
+    // 1. 读取原文档并创建备份
     const originalContent = readFileSync(targetPath, 'utf-8');
+    copyFileSync(targetPath, backupPath);
+    backupCreated = true;
     
-    // 应用所有操作
+    // 2. 应用所有操作，生成新内容
     let newContent = originalContent;
     for (const op of proposal.ops) {
       newContent = applyOperation(newContent, op);
     }
     
-    // 写入文件
-    writeFileSync(targetPath, newContent, 'utf-8');
+    // 3. 先写到临时文件
+    writeFileSync(tempPath, newContent, 'utf-8');
     
-    // Git commit
+    // 4. 替换原文件
+    copyFileSync(tempPath, targetPath);
+    
+    // 5. Git commit
     const git: SimpleGit = simpleGit(repositoryRoot);
     
     await git.add(proposal.target_file);
@@ -61,15 +69,46 @@ export async function executeProposal(proposal: Proposal, repositoryRoot: string
     const commitMessage = `[ADL] ${proposal.id}: ${getCommitMessage(proposal)}`;
     const commitResult = await git.commit(commitMessage);
     
+    // 6. 成功后清理临时文件和备份
+    cleanupFile(tempPath);
+    cleanupFile(backupPath);
+    
     return {
       success: true,
       commit_hash: commitResult.commit,
     };
   } catch (error) {
+    // 回滚：如果有备份，恢复原文件
+    if (backupCreated && existsSync(backupPath)) {
+      try {
+        copyFileSync(backupPath, targetPath);
+        console.error('[Executor] Rolled back to original file after error');
+      } catch (rollbackError) {
+        console.error('[Executor] Failed to rollback:', rollbackError);
+      }
+    }
+    
+    // 清理临时文件
+    cleanupFile(tempPath);
+    cleanupFile(backupPath);
+    
     return {
       success: false,
       error: String(error),
     };
+  }
+}
+
+/**
+ * 安全删除文件
+ */
+function cleanupFile(path: string): void {
+  try {
+    if (existsSync(path)) {
+      unlinkSync(path);
+    }
+  } catch {
+    // 忽略删除失败
   }
 }
 
@@ -93,6 +132,8 @@ function applyOperation(content: string, op: Operation): string {
 
 /**
  * 应用 update_yaml 操作
+ * 
+ * Phase 0.5: 使用统一的 YAML dump 配置
  */
 function applyUpdateYaml(content: string, op: Extract<Operation, { op: 'update_yaml' }>): string {
   const lines = content.split('\n');
@@ -117,13 +158,8 @@ function applyUpdateYaml(content: string, op: Extract<Operation, { op: 'update_y
   // 更新值
   setNestedValue(machine, op.path, op.value);
   
-  // 生成新的 YAML
-  const newYaml = yaml.dump(machine, {
-    indent: 2,
-    lineWidth: -1,
-    quotingType: '"',
-    forceQuotes: false,
-  }).trim();
+  // 生成新的 YAML（使用统一配置）
+  const newYaml = yaml.dump(machine, config.yamlDumpOptions).trim();
   
   // 替换原 YAML 内容
   const newLines = [
@@ -155,7 +191,7 @@ function applyInsertBlock(content: string, op: Extract<Operation, { op: 'insert_
     op.block.heading,
     '',
     '```yaml',
-    yaml.dump(op.block.machine, { indent: 2 }).trim(),
+    yaml.dump(op.block.machine, config.yamlDumpOptions).trim(),
     '```',
     '',
     op.block.body,
@@ -331,4 +367,3 @@ function getCommitMessage(proposal: Proposal): string {
   
   return opSummary;
 }
-

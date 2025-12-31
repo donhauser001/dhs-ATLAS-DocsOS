@@ -113,12 +113,13 @@ function parseBlocks(lines: string[], startLine: number): Block[] {
       try {
         const machine = yaml.load(yamlContent.join('\n')) as MachineBlock;
         if (currentBlock && machine) {
+          // 先展开 machine，再用默认值覆盖缺失字段
           currentBlock.machine = {
+            ...machine,
             type: machine.type || '',
             id: machine.id || '',
             status: machine.status || 'draft',
             title: machine.title || '',
-            ...machine,
           };
         }
       } catch (e) {

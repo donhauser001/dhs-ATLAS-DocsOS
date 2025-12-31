@@ -2,18 +2,27 @@
  * ADL API 路由
  * 
  * 提供 ADL 文档的读取、解析和操作接口
+ * 
+ * Phase 0.5: 使用持久化 Proposal 存储和统一配置
  */
 
 import { Router, Request, Response } from 'express';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { parseADL, findBlockByAnchor } from '../adl/parser.js';
+import { config, ensureDirectories } from '../config.js';
+import {
+  createProposal,
+  getProposal,
+  updateProposal,
+  listProposals,
+} from '../adl/proposal-store.js';
 import type { ADLDocument, Proposal, ValidationResult } from '../adl/types.js';
 
 const router = Router();
 
-// 文档仓库根目录
-const REPOSITORY_ROOT = join(process.cwd(), '..', 'repository');
+// 确保必要目录存在
+ensureDirectories();
 
 /**
  * GET /api/adl/document
@@ -27,7 +36,7 @@ router.get('/document', (req: Request, res: Response) => {
     return;
   }
   
-  const fullPath = join(REPOSITORY_ROOT, docPath);
+  const fullPath = join(config.repositoryRoot, docPath);
   
   if (!existsSync(fullPath)) {
     res.status(404).json({ error: 'Document not found', path: docPath });
@@ -56,7 +65,7 @@ router.get('/block/:anchor', (req: Request, res: Response) => {
     return;
   }
   
-  const fullPath = join(REPOSITORY_ROOT, docPath);
+  const fullPath = join(config.repositoryRoot, docPath);
   
   if (!existsSync(fullPath)) {
     res.status(404).json({ error: 'Document not found', path: docPath });
@@ -79,32 +88,36 @@ router.get('/block/:anchor', (req: Request, res: Response) => {
   }
 });
 
-// Proposal 存储（Phase 0 使用内存存储）
-const proposals = new Map<string, Proposal>();
+/**
+ * GET /api/adl/proposals
+ * 列出所有提案
+ */
+router.get('/proposals', (req: Request, res: Response) => {
+  try {
+    const proposals = listProposals();
+    res.json({ proposals });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to list proposals', details: String(error) });
+  }
+});
 
 /**
  * POST /api/adl/proposal
- * 创建变更提案
+ * 创建变更提案（持久化到文件）
  */
 router.post('/proposal', (req: Request, res: Response) => {
-  const proposalData = req.body as Omit<Proposal, 'id' | 'status'>;
-  
-  // 生成 Proposal ID
-  const id = `PROP-${Date.now()}`;
-  
-  const proposal: Proposal = {
-    ...proposalData,
-    id,
-    status: 'pending',
-  };
-  
-  proposals.set(id, proposal);
-  
-  res.json({ 
-    success: true, 
-    proposal_id: id,
-    proposal 
-  });
+  try {
+    const proposalData = req.body as Omit<Proposal, 'id' | 'status'>;
+    const proposal = createProposal(proposalData);
+    
+    res.json({ 
+      success: true, 
+      proposal_id: proposal.id,
+      proposal 
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create proposal', details: String(error) });
+  }
 });
 
 /**
@@ -113,7 +126,7 @@ router.post('/proposal', (req: Request, res: Response) => {
  */
 router.get('/proposal/:id', (req: Request, res: Response) => {
   const { id } = req.params;
-  const proposal = proposals.get(id);
+  const proposal = getProposal(id);
   
   if (!proposal) {
     res.status(404).json({ error: 'Proposal not found', id });
@@ -129,7 +142,7 @@ router.get('/proposal/:id', (req: Request, res: Response) => {
  */
 router.post('/proposal/:id/validate', async (req: Request, res: Response) => {
   const { id } = req.params;
-  const proposal = proposals.get(id);
+  const proposal = getProposal(id);
   
   if (!proposal) {
     res.status(404).json({ error: 'Proposal not found', id });
@@ -138,7 +151,7 @@ router.post('/proposal/:id/validate', async (req: Request, res: Response) => {
   
   // 动态导入 validator
   const { validateProposal } = await import('../adl/validator.js');
-  const result = validateProposal(proposal, REPOSITORY_ROOT);
+  const result = validateProposal(proposal, config.repositoryRoot);
   
   res.json(result);
 });
@@ -149,7 +162,7 @@ router.post('/proposal/:id/validate', async (req: Request, res: Response) => {
  */
 router.post('/proposal/:id/execute', async (req: Request, res: Response) => {
   const { id } = req.params;
-  const proposal = proposals.get(id);
+  const proposal = getProposal(id);
   
   if (!proposal) {
     res.status(404).json({ error: 'Proposal not found', id });
@@ -164,11 +177,12 @@ router.post('/proposal/:id/execute', async (req: Request, res: Response) => {
   try {
     // 动态导入 executor
     const { executeProposal } = await import('../adl/executor.js');
-    const result = await executeProposal(proposal, REPOSITORY_ROOT);
+    const result = await executeProposal(proposal, config.repositoryRoot);
     
-    // 更新 proposal 状态
-    proposal.status = result.success ? 'executed' : 'rejected';
-    proposals.set(id, proposal);
+    // 更新 proposal 状态（持久化）
+    updateProposal(id, { 
+      status: result.success ? 'executed' : 'rejected' 
+    });
     
     res.json(result);
   } catch (error) {
@@ -177,4 +191,3 @@ router.post('/proposal/:id/execute', async (req: Request, res: Response) => {
 });
 
 export default router;
-

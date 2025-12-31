@@ -1,0 +1,8 @@
+# ATLAS Runtime 数据目录
+# Proposals 是临时数据，不应提交到仓库
+.atlas/proposals/
+
+# 备份和临时文件
+*.backup-*
+*.tmp-*
+
