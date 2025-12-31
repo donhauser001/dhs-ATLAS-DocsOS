@@ -70,7 +70,7 @@ export function CreatePolicyForm({ defaultType = 'uniform' }: CreatePolicyFormPr
       updatedTiers[updatedTiers.length - 1] = {
         ...lastTier,
         max: newMin - 1,
-        label: `第${lastTier.min}-${newMin - 1}项`
+        label: generateTierLabel(lastTier.min, newMin - 1)
       }
     }
     
@@ -80,7 +80,7 @@ export function CreatePolicyForm({ defaultType = 'uniform' }: CreatePolicyFormPr
         min: newMin,
         max: null,
         rate: Math.max(50, (lastTier.rate || 100) - 10),
-        label: `第${newMin}项及以上`
+        label: generateTierLabel(newMin, null)
       }
     ])
   }
@@ -89,26 +89,72 @@ export function CreatePolicyForm({ defaultType = 'uniform' }: CreatePolicyFormPr
   const removeTier = (index: number) => {
     if (tiers.length <= 2) return
     const newTiers = tiers.filter((_, i) => i !== index)
-    // 更新最后一个阶梯为无上限
-    newTiers[newTiers.length - 1].max = null
-    newTiers[newTiers.length - 1].label = `第${newTiers[newTiers.length - 1].min}项及以上`
+    // 重新计算所有阶梯的 min/max 确保连续
+    recalculateTiers(newTiers)
     setTiers(newTiers)
+  }
+
+  // 生成阶梯标签
+  const generateTierLabel = (min: number, max: number | null) => {
+    if (min === max) return `第${min}项`
+    if (max === null) return `第${min}项及以上`
+    return `第${min}-${max}项`
+  }
+
+  // 重新计算阶梯确保连续
+  const recalculateTiers = (tierList: PolicyTier[]) => {
+    for (let i = 0; i < tierList.length; i++) {
+      if (i === 0) {
+        tierList[i].min = 1
+      } else {
+        // 当前阶梯的 min 必须是上一阶梯的 max + 1
+        const prevMax = tierList[i - 1].max
+        tierList[i].min = prevMax !== null ? prevMax + 1 : tierList[i - 1].min + 1
+      }
+      
+      // 最后一个阶梯设为无上限
+      if (i === tierList.length - 1) {
+        tierList[i].max = null
+      }
+      
+      // 更新标签
+      tierList[i].label = generateTierLabel(tierList[i].min, tierList[i].max)
+    }
   }
 
   // 更新阶梯
   const updateTier = (index: number, field: keyof PolicyTier, value: any) => {
     const newTiers = [...tiers]
-    newTiers[index] = { ...newTiers[index], [field]: value }
     
-    // 自动更新 label
-    const tier = newTiers[index]
-    if (tier.min === tier.max) {
-      tier.label = `第${tier.min}项`
-    } else if (tier.max === null) {
-      tier.label = `第${tier.min}项及以上`
+    if (field === 'max' && value !== null) {
+      // 更新当前阶梯的 max
+      newTiers[index].max = value
+      
+      // 自动更新后续阶梯的 min，确保连续
+      for (let i = index + 1; i < newTiers.length; i++) {
+        const prevMax = newTiers[i - 1].max
+        newTiers[i].min = prevMax !== null ? prevMax + 1 : newTiers[i - 1].min + 1
+        // 如果不是最后一个阶梯，确保 max >= min
+        if (i < newTiers.length - 1 && newTiers[i].max !== null && newTiers[i].max! < newTiers[i].min) {
+          newTiers[i].max = newTiers[i].min
+        }
+        newTiers[i].label = generateTierLabel(newTiers[i].min, newTiers[i].max)
+      }
+    } else if (field === 'min' && index === 0) {
+      // 只有第一个阶梯可以修改 min（通常是 1）
+      newTiers[0].min = value
+      // 重新计算后续阶梯
+      for (let i = 1; i < newTiers.length; i++) {
+        const prevMax = newTiers[i - 1].max
+        newTiers[i].min = prevMax !== null ? prevMax + 1 : newTiers[i - 1].min + 1
+        newTiers[i].label = generateTierLabel(newTiers[i].min, newTiers[i].max)
+      }
     } else {
-      tier.label = `第${tier.min}-${tier.max}项`
+      newTiers[index] = { ...newTiers[index], [field]: value }
     }
+    
+    // 更新当前阶梯的标签
+    newTiers[index].label = generateTierLabel(newTiers[index].min, newTiers[index].max)
     
     setTiers(newTiers)
   }
@@ -295,6 +341,8 @@ export function CreatePolicyForm({ defaultType = 'uniform' }: CreatePolicyFormPr
                     value={tier.min}
                     onChange={(e) => updateTier(index, 'min', parseInt(e.target.value) || 1)}
                     className="h-9 text-sm"
+                    disabled={index > 0}
+                    title={index > 0 ? '起始值由上一阶梯自动计算' : undefined}
                   />
                 </div>
                 <div className="col-span-2">
@@ -305,6 +353,8 @@ export function CreatePolicyForm({ defaultType = 'uniform' }: CreatePolicyFormPr
                     onChange={(e) => updateTier(index, 'max', e.target.value ? parseInt(e.target.value) : null)}
                     placeholder="无上限"
                     className="h-9 text-sm"
+                    disabled={index === tiers.length - 1}
+                    title={index === tiers.length - 1 ? '最后一个阶梯无上限' : undefined}
                   />
                 </div>
                 <div className="col-span-2">
@@ -325,6 +375,8 @@ export function CreatePolicyForm({ defaultType = 'uniform' }: CreatePolicyFormPr
                     value={tier.label}
                     onChange={(e) => updateTier(index, 'label', e.target.value)}
                     className="h-9 text-sm"
+                    disabled
+                    title="标签自动生成"
                   />
                 </div>
                 <div className="col-span-1">
