@@ -156,7 +156,7 @@ export function QueryPanel({ open, onOpenChange }: QueryPanelProps) {
                   未找到匹配的结果
                 </div>
               ) : (
-                {/* Phase 1.5: 使用文档定位字段而非 data 替身 */}
+                // Phase 1.5: 使用文档定位字段而非 data 替身
                 <div className="border rounded-lg divide-y max-h-[400px] overflow-auto">
                   {results.results.map((result) => (
                     <button
