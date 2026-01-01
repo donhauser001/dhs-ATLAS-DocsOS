@@ -102,7 +102,9 @@ export interface ExecuteResult {
  * 获取并解析 ADL 文档
  */
 export async function fetchDocument(path: string): Promise<ADLDocument> {
-  const res = await fetch(`${API_BASE}/document?path=${encodeURIComponent(path)}`);
+  const res = await fetch(`${API_BASE}/document?path=${encodeURIComponent(path)}`, {
+    credentials: 'include',
+  });
   if (!res.ok) {
     throw new Error(`Failed to fetch document: ${res.statusText}`);
   }
@@ -113,7 +115,9 @@ export async function fetchDocument(path: string): Promise<ADLDocument> {
  * 获取指定 Block
  */
 export async function fetchBlock(anchor: string, docPath: string): Promise<Block> {
-  const res = await fetch(`${API_BASE}/block/${anchor}?path=${encodeURIComponent(docPath)}`);
+  const res = await fetch(`${API_BASE}/block/${anchor}?path=${encodeURIComponent(docPath)}`, {
+    credentials: 'include',
+  });
   if (!res.ok) {
     throw new Error(`Failed to fetch block: ${res.statusText}`);
   }
@@ -128,6 +132,7 @@ export async function createProposal(proposal: Omit<Proposal, 'id' | 'status'>):
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(proposal),
+    credentials: 'include',
   });
   if (!res.ok) {
     throw new Error(`Failed to create proposal: ${res.statusText}`);
@@ -141,6 +146,7 @@ export async function createProposal(proposal: Omit<Proposal, 'id' | 'status'>):
 export async function validateProposal(proposalId: string): Promise<ValidationResult> {
   const res = await fetch(`${API_BASE}/proposal/${proposalId}/validate`, {
     method: 'POST',
+    credentials: 'include',
   });
   if (!res.ok) {
     throw new Error(`Failed to validate proposal: ${res.statusText}`);
@@ -154,6 +160,7 @@ export async function validateProposal(proposalId: string): Promise<ValidationRe
 export async function executeProposal(proposalId: string): Promise<ExecuteResult> {
   const res = await fetch(`${API_BASE}/proposal/${proposalId}/execute`, {
     method: 'POST',
+    credentials: 'include',
   });
   if (!res.ok) {
     throw new Error(`Failed to execute proposal: ${res.statusText}`);

@@ -53,7 +53,9 @@ export interface TreeNode {
  * 获取 Workspace 索引
  */
 export async function fetchWorkspaceIndex(): Promise<WorkspaceIndex> {
-  const res = await fetch(`${API_BASE}/index`);
+  const res = await fetch(`${API_BASE}/index`, {
+    credentials: 'include',
+  });
   if (!res.ok) {
     throw new Error(`Failed to fetch workspace index: ${res.statusText}`);
   }
@@ -64,7 +66,9 @@ export async function fetchWorkspaceIndex(): Promise<WorkspaceIndex> {
  * 获取目录树
  */
 export async function fetchWorkspaceTree(): Promise<TreeNode[]> {
-  const res = await fetch(`${API_BASE}/tree`);
+  const res = await fetch(`${API_BASE}/tree`, {
+    credentials: 'include',
+  });
   if (!res.ok) {
     throw new Error(`Failed to fetch workspace tree: ${res.statusText}`);
   }
@@ -78,6 +82,7 @@ export async function fetchWorkspaceTree(): Promise<TreeNode[]> {
 export async function rebuildWorkspaceIndex(): Promise<{ success: boolean; stats: WorkspaceIndex['stats'] }> {
   const res = await fetch(`${API_BASE}/rebuild`, {
     method: 'POST',
+    credentials: 'include',
   });
   if (!res.ok) {
     throw new Error(`Failed to rebuild workspace index: ${res.statusText}`);

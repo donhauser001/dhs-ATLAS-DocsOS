@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2026-01-01T12:03:29.328Z",
+  "generated_at": "2026-01-01T14:34:11.679Z",
   "documents": [
     {
       "path": "contacts/客户-刘八.md",
@@ -153,32 +153,84 @@
       "types": [
         "token_group"
       ],
-      "modified_at": "2026-01-01T11:56:44.044Z"
+      "modified_at": "2026-01-01T12:04:51.788Z"
     },
     {
       "path": "genesis/客户管理.md",
-      "title": "出版社",
+      "title": "中信出版社",
       "document_type": "facts",
-      "block_count": 10,
+      "block_count": 65,
       "anchors": [
-        "cat-publisher",
-        "cat-media",
-        "contact-wangqiang",
-        "contact-lixiao",
-        "contact-chenjiahe",
-        "client-citic",
+        "client-zhongxin",
+        "client-beijing-press",
+        "client-youth-press",
+        "client-century",
+        "client-science-press",
+        "client-shuangluoxuan",
+        "client-shulang",
+        "client-motie",
+        "client-hunan-arts",
+        "client-zhejiang-arts",
+        "client-guangzhou",
+        "client-shenzhen-haipai",
+        "client-jingsirui",
+        "client-ptpress",
+        "client-guangchen",
+        "client-tianxi",
+        "client-rentian",
+        "client-xinzhao",
+        "client-youze",
+        "client-zige",
+        "client-qingdou",
+        "client-yuedumingpin",
+        "client-ziyunwenxin",
+        "client-zhejiang-people",
+        "client-yuelu",
+        "client-jiangbo",
+        "client-babel",
+        "client-guangdong-people",
+        "client-yixinzhicheng",
+        "client-tuanjie",
+        "client-tianyi",
+        "client-zhongyi",
+        "client-baimashiguang",
+        "client-shengyuan",
+        "client-xiangtan",
+        "client-lingtouyang",
+        "client-zishi",
+        "client-yourongshubang",
+        "client-renmin-university",
+        "client-huyang",
+        "client-guotuboya",
+        "client-lubai",
+        "client-hebei-shulang",
         "client-memestory",
-        "client-seph",
-        "proj-001",
-        "proj-002"
+        "client-lezhidu",
+        "client-paitang",
+        "client-napa",
+        "client-zhonghehengrun",
+        "client-dongfang",
+        "client-cdgdc",
+        "client-steinway",
+        "client-jiangxi-edu",
+        "client-pku-shanghai",
+        "client-daoshan",
+        "client-zhuowentianyu",
+        "client-shidaihuayu",
+        "client-xinyitianxia",
+        "client-zifan",
+        "client-aimi",
+        "client-kuaishou",
+        "client-qianweiwen",
+        "client-xingshengle",
+        "client-chongqing",
+        "client-xinshijie",
+        "client-zhuanzhuan"
       ],
       "types": [
-        "client-category",
-        "contact",
-        "client",
-        "project"
+        "client"
       ],
-      "modified_at": "2026-01-01T12:02:30.333Z"
+      "modified_at": "2026-01-01T12:18:46.883Z"
     },
     {
       "path": "genesis/服务示例.md",
@@ -197,6 +249,28 @@
         "service"
       ],
       "modified_at": "2026-01-01T11:24:02.218Z"
+    },
+    {
+      "path": "genesis/联系人管理.md",
+      "title": "王编辑",
+      "document_type": "facts",
+      "block_count": 10,
+      "anchors": [
+        "contact-wang-editor",
+        "contact-li-director",
+        "contact-zhang-manager",
+        "contact-liu-chief",
+        "contact-chen-editor",
+        "contact-zhao-pm",
+        "contact-sun-designer",
+        "contact-zhou-boss",
+        "contact-wu-purchase",
+        "contact-zheng-finance"
+      ],
+      "types": [
+        "contact"
+      ],
+      "modified_at": "2026-01-01T14:32:41.981Z"
     },
     {
       "path": "projects/2025/P-001/项目主文档.md",
@@ -259,7 +333,7 @@
     {
       "path": "genesis",
       "name": "genesis",
-      "document_count": 3
+      "document_count": 4
     },
     {
       "path": "projects/2025/P-001",
@@ -278,10 +352,10 @@
     }
   ],
   "stats": {
-    "total_documents": 16,
-    "total_blocks": 48,
-    "total_anchors": 48
+    "total_documents": 17,
+    "total_blocks": 113,
+    "total_anchors": 113
   },
-  "repo_head": "dac9171ddb35bececa6b7020b9f158fe11276d53",
+  "repo_head": "e1c4da4375afbc389fad10d531ac12814c96ea8b",
   "stale": false
 }

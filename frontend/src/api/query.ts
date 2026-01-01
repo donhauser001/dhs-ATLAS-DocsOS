@@ -77,6 +77,7 @@ export async function executeQuery(query: Query): Promise<QueryResponse> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(query),
+    credentials: 'include',
   });
   
   if (!res.ok) {

@@ -71,7 +71,9 @@ export interface DisplayConfig {
  * 获取所有 Tokens
  */
 export async function fetchTokens(): Promise<TokenCache> {
-  const res = await fetch(API_BASE);
+  const res = await fetch(API_BASE, {
+    credentials: 'include',
+  });
   const data = await res.json();
   
   if (!data.success) {
@@ -85,7 +87,9 @@ export async function fetchTokens(): Promise<TokenCache> {
  * 获取所有 Token 组
  */
 export async function fetchTokenGroups(): Promise<TokenGroup[]> {
-  const res = await fetch(`${API_BASE}/groups`);
+  const res = await fetch(`${API_BASE}/groups`, {
+    credentials: 'include',
+  });
   const data = await res.json();
   
   if (!data.success) {
@@ -106,7 +110,9 @@ export async function resolveToken(path: string, variant?: string): Promise<stri
     ? `${API_BASE}/resolve/${path}?variant=${variant}`
     : `${API_BASE}/resolve/${path}`;
     
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    credentials: 'include',
+  });
   const data = await res.json();
   
   if (!data.success) {
@@ -120,7 +126,9 @@ export async function resolveToken(path: string, variant?: string): Promise<stri
  * 获取 Token 完整定义
  */
 export async function fetchTokenDefinition(path: string): Promise<TokenDefinition | null> {
-  const res = await fetch(`${API_BASE}/resolve/${path}`);
+  const res = await fetch(`${API_BASE}/resolve/${path}`, {
+    credentials: 'include',
+  });
   const data = await res.json();
   
   if (!data.success) {
@@ -134,7 +142,9 @@ export async function fetchTokenDefinition(path: string): Promise<TokenDefinitio
  * 获取状态的显现配置
  */
 export async function fetchStatusDisplay(status: string): Promise<DisplayConfig> {
-  const res = await fetch(`${API_BASE}/status/${status}`);
+  const res = await fetch(`${API_BASE}/status/${status}`, {
+    credentials: 'include',
+  });
   const data = await res.json();
   
   if (!data.success) {
@@ -148,7 +158,9 @@ export async function fetchStatusDisplay(status: string): Promise<DisplayConfig>
  * 获取类型的显现配置
  */
 export async function fetchTypeDisplay(type: string): Promise<DisplayConfig> {
-  const res = await fetch(`${API_BASE}/type/${type}`);
+  const res = await fetch(`${API_BASE}/type/${type}`, {
+    credentials: 'include',
+  });
   const data = await res.json();
   
   if (!data.success) {
@@ -162,7 +174,10 @@ export async function fetchTypeDisplay(type: string): Promise<DisplayConfig> {
  * 重建 Token 缓存
  */
 export async function rebuildTokenCache(): Promise<void> {
-  const res = await fetch(`${API_BASE}/rebuild`, { method: 'POST' });
+  const res = await fetch(`${API_BASE}/rebuild`, { 
+    method: 'POST',
+    credentials: 'include',
+  });
   const data = await res.json();
   
   if (!data.success) {

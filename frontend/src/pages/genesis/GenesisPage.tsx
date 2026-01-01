@@ -153,8 +153,8 @@ export function GenesisPage() {
               <button
                 onClick={() => setViewMode('read')}
                 className={`px-3 py-1.5 text-sm rounded-md transition-colors ${viewMode === 'read'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
                   }`}
               >
                 阅读
@@ -162,8 +162,8 @@ export function GenesisPage() {
               <button
                 onClick={() => setViewMode('edit')}
                 className={`px-3 py-1.5 text-sm rounded-md transition-colors ${viewMode === 'edit'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
                   }`}
               >
                 编辑
