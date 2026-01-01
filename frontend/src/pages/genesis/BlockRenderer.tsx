@@ -10,7 +10,8 @@
 import { type Block, type UpdateYamlOp } from '@/api/adl';
 import { FieldRenderer } from './FieldRenderer';
 import ReactMarkdown from 'react-markdown';
-import { useDisplayConfigs, getStatusDisplaySync, getTypeDisplaySync } from '@/hooks/useTokens';
+import { useDisplayConfigs, getStatusDisplaySync, getTypeDisplaySync, useTokens } from '@/hooks/useTokens';
+import { isTokenRef, type TokenRef } from '@/api/tokens';
 import * as LucideIcons from 'lucide-react';
 
 interface BlockRendererProps {
@@ -21,6 +22,18 @@ interface BlockRendererProps {
 }
 
 /**
+ * 将 hex 颜色转换为 rgba 格式
+ */
+function hexToRgba(hex: string, alpha: number): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!result) return hex;
+  const r = parseInt(result[1], 16);
+  const g = parseInt(result[2], 16);
+  const b = parseInt(result[3], 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+/**
  * 获取 Lucide 图标组件
  */
 function getLucideIcon(name: string | null): React.ComponentType<{ className?: string }> | null {
@@ -28,7 +41,8 @@ function getLucideIcon(name: string | null): React.ComponentType<{ className?: s
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const icons = LucideIcons as any;
   const Icon = icons[name];
-  if (typeof Icon === 'function') {
+  // React 组件可能是 function 或 object（forwardRef/memo 组件）
+  if (Icon && (typeof Icon === 'function' || typeof Icon === 'object')) {
     return Icon as React.ComponentType<{ className?: string }>;
   }
   return null;
@@ -60,13 +74,80 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
     machine.type
   );
   
+  // Phase 3.0: 获取 Token 解析能力
+  const { resolveToken, resolveTokenVariant, cache: tokenCache, loading: tokenLoading } = useTokens();
+  
   // 使用同步版本作为回退（当 Token 系统未加载完成时）
-  const finalStatusDisplay = statusDisplay || getStatusDisplaySync(machine.status as string);
-  const finalTypeDisplay = typeDisplay || getTypeDisplaySync(machine.type);
+  const fallbackStatusDisplay = statusDisplay || getStatusDisplaySync(machine.status as string);
+  const fallbackTypeDisplay = typeDisplay || getTypeDisplaySync(machine.type);
+  
+  // Phase 3.0: 检查 Block 的 $display 字段并解析 Token
+  const blockDisplay = machine.$display as {
+    color?: string | TokenRef;
+    icon?: string | TokenRef;
+  } | undefined;
+  
+  
+  // 解析 $display 中的 color token
+  let customColor: string | null = null;
+  let customColorBg: string | null = null;
+  let customColorText: string | null = null;
+  if (blockDisplay?.color) {
+    if (isTokenRef(blockDisplay.color)) {
+      const tokenPath = blockDisplay.color.token;
+      customColor = resolveToken(tokenPath);
+      
+      // 检查 token 是否有专门的 bg/text 变体（通过检查 tokenCache）
+      const tokenDef = tokenCache?.index[tokenPath];
+      const hasBgVariant = tokenDef && 'bg' in tokenDef;
+      const hasTextVariant = tokenDef && 'text' in tokenDef;
+      
+      if (hasBgVariant) {
+        customColorBg = resolveTokenVariant(tokenPath, 'bg');
+      } else if (customColor) {
+        // 没有 bg 变体，使用主色生成透明背景
+        customColorBg = hexToRgba(customColor, 0.15);
+      }
+      
+      if (hasTextVariant) {
+        customColorText = resolveTokenVariant(tokenPath, 'text');
+      } else if (customColor) {
+        // 没有 text 变体，使用主色作为文字色
+        customColorText = customColor;
+      }
+    } else if (typeof blockDisplay.color === 'string') {
+      customColor = blockDisplay.color;
+      customColorBg = hexToRgba(blockDisplay.color, 0.15);
+      customColorText = blockDisplay.color;
+    }
+  }
+  
+  // 解析 $display 中的 icon token
+  let customIcon: string | null = null;
+  if (blockDisplay?.icon) {
+    if (isTokenRef(blockDisplay.icon)) {
+      const tokenPath = blockDisplay.icon.token;
+      customIcon = resolveTokenVariant(tokenPath, 'lucide');
+    } else if (typeof blockDisplay.icon === 'string') {
+      customIcon = blockDisplay.icon;
+    }
+  }
+  
+  // 最终显示配置：优先使用 $display，回退到系统默认
+  const finalStatusDisplay = fallbackStatusDisplay;
+  const finalTypeDisplay = {
+    ...fallbackTypeDisplay,
+    // 如果有 $display 自定义，则覆盖默认值
+    ...(customColor && { color: customColor }),
+    ...(customColorBg && { bg: customColorBg }),
+    ...(customColorText && { text: customColorText }),
+    ...(customIcon && { icon: customIcon }),
+  };
   
   // 获取图标组件
   const StatusIcon = getLucideIcon(finalStatusDisplay.icon);
   const TypeIcon = getLucideIcon(finalTypeDisplay.icon);
+  
   
   // 检查字段是否有 pending change
   function getPendingValue(path: string): unknown | undefined {
@@ -91,6 +172,7 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
     backgroundColor: finalTypeDisplay.bg || '#F1F5F9',
     color: finalTypeDisplay.text || '#475569',
   };
+  
   
   const statusStyle = {
     backgroundColor: finalStatusDisplay.bg || '#F1F5F9',

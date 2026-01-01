@@ -113,22 +113,34 @@ router.get('/resolve/:path(*)', async (req: Request, res: Response) => {
     const { path } = req.params;
     const variant = req.query.variant as string | undefined;
     
-    let value: string | null;
-    if (variant) {
-      value = await resolveTokenVariant(path, variant);
-    } else {
-      value = await resolveToken(path);
-    }
+    // 首先获取完整定义
+    const definition = await getTokenDefinition(path);
     
-    if (value === null) {
+    // 如果 token 不存在，返回 404
+    if (!definition) {
       return res.status(404).json({
         success: false,
         error: `Token '${path}' not found`,
       });
     }
     
-    // 同时返回完整定义
-    const definition = await getTokenDefinition(path);
+    // 解析值
+    let value: string | null;
+    if (variant) {
+      value = await resolveTokenVariant(path, variant);
+    } else {
+      // 如果没有 value 字段，尝试获取第一个非 description 的字段
+      value = definition.value || null;
+      if (!value) {
+        // 对于图标等没有 value 的 token，返回第一个有值的字段
+        for (const [key, val] of Object.entries(definition)) {
+          if (key !== 'description' && val) {
+            value = val;
+            break;
+          }
+        }
+      }
+    }
     
     res.json({
       success: true,
