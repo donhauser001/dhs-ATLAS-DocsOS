@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2025-12-31T19:25:40.339Z",
+  "generated_at": "2026-01-01T03:20:36.698Z",
   "documents": [
     {
       "path": "contacts/客户-刘八.md",
@@ -148,7 +148,7 @@
         "category",
         "service"
       ],
-      "modified_at": "2025-12-31T19:25:40.210Z"
+      "modified_at": "2026-01-01T03:20:36.552Z"
     },
     {
       "path": "projects/2025/P-001/项目主文档.md",
@@ -234,6 +234,6 @@
     "total_blocks": 27,
     "total_anchors": 27
   },
-  "repo_head": "4f03eddee7adfe468f87efafd4d1c025f2feddc6",
+  "repo_head": "df4786b52b610b0e0829e00529639ea7efe29cb1",
   "stale": false
 }

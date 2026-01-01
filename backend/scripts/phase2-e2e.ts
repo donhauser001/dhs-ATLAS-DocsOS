@@ -1,5 +1,5 @@
 /**
- * Phase 2 E2E 测试脚本 - 安全场景测试
+ * Phase 2 + 2.1 E2E 测试脚本 - 安全场景测试
  * 
  * Phase 2 核心验收标准：
  * 1. 路径穿透防护（SafePath）
@@ -9,12 +9,17 @@
  * 5. Index 去数据库化
  * 6. 缓存一致性校验
  * 
+ * Phase 2.1 补丁：
+ * 7. Query-service 全面通过 Registry
+ * 8. SafePath realpath 前缀校验
+ * 9. BlocksIndex 增量更新
+ * 
  * 运行方式: npx tsx scripts/phase2-e2e.ts
  */
 
 import { config, ensureDirectories } from '../src/config.js';
 import { rebuildWorkspaceIndex, getWorkspaceIndex } from '../src/services/workspace-service.js';
-import { executeQuery, rebuildBlocksIndex } from '../src/services/query-service.js';
+import { executeQuery, rebuildBlocksIndex, updateBlocksIndexForDocument } from '../src/services/query-service.js';
 import { getUserByUsername, toPublicUser, checkPathPermission } from '../src/services/auth-service.js';
 import { createProposal, deleteProposal } from '../src/adl/proposal-store.js';
 import { validateProposal } from '../src/adl/validator.js';
@@ -389,6 +394,45 @@ async function testIndexMinimization() {
 }
 
 // ============================================================
+// 测试用例：增量索引更新 (Phase 2.1)
+// ============================================================
+
+async function testIncrementalIndexUpdate() {
+  console.log('\n=== 测试增量索引更新 (Phase 2.1) ===');
+  
+  // 重建全量索引
+  const fullIndex = await rebuildBlocksIndex();
+  const initialCount = fullIndex.blocks.length;
+  
+  assert(initialCount > 0, `全量索引包含 ${initialCount} 个条目`);
+  
+  // 增量更新单个文档
+  const testDocPath = 'genesis/服务示例.md';
+  const startTime = Date.now();
+  const incrementalIndex = await updateBlocksIndexForDocument(testDocPath);
+  const incrementalTime = Date.now() - startTime;
+  
+  // 验证增量更新后条目数量正确
+  assert(
+    incrementalIndex.blocks.length >= initialCount - 10, // 允许一些偏差
+    `增量更新后索引条目数量合理: ${incrementalIndex.blocks.length}`
+  );
+  
+  // 验证增量更新比全量快（正常情况下应该快很多）
+  assert(
+    incrementalTime < 1000, // 增量更新应该在 1 秒内完成
+    `增量更新耗时合理: ${incrementalTime}ms`
+  );
+  
+  // 验证被更新文档的条目存在
+  const updatedEntries = incrementalIndex.blocks.filter(b => b.document === testDocPath);
+  assert(
+    updatedEntries.length > 0,
+    `增量更新后文档条目存在: ${updatedEntries.length} 个`
+  );
+}
+
+// ============================================================
 // 测试用例：缓存一致性
 // ============================================================
 
@@ -442,6 +486,7 @@ async function runPhase2E2E() {
     await testExecutorThroughRegistry();
     await testUnsafeProposalRejected();
     await testIndexMinimization();
+    await testIncrementalIndexUpdate(); // Phase 2.1
     await testCacheConsistency();
   } catch (error) {
     console.error('\n[FATAL] 测试过程中发生错误:', error);

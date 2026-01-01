@@ -13,7 +13,7 @@
  * 这不是一个工具类，这是文档宇宙的唯一入口。
  */
 
-import { existsSync, readFileSync, statSync, lstatSync } from 'fs';
+import { existsSync, readFileSync, statSync, lstatSync, realpathSync } from 'fs';
 import { join, relative, resolve, isAbsolute, sep } from 'path';
 import { config } from '../config.js';
 import { parseADL } from '../adl/parser.js';
@@ -45,12 +45,14 @@ export interface SafePathResult {
  * 安全路径解析器
  * 
  * Phase 2 核心：防止路径穿越攻击
+ * Phase 2.1: 增加目录链路 symlink 防护（realpath 前缀校验）
  * 
  * 检查项：
  * 1. 拒绝绝对路径
  * 2. 拒绝路径穿越（..）
  * 3. 验证解析后的路径在 repository 边界内
  * 4. 拒绝软链接（防止逃逸）
+ * 5. Phase 2.1: 使用 realpath 校验整个路径链路
  */
 export function resolveSafePath(relativePath: string): SafePathResult {
   // 1. 拒绝空路径
@@ -73,7 +75,7 @@ export function resolveSafePath(relativePath: string): SafePathResult {
     return { valid: false, resolved: null, relative: null, error: 'URL-encoded path traversal not allowed' };
   }
   
-  // 5. 规范化并验证边界
+  // 5. 规范化并验证边界（初步检查）
   const repoRoot = resolve(config.repositoryRoot);
   const fullPath = resolve(repoRoot, relativePath);
   
@@ -83,19 +85,50 @@ export function resolveSafePath(relativePath: string): SafePathResult {
     return { valid: false, resolved: null, relative: null, error: 'Path outside repository boundary' };
   }
   
-  // 6. 检查是否为软链接（可选的安全强化）
+  // 6. Phase 2.1: 使用 realpath 校验整个路径链路（防止目录层级的 symlink 逃逸）
   if (existsSync(fullPath)) {
     try {
-      const stat = lstatSync(fullPath);
-      if (stat.isSymbolicLink()) {
-        return { valid: false, resolved: null, relative: null, error: 'Symbolic links not allowed' };
+      // 获取 repository 根目录的真实路径
+      const realRepoRoot = realpathSync(repoRoot);
+      // 获取目标文件的真实路径
+      const realFullPath = realpathSync(fullPath);
+      
+      // 检查真实路径是否在 repository 边界内
+      if (!realFullPath.startsWith(realRepoRoot + sep) && realFullPath !== realRepoRoot) {
+        return { 
+          valid: false, 
+          resolved: null, 
+          relative: null, 
+          error: 'Symlink chain escapes repository boundary' 
+        };
       }
-    } catch {
-      // 文件不存在或无法访问，继续
+      
+      // 使用真实路径替换解析路径（确保后续操作使用真实路径）
+      const normalizedRelative = relative(realRepoRoot, realFullPath);
+      
+      // 额外检查：规范化后的相对路径不应以 .. 开头
+      if (normalizedRelative.startsWith('..')) {
+        return { valid: false, resolved: null, relative: null, error: 'Normalized realpath escapes repository' };
+      }
+      
+      return {
+        valid: true,
+        resolved: realFullPath,
+        relative: normalizedRelative,
+      };
+    } catch (err) {
+      // realpath 失败（可能是断链的 symlink）
+      return { 
+        valid: false, 
+        resolved: null, 
+        relative: null, 
+        error: `Failed to resolve real path: ${String(err)}` 
+      };
     }
   }
   
-  // 7. 计算规范化的相对路径
+  // 7. 文件不存在时，仍需验证路径格式
+  // 对于不存在的文件，无法使用 realpath，只做基本检查
   const normalizedRelative = relative(repoRoot, fullPath);
   
   // 8. 额外检查：规范化后的相对路径不应以 .. 开头

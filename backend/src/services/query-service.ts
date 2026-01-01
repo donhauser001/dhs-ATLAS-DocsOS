@@ -2,6 +2,7 @@
  * Query Service - ADL 查询服务
  * 
  * Phase 1: 实现 ADL-Query v1.1
+ * Phase 2.1: 全面通过 Registry 取路径，支持增量更新
  * 
  * 支持的操作符：
  * - $eq: 等于（默认）
@@ -15,7 +16,8 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { config, ensureDirectories } from '../config.js';
 import { getWorkspaceIndex } from './workspace-service.js';
-// Phase 2: 不再需要 MachineBlock，因为索引不存储完整 machine 数据
+// Phase 2.1: 必须通过 Registry 访问文档（范式强制）
+import { getDocument, documentExists } from './workspace-registry.js';
 
 // ============================================================
 // 类型定义
@@ -175,10 +177,53 @@ export async function getBlocksIndex(): Promise<BlocksIndex> {
 }
 
 /**
- * 重建 Blocks 索引
+ * 从文档提取 Block 索引条目
+ * 
+ * Phase 2.1: 抽取为独立函数，支持增量更新
+ */
+function extractBlockEntries(docPath: string): BlockIndexEntry[] {
+  const entries: BlockIndexEntry[] = [];
+  
+  // Phase 2.1: 必须通过 Registry 访问文档（范式强制）
+  const content = getDocument(docPath);
+  if (!content) {
+    return entries;
+  }
+  
+  for (const block of content.document.blocks) {
+    if (block.machine?.type) {
+      // Phase 2: 只提取白名单字段
+      const searchable: SearchableFields = {
+        id: block.machine.id as string | undefined,
+        title: block.machine.title as string | undefined,
+        status: block.machine.status as string | undefined,
+        category: block.machine.category as string | undefined,
+      };
+      
+      entries.push({
+        // 定位信息
+        anchor: block.anchor,
+        document: docPath,
+        // 人类可读摘要
+        heading: block.heading,
+        title: (block.machine.title as string) || block.heading,
+        type: block.machine.type,
+        status: block.machine.status as string | undefined,
+        // 可搜索字段（白名单）
+        searchable,
+      });
+    }
+  }
+  
+  return entries;
+}
+
+/**
+ * 重建 Blocks 索引（全量）
  * 
  * Phase 1.5: 存储文档定位所需的完整信息
  * Phase 2: 去数据库化，只存储最小字段集合
+ * Phase 2.1: 必须通过 Registry 访问文档（消灭 repositoryRoot + path 拼接）
  */
 export async function rebuildBlocksIndex(): Promise<BlocksIndex> {
   ensureDirectories();
@@ -187,47 +232,17 @@ export async function rebuildBlocksIndex(): Promise<BlocksIndex> {
   const wsIndex = await getWorkspaceIndex();
   const blocks: BlockIndexEntry[] = [];
   
-  // 遍历所有文档，解析并提取 Block
-  const { parseADL } = await import('../adl/parser.js');
-  
   for (const doc of wsIndex.documents) {
-    const fullPath = `${config.repositoryRoot}/${doc.path}`;
-    
-    if (!existsSync(fullPath)) {
+    // Phase 2.1: 必须通过 Registry 检查文档存在性（范式强制）
+    if (!documentExists(doc.path)) {
       continue;
     }
     
     try {
-      const content = readFileSync(fullPath, 'utf-8');
-      const adlDoc = parseADL(content, doc.path);
-      
-      for (const block of adlDoc.blocks) {
-        if (block.machine?.type) {
-          // Phase 2: 只提取白名单字段
-          const searchable: SearchableFields = {
-            id: block.machine.id as string | undefined,
-            title: block.machine.title as string | undefined,
-            status: block.machine.status as string | undefined,
-            category: block.machine.category as string | undefined,
-          };
-          
-          blocks.push({
-            // 定位信息
-            anchor: block.anchor,
-            document: doc.path,
-            // 人类可读摘要
-            heading: block.heading,
-            title: (block.machine.title as string) || block.heading,
-            type: block.machine.type,
-            status: block.machine.status as string | undefined,
-            // 可搜索字段（白名单）
-            searchable,
-            // Phase 2: 不再存储 machine 全量数据
-          });
-        }
-      }
+      const entries = extractBlockEntries(doc.path);
+      blocks.push(...entries);
     } catch (error) {
-      console.error(`Failed to index ${doc.path}:`, error);
+      console.error(`[Query] Failed to index ${doc.path}:`, error);
     }
   }
   
@@ -235,6 +250,39 @@ export async function rebuildBlocksIndex(): Promise<BlocksIndex> {
     blocks,
     updated_at: new Date().toISOString(),
   };
+  
+  // 写入缓存
+  writeFileSync(config.blocksIndexPath, JSON.stringify(index, null, 2), 'utf-8');
+  
+  return index;
+}
+
+/**
+ * 增量更新单个文档的 Blocks 索引
+ * 
+ * Phase 2.1: 避免每次 Proposal 执行后全量重建
+ */
+export async function updateBlocksIndexForDocument(docPath: string): Promise<BlocksIndex> {
+  ensureDirectories();
+  
+  // 获取现有索引
+  let index = await getBlocksIndex();
+  
+  // 移除该文档的旧条目
+  index.blocks = index.blocks.filter(b => b.document !== docPath);
+  
+  // Phase 2.1: 通过 Registry 检查文档是否存在
+  if (documentExists(docPath)) {
+    try {
+      const entries = extractBlockEntries(docPath);
+      index.blocks.push(...entries);
+    } catch (error) {
+      console.error(`[Query] Failed to update index for ${docPath}:`, error);
+    }
+  }
+  
+  // 更新时间戳
+  index.updated_at = new Date().toISOString();
   
   // 写入缓存
   writeFileSync(config.blocksIndexPath, JSON.stringify(index, null, 2), 'utf-8');

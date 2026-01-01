@@ -163,5 +163,36 @@ Phase 2 已完成，所有 P0 级安全硬伤已修复：
 4. **Index 去数据库化** - 只存储最小定位信息
 5. **缓存一致性** - 可检测索引是否过期
 
+---
+
+## Phase 2.1 补丁（范式强制执行）
+
+### 缺陷 A 修复：Query-service 全面改为 Registry 取路径
+
+**问题**: `rebuildBlocksIndex()` 直接拼接 `repositoryRoot + path`，绕开了 Registry。
+
+**修复**: 
+- 使用 `documentExists()` 检查文档存在性
+- 使用 `getDocument()` 获取文档内容
+- 新增 `updateBlocksIndexForDocument()` 增量更新函数
+
+### 缺陷 B 修复：SafePath realpath 前缀校验
+
+**问题**: 只检查目标文件是否为 symlink，未检查路径链路中的目录 symlink。
+
+**修复**:
+- 使用 `realpathSync()` 获取真实路径
+- 比较 `realFullPath` 与 `realRepoRoot` 的前缀关系
+- 检测 symlink 链路逃逸攻击
+
+### 缺陷 D 修复：BlocksIndex 增量更新
+
+**问题**: 每次 Proposal 执行后全量重建索引，规模化时会成为性能死穴。
+
+**修复**:
+- 新增 `updateBlocksIndexForDocument(docPath)` 函数
+- Proposal 执行后只更新受影响的文档条目
+- 保留 `rebuildBlocksIndex()` 用于手动全量重建
+
 E2E 测试脚本：`backend/scripts/phase2-e2e.ts`
 

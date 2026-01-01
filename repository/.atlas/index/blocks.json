@@ -131,74 +131,6 @@
       }
     },
     {
-      "anchor": "cat-brand-design",
-      "document": "genesis/服务示例.md",
-      "heading": "品牌设计",
-      "title": "品牌设计1",
-      "type": "category",
-      "status": "draft",
-      "searchable": {
-        "id": "brand-design",
-        "title": "品牌设计1",
-        "status": "draft"
-      }
-    },
-    {
-      "anchor": "cat-digital-product",
-      "document": "genesis/服务示例.md",
-      "heading": "数字产品",
-      "title": "数字产品",
-      "type": "category",
-      "status": "active",
-      "searchable": {
-        "id": "digital-product",
-        "title": "数字产品",
-        "status": "active"
-      }
-    },
-    {
-      "anchor": "svc-S-001",
-      "document": "genesis/服务示例.md",
-      "heading": "S-001 品牌VI设计",
-      "title": "品牌VI设计",
-      "type": "service",
-      "status": "active",
-      "searchable": {
-        "id": "S-001",
-        "title": "品牌VI设计",
-        "status": "active",
-        "category": "cat-brand-design"
-      }
-    },
-    {
-      "anchor": "svc-S-002",
-      "document": "genesis/服务示例.md",
-      "heading": "S-002 产品界面设计",
-      "title": "产品界面设计",
-      "type": "service",
-      "status": "active",
-      "searchable": {
-        "id": "S-002",
-        "title": "产品界面设计",
-        "status": "active",
-        "category": "cat-digital-product"
-      }
-    },
-    {
-      "anchor": "svc-S-003",
-      "document": "genesis/服务示例.md",
-      "heading": "S-003 品牌策略咨询",
-      "title": "品牌策略咨询",
-      "type": "service",
-      "status": "draft",
-      "searchable": {
-        "id": "S-003",
-        "title": "品牌策略咨询",
-        "status": "draft",
-        "category": "cat-brand-design"
-      }
-    },
-    {
       "anchor": "proj-P-001",
       "document": "projects/2025/P-001/项目主文档.md",
       "heading": "星云科技品牌升级项目",
@@ -353,7 +285,75 @@
         "title": "项目验收",
         "status": "draft"
       }
+    },
+    {
+      "anchor": "cat-brand-design",
+      "document": "genesis/服务示例.md",
+      "heading": "品牌设计",
+      "title": "品牌设计1",
+      "type": "category",
+      "status": "active",
+      "searchable": {
+        "id": "brand-design",
+        "title": "品牌设计1",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "cat-digital-product",
+      "document": "genesis/服务示例.md",
+      "heading": "数字产品",
+      "title": "数字产品",
+      "type": "category",
+      "status": "active",
+      "searchable": {
+        "id": "digital-product",
+        "title": "数字产品",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "svc-S-001",
+      "document": "genesis/服务示例.md",
+      "heading": "S-001 品牌VI设计",
+      "title": "品牌VI设计",
+      "type": "service",
+      "status": "active",
+      "searchable": {
+        "id": "S-001",
+        "title": "品牌VI设计",
+        "status": "active",
+        "category": "cat-brand-design"
+      }
+    },
+    {
+      "anchor": "svc-S-002",
+      "document": "genesis/服务示例.md",
+      "heading": "S-002 产品界面设计",
+      "title": "产品界面设计",
+      "type": "service",
+      "status": "active",
+      "searchable": {
+        "id": "S-002",
+        "title": "产品界面设计",
+        "status": "active",
+        "category": "cat-digital-product"
+      }
+    },
+    {
+      "anchor": "svc-S-003",
+      "document": "genesis/服务示例.md",
+      "heading": "S-003 品牌策略咨询",
+      "title": "品牌策略咨询",
+      "type": "service",
+      "status": "draft",
+      "searchable": {
+        "id": "S-003",
+        "title": "品牌策略咨询",
+        "status": "draft",
+        "category": "cat-brand-design"
+      }
     }
   ],
-  "updated_at": "2025-12-31T19:25:40.325Z"
+  "updated_at": "2026-01-01T03:20:36.684Z"
 }

@@ -18,7 +18,8 @@ import {
   listProposals,
 } from '../adl/proposal-store.js';
 import { updateDocumentIndex } from '../services/workspace-service.js';
-import { executeQuery, rebuildBlocksIndex, type Query } from '../services/query-service.js';
+// Phase 2.1: 使用增量更新而非全量重建
+import { executeQuery, updateBlocksIndexForDocument, type Query } from '../services/query-service.js';
 // Phase 1.5: 使用 Registry 作为文档发现的唯一入口
 import { 
   documentExists, 
@@ -260,7 +261,8 @@ router.post('/proposal/:id/execute', requireAuth, requireProposalExecute, async 
     // 如果执行成功，更新 Workspace 索引和 Blocks 索引
     if (result.success) {
       await updateDocumentIndex(proposal.target_file);
-      await rebuildBlocksIndex(); // 重建 Blocks 索引
+      // Phase 2.1: 使用增量更新（只重建单文档）
+      await updateBlocksIndexForDocument(proposal.target_file);
     }
     
     res.json(result);
