@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { fetchDocument, type ADLDocument } from '@/api/adl';
 import { BlockRenderer } from './BlockRenderer';
 import { ProposalPreview } from './ProposalPreview';
@@ -11,29 +12,43 @@ import type { UpdateYamlOp } from '@/api/adl';
 // 默认文档路径
 const DEFAULT_DOC_PATH = 'genesis/服务示例.md';
 
+// 可用文档列表
+const AVAILABLE_DOCS = [
+  { path: 'genesis/服务示例.md', name: '服务示例' },
+  { path: 'genesis/客户管理.md', name: '客户管理' },
+  { path: 'genesis/tokens.md', name: 'Design Tokens' },
+];
+
 type ViewMode = 'read' | 'edit';
 
 export function GenesisPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [doc, setDoc] = useState<ADLDocument | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('read');
-  
+
+  // 从 URL 参数获取当前文档路径
+  const currentDocPath = searchParams.get('doc')
+    ? `genesis/${searchParams.get('doc')}`
+    : DEFAULT_DOC_PATH;
+
   // Pending changes for proposal
   const [pendingChanges, setPendingChanges] = useState<UpdateYamlOp[]>([]);
   const [showProposalPreview, setShowProposalPreview] = useState(false);
-  
+
   // 加载文档
   useEffect(() => {
-    loadDocument();
-  }, []);
-  
-  async function loadDocument() {
+    loadDocument(currentDocPath);
+  }, [currentDocPath]);
+
+  async function loadDocument(docPath: string) {
     setLoading(true);
     setError(null);
-    
+    setPendingChanges([]); // 切换文档时清空 pending changes
+
     try {
-      const document = await fetchDocument(DEFAULT_DOC_PATH);
+      const document = await fetchDocument(docPath);
       setDoc(document);
     } catch (e) {
       setError(String(e));
@@ -41,14 +56,20 @@ export function GenesisPage() {
       setLoading(false);
     }
   }
-  
+
+  // 切换文档
+  function handleDocChange(docPath: string) {
+    const docName = docPath.replace('genesis/', '');
+    setSearchParams({ doc: docName });
+  }
+
   // 处理字段变更
   function handleFieldChange(anchor: string, path: string, value: unknown, oldValue: unknown) {
     // 检查是否已有相同的变更
     const existingIndex = pendingChanges.findIndex(
       c => c.anchor === anchor && c.path === path
     );
-    
+
     if (existingIndex >= 0) {
       // 更新现有变更
       const newChanges = [...pendingChanges];
@@ -59,20 +80,20 @@ export function GenesisPage() {
       setPendingChanges([...pendingChanges, { op: 'update_yaml', anchor, path, value, old_value: oldValue }]);
     }
   }
-  
+
   // 取消所有变更
   function handleCancelChanges() {
     setPendingChanges([]);
     setShowProposalPreview(false);
   }
-  
+
   // Proposal 执行成功后刷新
   function handleProposalExecuted() {
     setPendingChanges([]);
     setShowProposalPreview(false);
-    loadDocument();
+    loadDocument(currentDocPath);
   }
-  
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -80,14 +101,14 @@ export function GenesisPage() {
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-500 mb-4">{error}</div>
-          <button 
-            onClick={loadDocument}
+          <button
+            onClick={() => loadDocument(currentDocPath)}
             className="px-4 py-2 bg-slate-900 text-white rounded-lg"
           >
             重试
@@ -96,46 +117,59 @@ export function GenesisPage() {
       </div>
     );
   }
-  
+
   if (!doc) {
     return null;
   }
-  
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-slate-900">Genesis</h1>
-            <p className="text-sm text-slate-500">{doc.path}</p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-xl font-semibold text-slate-900">Genesis</h1>
+              <p className="text-sm text-slate-500">{doc.path}</p>
+            </div>
+
+            {/* 文档选择器 */}
+            <select
+              value={currentDocPath}
+              onChange={(e) => handleDocChange(e.target.value)}
+              className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              {AVAILABLE_DOCS.map((d) => (
+                <option key={d.path} value={d.path}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
           </div>
-          
+
           <div className="flex items-center gap-4">
             {/* View Mode Toggle */}
             <div className="flex bg-slate-100 rounded-lg p-1">
               <button
                 onClick={() => setViewMode('read')}
-                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                  viewMode === 'read' 
-                    ? 'bg-white text-slate-900 shadow-sm' 
+                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${viewMode === 'read'
+                    ? 'bg-white text-slate-900 shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 阅读
               </button>
               <button
                 onClick={() => setViewMode('edit')}
-                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                  viewMode === 'edit' 
-                    ? 'bg-white text-slate-900 shadow-sm' 
+                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${viewMode === 'edit'
+                    ? 'bg-white text-slate-900 shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 编辑
               </button>
             </div>
-            
+
             {/* Pending Changes */}
             {pendingChanges.length > 0 && (
               <div className="flex items-center gap-2">
@@ -159,7 +193,7 @@ export function GenesisPage() {
           </div>
         </div>
       </header>
-      
+
       {/* Content */}
       <main className="max-w-5xl mx-auto px-6 py-8">
         {/* Frontmatter */}
@@ -176,7 +210,7 @@ export function GenesisPage() {
             </div>
           </div>
         )}
-        
+
         {/* Blocks */}
         <div className="space-y-6">
           {doc.blocks.map((block) => (
@@ -190,7 +224,7 @@ export function GenesisPage() {
           ))}
         </div>
       </main>
-      
+
       {/* Proposal Preview Modal */}
       {showProposalPreview && (
         <ProposalPreview

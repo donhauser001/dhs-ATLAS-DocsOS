@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2026-01-01T11:23:12.945Z",
+  "generated_at": "2026-01-01T12:03:29.328Z",
   "documents": [
     {
       "path": "contacts/客户-刘八.md",
@@ -153,7 +153,32 @@
       "types": [
         "token_group"
       ],
-      "modified_at": "2026-01-01T03:57:40.367Z"
+      "modified_at": "2026-01-01T11:56:44.044Z"
+    },
+    {
+      "path": "genesis/客户管理.md",
+      "title": "出版社",
+      "document_type": "facts",
+      "block_count": 10,
+      "anchors": [
+        "cat-publisher",
+        "cat-media",
+        "contact-wangqiang",
+        "contact-lixiao",
+        "contact-chenjiahe",
+        "client-citic",
+        "client-memestory",
+        "client-seph",
+        "proj-001",
+        "proj-002"
+      ],
+      "types": [
+        "client-category",
+        "contact",
+        "client",
+        "project"
+      ],
+      "modified_at": "2026-01-01T12:02:30.333Z"
     },
     {
       "path": "genesis/服务示例.md",
@@ -171,7 +196,7 @@
         "category",
         "service"
       ],
-      "modified_at": "2026-01-01T03:34:27.372Z"
+      "modified_at": "2026-01-01T11:24:02.218Z"
     },
     {
       "path": "projects/2025/P-001/项目主文档.md",
@@ -234,7 +259,7 @@
     {
       "path": "genesis",
       "name": "genesis",
-      "document_count": 2
+      "document_count": 3
     },
     {
       "path": "projects/2025/P-001",
@@ -253,10 +278,10 @@
     }
   ],
   "stats": {
-    "total_documents": 15,
-    "total_blocks": 38,
-    "total_anchors": 38
+    "total_documents": 16,
+    "total_blocks": 48,
+    "total_anchors": 48
   },
-  "repo_head": "8cb332cbdd0795fc437f8108d71c24dff666721b",
+  "repo_head": "dac9171ddb35bececa6b7020b9f158fe11276d53",
   "stale": false
 }

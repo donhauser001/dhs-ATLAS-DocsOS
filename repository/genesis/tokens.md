@@ -159,6 +159,18 @@ tokens:
   monitor:
     lucide: Monitor
     description: 显示器 - 用于数字产品
+  book:
+    lucide: BookOpen
+    description: 书本 - 用于出版/阅读
+  building:
+    lucide: Building2
+    description: 建筑 - 用于公司/组织
+  users:
+    lucide: Users
+    description: 用户组 - 用于团队/群组
+  briefcase:
+    lucide: Briefcase
+    description: 公文包 - 用于项目/商务
   file:
     lucide: FileText
     description: 文件 - 用于文档
