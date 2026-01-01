@@ -1,0 +1,416 @@
+{
+  "version": "1.0",
+  "updatedAt": "2026-01-01T17:50:11.036Z",
+  "categories": [
+    {
+      "id": "core",
+      "name": "核心字段",
+      "description": "所有文档通用的基础字段",
+      "isSystem": true,
+      "items": [
+        {
+          "key": "id",
+          "label": "标识符",
+          "icon": "fingerprint",
+          "isSystem": true
+        },
+        {
+          "key": "type",
+          "label": "类型",
+          "icon": "layers",
+          "isSystem": true
+        },
+        {
+          "key": "status",
+          "label": "状态",
+          "icon": "activity",
+          "isSystem": true
+        },
+        {
+          "key": "title",
+          "label": "标题",
+          "icon": "heading",
+          "isSystem": true
+        },
+        {
+          "key": "display_name",
+          "label": "显示名称",
+          "icon": "user",
+          "isSystem": true
+        },
+        {
+          "key": "description",
+          "label": "描述",
+          "icon": "align-left",
+          "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "metadata",
+      "name": "文档元数据",
+      "description": "文档的元信息字段",
+      "isSystem": true,
+      "items": [
+        {
+          "key": "version",
+          "label": "版本",
+          "icon": "git-branch",
+          "isSystem": true
+        },
+        {
+          "key": "document_type",
+          "label": "文档类型",
+          "icon": "file-type",
+          "isSystem": true
+        },
+        {
+          "key": "created",
+          "label": "创建时间",
+          "icon": "calendar",
+          "isSystem": true
+        },
+        {
+          "key": "updated",
+          "label": "更新时间",
+          "icon": "calendar-check",
+          "isSystem": true
+        },
+        {
+          "key": "author",
+          "label": "作者",
+          "icon": "user",
+          "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "identity",
+      "name": "身份与联系",
+      "description": "用户身份和联系信息字段",
+      "isSystem": true,
+      "items": [
+        {
+          "key": "identity",
+          "label": "身份信息",
+          "icon": "contact",
+          "isSystem": true
+        },
+        {
+          "key": "emails",
+          "label": "邮箱",
+          "icon": "mail",
+          "isSystem": true
+        },
+        {
+          "key": "phones",
+          "label": "电话",
+          "icon": "phone",
+          "isSystem": true
+        },
+        {
+          "key": "avatar",
+          "label": "头像",
+          "icon": "image",
+          "isSystem": true
+        },
+        {
+          "key": "contact",
+          "label": "联系人",
+          "icon": "user",
+          "isSystem": true
+        },
+        {
+          "key": "contact_email",
+          "label": "联系邮箱",
+          "icon": "mail",
+          "isSystem": true
+        },
+        {
+          "key": "contact_phone",
+          "label": "联系电话",
+          "icon": "phone",
+          "isSystem": true
+        },
+        {
+          "key": "address",
+          "label": "地址",
+          "icon": "map-pin",
+          "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "organization",
+      "name": "组织与角色",
+      "description": "组织结构相关字段",
+      "isSystem": true,
+      "items": [
+        {
+          "key": "company",
+          "label": "公司",
+          "icon": "building",
+          "isSystem": true
+        },
+        {
+          "key": "department",
+          "label": "部门",
+          "icon": "users",
+          "isSystem": true
+        },
+        {
+          "key": "position",
+          "label": "职位",
+          "icon": "briefcase",
+          "isSystem": true
+        },
+        {
+          "key": "role",
+          "label": "角色",
+          "icon": "shield",
+          "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "project",
+      "name": "项目相关",
+      "description": "项目管理相关字段",
+      "isSystem": true,
+      "items": [
+        {
+          "key": "project_name",
+          "label": "项目名称",
+          "icon": "folder",
+          "isSystem": true
+        },
+        {
+          "key": "project_id",
+          "label": "项目编号",
+          "icon": "hash",
+          "isSystem": true
+        },
+        {
+          "key": "client",
+          "label": "客户",
+          "icon": "building",
+          "isSystem": true
+        },
+        {
+          "key": "client_name",
+          "label": "客户名称",
+          "icon": "building",
+          "isSystem": true
+        },
+        {
+          "key": "contract_value",
+          "label": "合同金额",
+          "icon": "dollar-sign",
+          "isSystem": true
+        },
+        {
+          "key": "start_date",
+          "label": "开始日期",
+          "icon": "calendar",
+          "isSystem": true
+        },
+        {
+          "key": "end_date",
+          "label": "结束日期",
+          "icon": "calendar",
+          "isSystem": true
+        },
+        {
+          "key": "deadline",
+          "label": "截止日期",
+          "icon": "clock",
+          "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "business",
+      "name": "业务字段",
+      "description": "通用业务字段",
+      "isSystem": true,
+      "items": [
+        {
+          "key": "price",
+          "label": "价格",
+          "icon": "dollar-sign",
+          "isSystem": true
+        },
+        {
+          "key": "quantity",
+          "label": "数量",
+          "icon": "hash",
+          "isSystem": true
+        },
+        {
+          "key": "unit",
+          "label": "单位",
+          "icon": "ruler",
+          "isSystem": true
+        },
+        {
+          "key": "notes",
+          "label": "备注",
+          "icon": "message-square",
+          "isSystem": true
+        },
+        {
+          "key": "tags",
+          "label": "标签",
+          "icon": "tag",
+          "isSystem": true
+        },
+        {
+          "key": "category",
+          "label": "分类",
+          "icon": "folder-tree",
+          "isSystem": true
+        },
+        {
+          "key": "priority",
+          "label": "优先级",
+          "icon": "flag",
+          "isSystem": true
+        },
+        {
+          "key": "progress",
+          "label": "进度",
+          "icon": "percent",
+          "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "relations",
+      "name": "关联字段",
+      "description": "文档间关联字段",
+      "isSystem": true,
+      "items": [
+        {
+          "key": "ref",
+          "label": "引用",
+          "icon": "link",
+          "isSystem": true
+        },
+        {
+          "key": "profiles",
+          "label": "关联档案",
+          "icon": "folder-open",
+          "isSystem": true
+        },
+        {
+          "key": "related_projects",
+          "label": "相关项目",
+          "icon": "link-2",
+          "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "atlas_functions",
+      "name": "ATLAS 功能类型",
+      "description": "文档的功能声明类型",
+      "isSystem": true,
+      "items": [
+        {
+          "key": "principal",
+          "label": "登录主体",
+          "icon": "user-circle",
+          "isSystem": true
+        },
+        {
+          "key": "entity_list",
+          "label": "实体列表",
+          "icon": "list",
+          "isSystem": true
+        },
+        {
+          "key": "entity_detail",
+          "label": "实体详情",
+          "icon": "file-text",
+          "isSystem": true
+        },
+        {
+          "key": "config",
+          "label": "系统配置",
+          "icon": "settings",
+          "isSystem": true
+        },
+        {
+          "key": "registry",
+          "label": "注册表",
+          "icon": "database",
+          "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "statuses",
+      "name": "状态值",
+      "description": "常用状态枚举值",
+      "isSystem": true,
+      "items": [
+        {
+          "key": "active",
+          "label": "活跃",
+          "icon": "check-circle",
+          "color": "green",
+          "isSystem": true
+        },
+        {
+          "key": "draft",
+          "label": "草稿",
+          "icon": "edit",
+          "color": "yellow",
+          "isSystem": true
+        },
+        {
+          "key": "archived",
+          "label": "已归档",
+          "icon": "archive",
+          "color": "gray",
+          "isSystem": true
+        },
+        {
+          "key": "suspended",
+          "label": "已暂停",
+          "icon": "pause-circle",
+          "color": "red",
+          "isSystem": true
+        },
+        {
+          "key": "in_progress",
+          "label": "进行中",
+          "icon": "play-circle",
+          "color": "blue",
+          "isSystem": true
+        },
+        {
+          "key": "completed",
+          "label": "已完成",
+          "icon": "check-circle",
+          "color": "green",
+          "isSystem": true
+        },
+        {
+          "key": "pending",
+          "label": "待处理",
+          "icon": "clock",
+          "color": "yellow",
+          "isSystem": true
+        }
+      ]
+    }
+  ],
+  "hiddenFields": [
+    "password_hash",
+    "auth",
+    "oauth",
+    "secret",
+    "token"
+  ]
+}

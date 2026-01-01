@@ -3,7 +3,7 @@
     {
       "id": "user-admin",
       "username": "admin",
-      "password_hash": "$2b$10$DjfzRZb6sw3q4uYb6sea7OtSx3k49rhEOZayJC7ZBkhz2wL/FKO0W",
+      "password_hash": "$2b$10$GB/D2LEsNIfXsUZYwMy0cOpEpeONP3wd/7iTA/u8mlkFOKgUybZBq",
       "role": "admin",
       "name": "系统管理员",
       "permissions": {
@@ -17,7 +17,7 @@
     {
       "id": "user-staff-001",
       "username": "designer",
-      "password_hash": "$2b$10$HbrcesTALnvIU/hE72PJ/.4wwCVRqeTiFePurexpvv6t7liH0Yen.",
+      "password_hash": "$2b$10$SNVgW.lliqLHOKmV9w4n2OXijMGSrlRcIscuae6m3bgt1QpVqQ91.",
       "role": "staff",
       "name": "设计师小王",
       "permissions": {
@@ -31,7 +31,7 @@
     {
       "id": "user-client-001",
       "username": "client-zhang",
-      "password_hash": "$2b$10$AAeR2Mfeb.PmcYJ0nGLYmeNCmQPIGV.0kiIJwqlu98cXfO4/M.xme",
+      "password_hash": "$2b$10$ZIO6b8UmFxqXG3T7h8ISwuccDBS3m5lGaTxivOUS.GQwcRZskQICC",
       "role": "client",
       "name": "张总",
       "client_id": "contact-zhang-san",

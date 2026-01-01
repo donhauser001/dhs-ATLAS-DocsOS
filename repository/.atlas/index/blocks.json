@@ -1,136 +1,6 @@
 {
   "blocks": [
     {
-      "anchor": "contact-liu-ba",
-      "document": "contacts/客户-刘八.md",
-      "heading": "刘八",
-      "title": "刘八",
-      "type": "contact",
-      "status": "active",
-      "searchable": {
-        "id": "liu-ba",
-        "title": "刘八",
-        "status": "active"
-      }
-    },
-    {
-      "anchor": "contact-wu-yi",
-      "document": "contacts/客户-吴一.md",
-      "heading": "吴一",
-      "title": "吴一",
-      "type": "contact",
-      "status": "active",
-      "searchable": {
-        "id": "wu-yi",
-        "title": "吴一",
-        "status": "active"
-      }
-    },
-    {
-      "anchor": "contact-zhou-shi",
-      "document": "contacts/客户-周十.md",
-      "heading": "周十",
-      "title": "周十",
-      "type": "contact",
-      "status": "active",
-      "searchable": {
-        "id": "zhou-shi",
-        "title": "周十",
-        "status": "active"
-      }
-    },
-    {
-      "anchor": "contact-sun-jiu",
-      "document": "contacts/客户-孙九.md",
-      "heading": "孙九",
-      "title": "孙九",
-      "type": "contact",
-      "status": "active",
-      "searchable": {
-        "id": "sun-jiu",
-        "title": "孙九",
-        "status": "active"
-      }
-    },
-    {
-      "anchor": "contact-zhang-san",
-      "document": "contacts/客户-张三.md",
-      "heading": "张三",
-      "title": "张三",
-      "type": "contact",
-      "status": "active",
-      "searchable": {
-        "id": "zhang-san",
-        "title": "张三",
-        "status": "active"
-      }
-    },
-    {
-      "anchor": "contact-li-si",
-      "document": "contacts/客户-李四.md",
-      "heading": "李四",
-      "title": "李四",
-      "type": "contact",
-      "status": "active",
-      "searchable": {
-        "id": "li-si",
-        "title": "李四",
-        "status": "active"
-      }
-    },
-    {
-      "anchor": "contact-wang-wu",
-      "document": "contacts/客户-王五.md",
-      "heading": "王五",
-      "title": "王五",
-      "type": "contact",
-      "status": "active",
-      "searchable": {
-        "id": "wang-wu",
-        "title": "王五",
-        "status": "active"
-      }
-    },
-    {
-      "anchor": "contact-zhao-liu",
-      "document": "contacts/客户-赵六.md",
-      "heading": "赵六",
-      "title": "赵六",
-      "type": "contact",
-      "status": "active",
-      "searchable": {
-        "id": "zhao-liu",
-        "title": "赵六",
-        "status": "active"
-      }
-    },
-    {
-      "anchor": "contact-zheng-er",
-      "document": "contacts/客户-郑二.md",
-      "heading": "郑二",
-      "title": "郑二",
-      "type": "contact",
-      "status": "active",
-      "searchable": {
-        "id": "zheng-er",
-        "title": "郑二",
-        "status": "active"
-      }
-    },
-    {
-      "anchor": "contact-chen-qi",
-      "document": "contacts/客户-陈七.md",
-      "heading": "陈七",
-      "title": "陈七",
-      "type": "contact",
-      "status": "active",
-      "searchable": {
-        "id": "chen-qi",
-        "title": "陈七",
-        "status": "active"
-      }
-    },
-    {
       "anchor": "color-brand",
       "document": "genesis/tokens.md",
       "heading": "品牌色",
@@ -205,6 +75,58 @@
       "searchable": {
         "id": "icon.type",
         "title": "类型图标",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "spacing-base",
+      "document": "genesis/tokens.md",
+      "heading": "基础间距",
+      "title": "间距系统",
+      "type": "token_group",
+      "status": "active",
+      "searchable": {
+        "id": "spacing",
+        "title": "间距系统",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "ui-block",
+      "document": "genesis/tokens.md",
+      "heading": "Block 显现角色",
+      "title": "Block 显现角色",
+      "type": "token_group",
+      "status": "active",
+      "searchable": {
+        "id": "ui.block",
+        "title": "Block 显现角色",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "ui-field",
+      "document": "genesis/tokens.md",
+      "heading": "字段显现角色",
+      "title": "字段显现角色",
+      "type": "token_group",
+      "status": "active",
+      "searchable": {
+        "id": "ui.field",
+        "title": "字段显现角色",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "ui-nav",
+      "document": "genesis/tokens.md",
+      "heading": "导航显现角色",
+      "title": "导航显现角色",
+      "type": "token_group",
+      "status": "active",
+      "searchable": {
+        "id": "ui.nav",
+        "title": "导航显现角色",
         "status": "active"
       }
     },
@@ -365,79 +287,1484 @@
       }
     },
     {
-      "anchor": "cat-brand-design",
-      "document": "genesis/服务示例.md",
-      "heading": "品牌设计",
-      "title": "品牌设计",
-      "type": "category",
+      "anchor": "reg-profile-types",
+      "document": "system/profile-types.md",
+      "heading": "Profile 类型注册表",
+      "title": "Profile 类型注册表",
+      "type": "registry",
       "status": "active",
       "searchable": {
-        "id": "brand-design",
-        "title": "品牌设计",
+        "id": "profile-type-registry",
+        "title": "Profile 类型注册表",
         "status": "active"
       }
     },
     {
-      "anchor": "cat-digital-product",
-      "document": "genesis/服务示例.md",
-      "heading": "数字产品",
-      "title": "数字产品",
-      "type": "category",
+      "anchor": "profile-type-employee",
+      "document": "system/profile-types.md",
+      "heading": "员工档案类型定义",
+      "title": "员工档案类型",
+      "type": "type_definition",
       "status": "active",
       "searchable": {
-        "id": "digital-product",
-        "title": "数字产品",
+        "id": "profile-type-employee",
+        "title": "员工档案类型",
         "status": "active"
       }
     },
     {
-      "anchor": "svc-S-001",
-      "document": "genesis/服务示例.md",
-      "heading": "S-001 品牌VI设计",
-      "title": "品牌VI设计",
-      "type": "service",
+      "anchor": "profile-type-client-contact",
+      "document": "system/profile-types.md",
+      "heading": "客户联系人档案类型定义",
+      "title": "客户联系人档案类型",
+      "type": "type_definition",
       "status": "active",
       "searchable": {
-        "id": "S-001",
-        "title": "品牌VI设计",
-        "status": "active",
-        "category": {
-          "ref": "#cat-brand-design"
-        }
+        "id": "profile-type-client-contact",
+        "title": "客户联系人档案类型",
+        "status": "active"
       }
     },
     {
-      "anchor": "svc-S-002",
-      "document": "genesis/服务示例.md",
-      "heading": "S-002 产品界面设计",
-      "title": "产品界面设计",
-      "type": "service",
+      "anchor": "client-zhongxin",
+      "document": "客户管理.md",
+      "heading": "中信出版社",
+      "title": "中信出版社",
+      "type": "client",
       "status": "active",
       "searchable": {
-        "id": "S-002",
-        "title": "产品界面设计",
+        "id": "client-zhongxin",
+        "title": "中信出版社",
         "status": "active",
-        "category": {
-          "ref": "#cat-digital-product"
-        }
+        "category": "北京出版社"
       }
     },
     {
-      "anchor": "svc-S-003",
-      "document": "genesis/服务示例.md",
-      "heading": "S-003 品牌策略咨询",
-      "title": "品牌策略咨询",
-      "type": "service",
-      "status": "draft",
+      "anchor": "client-beijing-press",
+      "document": "客户管理.md",
+      "heading": "北京出版社",
+      "title": "北京出版社",
+      "type": "client",
+      "status": "active",
       "searchable": {
-        "id": "S-003",
-        "title": "品牌策略咨询",
-        "status": "draft",
-        "category": {
-          "ref": "#cat-brand-design"
-        }
+        "id": "client-beijing-press",
+        "title": "北京出版社",
+        "status": "active",
+        "category": "北京出版社"
+      }
+    },
+    {
+      "anchor": "client-youth-press",
+      "document": "客户管理.md",
+      "heading": "中国青年出版总社",
+      "title": "中国青年出版总社",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-youth-press",
+        "title": "中国青年出版总社",
+        "status": "active",
+        "category": "北京出版社"
+      }
+    },
+    {
+      "anchor": "client-century",
+      "document": "客户管理.md",
+      "heading": "上海世纪出版股份有限公司",
+      "title": "上海世纪出版股份有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-century",
+        "title": "上海世纪出版股份有限公司",
+        "status": "active",
+        "category": "北京出版社"
+      }
+    },
+    {
+      "anchor": "client-science-press",
+      "document": "客户管理.md",
+      "heading": "中国科学技术出版社",
+      "title": "中国科学技术出版社",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-science-press",
+        "title": "中国科学技术出版社",
+        "status": "active",
+        "category": "北京出版社"
+      }
+    },
+    {
+      "anchor": "client-shuangluoxuan",
+      "document": "客户管理.md",
+      "heading": "北京双螺旋文化交流有限公司",
+      "title": "北京双螺旋文化交流有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-shuangluoxuan",
+        "title": "北京双螺旋文化交流有限公司",
+        "status": "active",
+        "category": "北京书商"
+      }
+    },
+    {
+      "anchor": "client-shulang",
+      "document": "客户管理.md",
+      "heading": "北京书琅文化有限公司",
+      "title": "北京书琅文化有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-shulang",
+        "title": "北京书琅文化有限公司",
+        "status": "active",
+        "category": "北京书商"
+      }
+    },
+    {
+      "anchor": "client-motie",
+      "document": "客户管理.md",
+      "heading": "磨铁文化",
+      "title": "磨铁文化",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-motie",
+        "title": "磨铁文化",
+        "status": "active",
+        "category": "北京书商"
+      }
+    },
+    {
+      "anchor": "client-hunan-arts",
+      "document": "客户管理.md",
+      "heading": "湖南文艺出版社",
+      "title": "湖南文艺出版社",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-hunan-arts",
+        "title": "湖南文艺出版社",
+        "status": "active",
+        "category": "外地出版社"
+      }
+    },
+    {
+      "anchor": "client-zhejiang-arts",
+      "document": "客户管理.md",
+      "heading": "浙江文艺出版社",
+      "title": "浙江文艺出版社",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-zhejiang-arts",
+        "title": "浙江文艺出版社",
+        "status": "active",
+        "category": "外地出版社"
+      }
+    },
+    {
+      "anchor": "client-guangzhou",
+      "document": "客户管理.md",
+      "heading": "广州出版社",
+      "title": "广州出版社",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-guangzhou",
+        "title": "广州出版社",
+        "status": "active",
+        "category": "外地出版社"
+      }
+    },
+    {
+      "anchor": "client-shenzhen-haipai",
+      "document": "客户管理.md",
+      "heading": "深圳市中资海派文化传播有限公司",
+      "title": "深圳市中资海派文化传播有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-shenzhen-haipai",
+        "title": "深圳市中资海派文化传播有限公司",
+        "status": "active",
+        "category": "外地出版社"
+      }
+    },
+    {
+      "anchor": "client-jingsirui",
+      "document": "客户管理.md",
+      "heading": "杭州静思睿企业服务有限公司",
+      "title": "杭州静思睿企业服务有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-jingsirui",
+        "title": "杭州静思睿企业服务有限公司",
+        "status": "active",
+        "category": "外地书商"
+      }
+    },
+    {
+      "anchor": "client-ptpress",
+      "document": "客户管理.md",
+      "heading": "人民邮电出版社",
+      "title": "人民邮电出版社",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-ptpress",
+        "title": "人民邮电出版社",
+        "status": "active",
+        "category": "分类0"
+      }
+    },
+    {
+      "anchor": "client-guangchen",
+      "document": "客户管理.md",
+      "heading": "北京光尘文化传播有限公司",
+      "title": "北京光尘文化传播有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-guangchen",
+        "title": "北京光尘文化传播有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-tianxi",
+      "document": "客户管理.md",
+      "heading": "天津天喜中大文化发展有限公司",
+      "title": "天津天喜中大文化发展有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-tianxi",
+        "title": "天津天喜中大文化发展有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-rentian",
+      "document": "客户管理.md",
+      "heading": "人天兀鲁思",
+      "title": "人天兀鲁思",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-rentian",
+        "title": "人天兀鲁思",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-xinzhao",
+      "document": "客户管理.md",
+      "heading": "宁波市新兆印业有限公司",
+      "title": "宁波市新兆印业有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-xinzhao",
+        "title": "宁波市新兆印业有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-youze",
+      "document": "客户管理.md",
+      "heading": "开平市优泽种养有限公司",
+      "title": "开平市优泽种养有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-youze",
+        "title": "开平市优泽种养有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-zige",
+      "document": "客户管理.md",
+      "heading": "自个",
+      "title": "自个",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-zige",
+        "title": "自个",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-qingdou",
+      "document": "客户管理.md",
+      "heading": "青豆书坊",
+      "title": "青豆书坊",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-qingdou",
+        "title": "青豆书坊",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-yuedumingpin",
+      "document": "客户管理.md",
+      "heading": "悦读名品文化传媒有限公司",
+      "title": "悦读名品文化传媒有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-yuedumingpin",
+        "title": "悦读名品文化传媒有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-ziyunwenxin",
+      "document": "客户管理.md",
+      "heading": "北京紫云文心图书有限公司",
+      "title": "北京紫云文心图书有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-ziyunwenxin",
+        "title": "北京紫云文心图书有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-zhejiang-people",
+      "document": "客户管理.md",
+      "heading": "浙江人民出版社",
+      "title": "浙江人民出版社",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-zhejiang-people",
+        "title": "浙江人民出版社",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-yuelu",
+      "document": "客户管理.md",
+      "heading": "岳麓书社",
+      "title": "岳麓书社",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-yuelu",
+        "title": "岳麓书社",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-jiangbo",
+      "document": "客户管理.md",
+      "heading": "新疆江博泓鑫投资有限公司",
+      "title": "新疆江博泓鑫投资有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-jiangbo",
+        "title": "新疆江博泓鑫投资有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-babel",
+      "document": "客户管理.md",
+      "heading": "东方巴别塔文化传媒有限公司",
+      "title": "东方巴别塔文化传媒有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-babel",
+        "title": "东方巴别塔文化传媒有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-guangdong-people",
+      "document": "客户管理.md",
+      "heading": "广东人民出版社",
+      "title": "广东人民出版社",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-guangdong-people",
+        "title": "广东人民出版社",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-yixinzhicheng",
+      "document": "客户管理.md",
+      "heading": "武汉一心至诚文化传播有限公司",
+      "title": "武汉一心至诚文化传播有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-yixinzhicheng",
+        "title": "武汉一心至诚文化传播有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-tuanjie",
+      "document": "客户管理.md",
+      "heading": "团结出版社有限公司",
+      "title": "团结出版社有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-tuanjie",
+        "title": "团结出版社有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-tianyi",
+      "document": "客户管理.md",
+      "heading": "河南天一文化传播股份有限公司",
+      "title": "河南天一文化传播股份有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-tianyi",
+        "title": "河南天一文化传播股份有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-zhongyi",
+      "document": "客户管理.md",
+      "heading": "中译出版社",
+      "title": "中译出版社",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-zhongyi",
+        "title": "中译出版社",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-baimashiguang",
+      "document": "客户管理.md",
+      "heading": "北京白马时光文化发展有限公司",
+      "title": "北京白马时光文化发展有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-baimashiguang",
+        "title": "北京白马时光文化发展有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-shengyuan",
+      "document": "客户管理.md",
+      "heading": "盛元文溯传媒有限公司",
+      "title": "盛元文溯传媒有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-shengyuan",
+        "title": "盛元文溯传媒有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-xiangtan",
+      "document": "客户管理.md",
+      "heading": "湘潭大学出版社",
+      "title": "湘潭大学出版社",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-xiangtan",
+        "title": "湘潭大学出版社",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-lingtouyang",
+      "document": "客户管理.md",
+      "heading": "西安领头羊文化传播有限责任公司",
+      "title": "西安领头羊文化传播有限责任公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-lingtouyang",
+        "title": "西安领头羊文化传播有限责任公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-zishi",
+      "document": "客户管理.md",
+      "heading": "紫石文化传媒有限公司",
+      "title": "紫石文化传媒有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-zishi",
+        "title": "紫石文化传媒有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-yourongshubang",
+      "document": "客户管理.md",
+      "heading": "北京有容书邦文化传媒有限公司",
+      "title": "北京有容书邦文化传媒有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-yourongshubang",
+        "title": "北京有容书邦文化传媒有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-renmin-university",
+      "document": "客户管理.md",
+      "heading": "中国人民大学出版社",
+      "title": "中国人民大学出版社",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-renmin-university",
+        "title": "中国人民大学出版社",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-huyang",
+      "document": "客户管理.md",
+      "heading": "北京胡杨文化传播有限公司",
+      "title": "北京胡杨文化传播有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-huyang",
+        "title": "北京胡杨文化传播有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-guotuboya",
+      "document": "客户管理.md",
+      "heading": "北京国图博雅文化发展有限责任公司",
+      "title": "北京国图博雅文化发展有限责任公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-guotuboya",
+        "title": "北京国图博雅文化发展有限责任公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-lubai",
+      "document": "客户管理.md",
+      "heading": "簏柏文化传媒有限公司",
+      "title": "簏柏文化传媒有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-lubai",
+        "title": "簏柏文化传媒有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-hebei-shulang",
+      "document": "客户管理.md",
+      "heading": "河北书琅文化传播有限公司",
+      "title": "河北书琅文化传播有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-hebei-shulang",
+        "title": "河北书琅文化传播有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-memestory",
+      "document": "客户管理.md",
+      "heading": "北京模因故事文化传媒有限公司",
+      "title": "北京模因故事文化传媒有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-memestory",
+        "title": "北京模因故事文化传媒有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-lezhidu",
+      "document": "客户管理.md",
+      "heading": "北京乐之读图书有限公司",
+      "title": "北京乐之读图书有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-lezhidu",
+        "title": "北京乐之读图书有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-paitang",
+      "document": "客户管理.md",
+      "heading": "长春派糖文化传媒有限公司",
+      "title": "长春派糖文化传媒有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-paitang",
+        "title": "长春派糖文化传媒有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-napa",
+      "document": "客户管理.md",
+      "heading": "国家行政学院出版社",
+      "title": "国家行政学院出版社",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-napa",
+        "title": "国家行政学院出版社",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-zhonghehengrun",
+      "document": "客户管理.md",
+      "heading": "北京中和恒润文化产业发展有限公司",
+      "title": "北京中和恒润文化产业发展有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-zhonghehengrun",
+        "title": "北京中和恒润文化产业发展有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-dongfang",
+      "document": "客户管理.md",
+      "heading": "人民东方出版传媒有限公司",
+      "title": "人民东方出版传媒有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-dongfang",
+        "title": "人民东方出版传媒有限公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-cdgdc",
+      "document": "客户管理.md",
+      "heading": "教育部学位与研究生教育发展中心",
+      "title": "教育部学位与研究生教育发展中心",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-cdgdc",
+        "title": "教育部学位与研究生教育发展中心",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-steinway",
+      "document": "客户管理.md",
+      "heading": "北京斯坦威图书有限责任公司",
+      "title": "北京斯坦威图书有限责任公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-steinway",
+        "title": "北京斯坦威图书有限责任公司",
+        "status": "active",
+        "category": "分类1"
+      }
+    },
+    {
+      "anchor": "client-jiangxi-edu",
+      "document": "客户管理.md",
+      "heading": "江西教育出版社",
+      "title": "江西教育出版社",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-jiangxi-edu",
+        "title": "江西教育出版社",
+        "status": "active",
+        "category": "分类2"
+      }
+    },
+    {
+      "anchor": "client-pku-shanghai",
+      "document": "客户管理.md",
+      "heading": "北京大学出版社上海分社",
+      "title": "北京大学出版社上海分社",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-pku-shanghai",
+        "title": "北京大学出版社上海分社",
+        "status": "active",
+        "category": "分类2"
+      }
+    },
+    {
+      "anchor": "client-daoshan",
+      "document": "客户管理.md",
+      "heading": "道善文化传媒有限公司",
+      "title": "道善文化传媒有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-daoshan",
+        "title": "道善文化传媒有限公司",
+        "status": "active",
+        "category": "分类3"
+      }
+    },
+    {
+      "anchor": "client-zhuowentianyu",
+      "document": "客户管理.md",
+      "heading": "北京卓文天语文化有限公司",
+      "title": "北京卓文天语文化有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-zhuowentianyu",
+        "title": "北京卓文天语文化有限公司",
+        "status": "active",
+        "category": "分类3"
+      }
+    },
+    {
+      "anchor": "client-shidaihuayu",
+      "document": "客户管理.md",
+      "heading": "北京时代华语国际传媒股份有限公司",
+      "title": "北京时代华语国际传媒股份有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-shidaihuayu",
+        "title": "北京时代华语国际传媒股份有限公司",
+        "status": "active",
+        "category": "分类3"
+      }
+    },
+    {
+      "anchor": "client-xinyitianxia",
+      "document": "客户管理.md",
+      "heading": "北京信谊天下文化发展有限公司",
+      "title": "北京信谊天下文化发展有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-xinyitianxia",
+        "title": "北京信谊天下文化发展有限公司",
+        "status": "active",
+        "category": "分类3"
+      }
+    },
+    {
+      "anchor": "client-zifan",
+      "document": "客户管理.md",
+      "heading": "北京紫帆文化传媒有限公司",
+      "title": "北京紫帆文化传媒有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-zifan",
+        "title": "北京紫帆文化传媒有限公司",
+        "status": "active",
+        "category": "分类3"
+      }
+    },
+    {
+      "anchor": "client-aimi",
+      "document": "客户管理.md",
+      "heading": "北京爱米成长教育科技有限公司",
+      "title": "北京爱米成长教育科技有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-aimi",
+        "title": "北京爱米成长教育科技有限公司",
+        "status": "active",
+        "category": "分类3"
+      }
+    },
+    {
+      "anchor": "client-kuaishou",
+      "document": "客户管理.md",
+      "heading": "北京快手科技有限公司",
+      "title": "北京快手科技有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-kuaishou",
+        "title": "北京快手科技有限公司",
+        "status": "active",
+        "category": "分类3"
+      }
+    },
+    {
+      "anchor": "client-qianweiwen",
+      "document": "客户管理.md",
+      "heading": "千蔚文文化传媒有限公司",
+      "title": "千蔚文文化传媒有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-qianweiwen",
+        "title": "千蔚文文化传媒有限公司",
+        "status": "active",
+        "category": "分类3"
+      }
+    },
+    {
+      "anchor": "client-xingshengle",
+      "document": "客户管理.md",
+      "heading": "北京兴盛乐书刊发行有限责任公司",
+      "title": "北京兴盛乐书刊发行有限责任公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-xingshengle",
+        "title": "北京兴盛乐书刊发行有限责任公司",
+        "status": "active",
+        "category": "分类4"
+      }
+    },
+    {
+      "anchor": "client-chongqing",
+      "document": "客户管理.md",
+      "heading": "重庆出版社",
+      "title": "重庆出版社",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-chongqing",
+        "title": "重庆出版社",
+        "status": "active",
+        "category": "分类4"
+      }
+    },
+    {
+      "anchor": "client-xinshijie",
+      "document": "客户管理.md",
+      "heading": "新世界出版社有限责任公司",
+      "title": "新世界出版社有限责任公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-xinshijie",
+        "title": "新世界出版社有限责任公司",
+        "status": "active",
+        "category": "分类6"
+      }
+    },
+    {
+      "anchor": "client-zhuanzhuan",
+      "document": "客户管理.md",
+      "heading": "转转循环科技有限公司",
+      "title": "转转循环科技有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-zhuanzhuan",
+        "title": "转转循环科技有限公司",
+        "status": "active",
+        "category": "散户"
+      }
+    },
+    {
+      "anchor": "client-xingyun",
+      "document": "客户管理.md",
+      "heading": "星云科技有限公司",
+      "title": "星云科技有限公司",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-xingyun",
+        "title": "星云科技有限公司",
+        "status": "active",
+        "category": "其他客户"
+      }
+    },
+    {
+      "anchor": "client-lanhai",
+      "document": "客户管理.md",
+      "heading": "蓝海集团",
+      "title": "蓝海集团",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-lanhai",
+        "title": "蓝海集团",
+        "status": "active",
+        "category": "其他客户"
+      }
+    },
+    {
+      "anchor": "client-yunfeng",
+      "document": "客户管理.md",
+      "heading": "云峰控股",
+      "title": "云峰控股",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-yunfeng",
+        "title": "云峰控股",
+        "status": "active",
+        "category": "其他客户"
+      }
+    },
+    {
+      "anchor": "client-mingri",
+      "document": "客户管理.md",
+      "heading": "明日科技",
+      "title": "明日科技",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-mingri",
+        "title": "明日科技",
+        "status": "active",
+        "category": "其他客户"
+      }
+    },
+    {
+      "anchor": "client-huachuang",
+      "document": "客户管理.md",
+      "heading": "华创投资",
+      "title": "华创投资",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-huachuang",
+        "title": "华创投资",
+        "status": "active",
+        "category": "其他客户"
+      }
+    },
+    {
+      "anchor": "client-shengshi",
+      "document": "客户管理.md",
+      "heading": "盛世传媒",
+      "title": "盛世传媒",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-shengshi",
+        "title": "盛世传媒",
+        "status": "active",
+        "category": "其他客户"
+      }
+    },
+    {
+      "anchor": "client-yuanhang",
+      "document": "客户管理.md",
+      "heading": "远航物流",
+      "title": "远航物流",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-yuanhang",
+        "title": "远航物流",
+        "status": "active",
+        "category": "其他客户"
+      }
+    },
+    {
+      "anchor": "client-jinding",
+      "document": "客户管理.md",
+      "heading": "金鼎地产",
+      "title": "金鼎地产",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-jinding",
+        "title": "金鼎地产",
+        "status": "active",
+        "category": "其他客户"
+      }
+    },
+    {
+      "anchor": "client-tianyu",
+      "document": "客户管理.md",
+      "heading": "天宇教育",
+      "title": "天宇教育",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-tianyu",
+        "title": "天宇教育",
+        "status": "active",
+        "category": "其他客户"
+      }
+    },
+    {
+      "anchor": "client-haitong",
+      "document": "客户管理.md",
+      "heading": "海通商贸",
+      "title": "海通商贸",
+      "type": "client",
+      "status": "active",
+      "searchable": {
+        "id": "client-haitong",
+        "title": "海通商贸",
+        "status": "active",
+        "category": "其他客户"
+      }
+    },
+    {
+      "anchor": "user-index",
+      "document": "用户列表.md",
+      "heading": "用户管理",
+      "title": "系统用户",
+      "type": "directory_index",
+      "status": "active",
+      "searchable": {
+        "id": "user-list",
+        "title": "系统用户",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "u-chenqi",
+      "document": "联系人/principals/u-chenqi.md",
+      "heading": "陈七",
+      "title": "陈七",
+      "type": "principal",
+      "status": "active",
+      "searchable": {
+        "id": "u-chenqi",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "u-li",
+      "document": "联系人/principals/u-li.md",
+      "heading": "李主管",
+      "title": "李主管",
+      "type": "principal",
+      "status": "active",
+      "searchable": {
+        "id": "u-li",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "u-lisi",
+      "document": "联系人/principals/u-lisi.md",
+      "heading": "李四",
+      "title": "李四",
+      "type": "principal",
+      "status": "active",
+      "searchable": {
+        "id": "u-lisi",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "u-liuba",
+      "document": "联系人/principals/u-liuba.md",
+      "heading": "刘八",
+      "title": "刘八",
+      "type": "principal",
+      "status": "active",
+      "searchable": {
+        "id": "u-liuba",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "u-sunjiu",
+      "document": "联系人/principals/u-sunjiu.md",
+      "heading": "孙九",
+      "title": "孙九",
+      "type": "principal",
+      "status": "active",
+      "searchable": {
+        "id": "u-sunjiu",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "u-wang",
+      "document": "联系人/principals/u-wang.md",
+      "heading": "王编辑",
+      "title": "王编辑",
+      "type": "principal",
+      "status": "active",
+      "searchable": {
+        "id": "u-wang",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "u-wangwu",
+      "document": "联系人/principals/u-wangwu.md",
+      "heading": "王五",
+      "title": "王五",
+      "type": "principal",
+      "status": "active",
+      "searchable": {
+        "id": "u-wangwu",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "u-wuyi",
+      "document": "联系人/principals/u-wuyi.md",
+      "heading": "吴一",
+      "title": "吴一",
+      "type": "principal",
+      "status": "active",
+      "searchable": {
+        "id": "u-wuyi",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "u-zhang",
+      "document": "联系人/principals/u-zhang.md",
+      "heading": "张会计",
+      "title": "张会计",
+      "type": "principal",
+      "status": "active",
+      "searchable": {
+        "id": "u-zhang",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "u-zhangsan",
+      "document": "联系人/principals/u-zhangsan.md",
+      "heading": "张三",
+      "title": "张三",
+      "type": "principal",
+      "status": "active",
+      "searchable": {
+        "id": "u-zhangsan",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "u-zhaoliu",
+      "document": "联系人/principals/u-zhaoliu.md",
+      "heading": "赵六",
+      "title": "赵六",
+      "type": "principal",
+      "status": "active",
+      "searchable": {
+        "id": "u-zhaoliu",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "u-zhenger",
+      "document": "联系人/principals/u-zhenger.md",
+      "heading": "郑二",
+      "title": "郑二",
+      "type": "principal",
+      "status": "active",
+      "searchable": {
+        "id": "u-zhenger",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "u-zhoushi",
+      "document": "联系人/principals/u-zhoushi.md",
+      "heading": "周十",
+      "title": "周十",
+      "type": "principal",
+      "status": "active",
+      "searchable": {
+        "id": "u-zhoushi",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "p-client-contact-u-wang",
+      "document": "联系人/profiles/client-contacts.md",
+      "heading": "王编辑 - 中信出版社联系人",
+      "title": "王编辑 - 中信出版社联系人",
+      "type": "profile",
+      "status": "active",
+      "searchable": {
+        "id": "p-client-contact-u-wang",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "p-client-contact-u-zhang",
+      "document": "联系人/profiles/client-contacts.md",
+      "heading": "张会计 - 快手联系人",
+      "title": "张会计 - 快手联系人",
+      "type": "profile",
+      "status": "active",
+      "searchable": {
+        "id": "p-client-contact-u-zhang",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "p-client-contact-zhao",
+      "document": "联系人/profiles/client-contacts.md",
+      "heading": "外部联系人 - 赵经理",
+      "title": "外部联系人 - 赵经理",
+      "type": "profile",
+      "status": "active",
+      "searchable": {
+        "id": "p-client-contact-zhao",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "p-client-contact-zhangsan",
+      "document": "联系人/profiles/client-contacts.md",
+      "heading": "张三 - 星云科技联系人",
+      "title": "张三 - 星云科技联系人",
+      "type": "profile",
+      "status": "active",
+      "searchable": {
+        "id": "p-client-contact-zhangsan",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "p-client-contact-lisi",
+      "document": "联系人/profiles/client-contacts.md",
+      "heading": "李四 - 蓝海集团联系人",
+      "title": "李四 - 蓝海集团联系人",
+      "type": "profile",
+      "status": "active",
+      "searchable": {
+        "id": "p-client-contact-lisi",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "p-client-contact-wangwu",
+      "document": "联系人/profiles/client-contacts.md",
+      "heading": "王五 - 云峰控股联系人",
+      "title": "王五 - 云峰控股联系人",
+      "type": "profile",
+      "status": "active",
+      "searchable": {
+        "id": "p-client-contact-wangwu",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "p-client-contact-zhaoliu",
+      "document": "联系人/profiles/client-contacts.md",
+      "heading": "赵六 - 明日科技联系人",
+      "title": "赵六 - 明日科技联系人",
+      "type": "profile",
+      "status": "active",
+      "searchable": {
+        "id": "p-client-contact-zhaoliu",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "p-client-contact-chenqi",
+      "document": "联系人/profiles/client-contacts.md",
+      "heading": "陈七 - 华创投资联系人",
+      "title": "陈七 - 华创投资联系人",
+      "type": "profile",
+      "status": "active",
+      "searchable": {
+        "id": "p-client-contact-chenqi",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "p-client-contact-liuba",
+      "document": "联系人/profiles/client-contacts.md",
+      "heading": "刘八 - 盛世传媒联系人",
+      "title": "刘八 - 盛世传媒联系人",
+      "type": "profile",
+      "status": "active",
+      "searchable": {
+        "id": "p-client-contact-liuba",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "p-client-contact-sunjiu",
+      "document": "联系人/profiles/client-contacts.md",
+      "heading": "孙九 - 远航物流联系人",
+      "title": "孙九 - 远航物流联系人",
+      "type": "profile",
+      "status": "active",
+      "searchable": {
+        "id": "p-client-contact-sunjiu",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "p-client-contact-zhoushi",
+      "document": "联系人/profiles/client-contacts.md",
+      "heading": "周十 - 金鼎地产联系人",
+      "title": "周十 - 金鼎地产联系人",
+      "type": "profile",
+      "status": "active",
+      "searchable": {
+        "id": "p-client-contact-zhoushi",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "p-client-contact-wuyi",
+      "document": "联系人/profiles/client-contacts.md",
+      "heading": "吴一 - 天宇教育联系人",
+      "title": "吴一 - 天宇教育联系人",
+      "type": "profile",
+      "status": "active",
+      "searchable": {
+        "id": "p-client-contact-wuyi",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "p-client-contact-zhenger",
+      "document": "联系人/profiles/client-contacts.md",
+      "heading": "郑二 - 海通商贸联系人",
+      "title": "郑二 - 海通商贸联系人",
+      "type": "profile",
+      "status": "active",
+      "searchable": {
+        "id": "p-client-contact-zhenger",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "p-employee-u-wang",
+      "document": "联系人/profiles/employees.md",
+      "heading": "王编辑 - 员工档案",
+      "title": "王编辑 - 员工档案",
+      "type": "profile",
+      "status": "active",
+      "searchable": {
+        "id": "p-employee-u-wang",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "p-employee-u-li",
+      "document": "联系人/profiles/employees.md",
+      "heading": "李主管 - 员工档案",
+      "title": "李主管 - 员工档案",
+      "type": "profile",
+      "status": "active",
+      "searchable": {
+        "id": "p-employee-u-li",
+        "title": "",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "p-employee-u-zhang",
+      "document": "联系人/profiles/employees.md",
+      "heading": "张会计 - 员工档案",
+      "title": "张会计 - 员工档案",
+      "type": "profile",
+      "status": "active",
+      "searchable": {
+        "id": "p-employee-u-zhang",
+        "title": "",
+        "status": "active"
       }
     }
   ],
-  "updated_at": "2026-01-01T03:33:39.051Z"
+  "updated_at": "2026-01-01T17:12:14.453Z"
 }

@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-01-01T18:24:51.033Z",
+  "labels": {
+    "状态": {
+      "icon": "activity"
+    },
+    "标题": {
+      "icon": "heading"
+    },
+    "描述": {
+      "icon": "align-left"
+    }
+  },
+  "aliasIndex": {
+    "status": "状态",
+    "title": "标题",
+    "description": "描述"
+  },
+  "hiddenFields": [
+    "password_hash",
+    "auth"
+  ]
+}

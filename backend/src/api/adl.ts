@@ -301,4 +301,102 @@ router.post('/query', requireAuth, async (req: Request, res: Response) => {
   }
 });
 
+// ============================================================
+// Entity Index API - Phase 3.2: 关系型文档
+// ============================================================
+
+/**
+ * POST /api/adl/resolve-refs
+ * 批量解析引用并提取字段
+ * 
+ * 用于 entity_index 类型的文档渲染
+ * 输入: { refs: [{ ref: "path/to/doc.md#anchor" }, ...] }
+ * 输出: { entities: [{ ref, data: { display_name, status, ... } }, ...] }
+ */
+router.post('/resolve-refs', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { refs } = req.body as { refs: Array<{ ref: string }> };
+    
+    if (!refs || !Array.isArray(refs)) {
+      res.status(400).json({ error: 'Missing refs array' });
+      return;
+    }
+    
+    const entities: Array<{
+      ref: string;
+      resolved: boolean;
+      data?: {
+        id: string;
+        type: string;
+        title: string;
+        display_name?: string;
+        status: string;
+        identity?: {
+          emails?: string[];
+          phones?: string[];
+        };
+        documentPath: string;
+        anchor: string;
+        // 可以扩展更多字段
+      };
+      error?: string;
+    }> = [];
+    
+    for (const refObj of refs) {
+      const refStr = refObj.ref;
+      
+      // 解析引用格式: "path/to/doc.md#anchor"
+      const hashIndex = refStr.lastIndexOf('#');
+      if (hashIndex === -1) {
+        entities.push({ ref: refStr, resolved: false, error: 'Invalid ref format (missing #anchor)' });
+        continue;
+      }
+      
+      const docPath = refStr.substring(0, hashIndex);
+      const anchor = refStr.substring(hashIndex + 1);
+      
+      // 检查访问权限
+      if (!canAccessDocument(req.user!, docPath)) {
+        entities.push({ ref: refStr, resolved: false, error: 'Access denied' });
+        continue;
+      }
+      
+      // 获取文档
+      const content = getDocument(docPath);
+      if (!content) {
+        entities.push({ ref: refStr, resolved: false, error: 'Document not found' });
+        continue;
+      }
+      
+      // 查找 block
+      const block = findBlockByAnchor(content.document, anchor);
+      if (!block) {
+        entities.push({ ref: refStr, resolved: false, error: 'Block not found' });
+        continue;
+      }
+      
+      // 提取关键字段
+      const machine = block.machine;
+      entities.push({
+        ref: refStr,
+        resolved: true,
+        data: {
+          id: machine.id as string,
+          type: machine.type as string,
+          title: machine.title as string,
+          display_name: machine.display_name as string | undefined,
+          status: machine.status as string,
+          identity: machine.identity as { emails?: string[]; phones?: string[] } | undefined,
+          documentPath: docPath,
+          anchor: anchor,
+        },
+      });
+    }
+    
+    res.json({ entities });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to resolve refs', details: String(error) });
+  }
+});
+
 export default router;

@@ -1,0 +1,265 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-01-01T16:54:00.827Z",
+  "summary": {
+    "total_documents": 22,
+    "passed_count": 22,
+    "failed_count": 0,
+    "error_count": 0,
+    "warning_count": 5,
+    "info_count": 3,
+    "hint_count": 7
+  },
+  "documents": [
+    {
+      "path": "genesis/tokens.md",
+      "issues": [
+        {
+          "level": "hint",
+          "rule": "atlas_not_declared",
+          "message": "Document has no atlas function declaration",
+          "location": {
+            "field": "atlas"
+          },
+          "suggestion": "Consider adding atlas.function declaration if this document serves a specific system function"
+        },
+        {
+          "level": "warning",
+          "rule": "block_type_missing",
+          "message": "Block \"ui-proposal\" has no type in machine zone",
+          "location": {
+            "block": "ui-proposal",
+            "field": "type"
+          }
+        },
+        {
+          "level": "info",
+          "rule": "block_id_missing",
+          "message": "Block \"ui-proposal\" has no id in machine zone",
+          "location": {
+            "block": "ui-proposal",
+            "field": "id"
+          }
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "genesis/客户管理.md",
+      "issues": [
+        {
+          "level": "warning",
+          "rule": "entity_list_block_missing",
+          "message": "entity_list document should have a directory_index or entity_index block",
+          "location": {},
+          "suggestion": "Add a block with type: directory_index or type: entity_index"
+        },
+        {
+          "level": "warning",
+          "rule": "block_type_missing",
+          "message": "Block \"client-index\" has no type in machine zone",
+          "location": {
+            "block": "client-index",
+            "field": "type"
+          }
+        },
+        {
+          "level": "info",
+          "rule": "block_id_missing",
+          "message": "Block \"client-index\" has no id in machine zone",
+          "location": {
+            "block": "client-index",
+            "field": "id"
+          }
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "projects/2025/P-001/项目主文档.md",
+      "issues": [
+        {
+          "level": "hint",
+          "rule": "atlas_not_declared",
+          "message": "Document has no atlas function declaration",
+          "location": {
+            "field": "atlas"
+          },
+          "suggestion": "Consider adding atlas.function declaration if this document serves a specific system function"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "projects/2025/P-002/项目主文档.md",
+      "issues": [
+        {
+          "level": "hint",
+          "rule": "atlas_not_declared",
+          "message": "Document has no atlas function declaration",
+          "location": {
+            "field": "atlas"
+          },
+          "suggestion": "Consider adding atlas.function declaration if this document serves a specific system function"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "projects/2025/P-003/项目主文档.md",
+      "issues": [
+        {
+          "level": "hint",
+          "rule": "atlas_not_declared",
+          "message": "Document has no atlas function declaration",
+          "location": {
+            "field": "atlas"
+          },
+          "suggestion": "Consider adding atlas.function declaration if this document serves a specific system function"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "system/profile-types.md",
+      "issues": [
+        {
+          "level": "hint",
+          "rule": "atlas_not_declared",
+          "message": "Document has no atlas function declaration",
+          "location": {
+            "field": "atlas"
+          },
+          "suggestion": "Consider adding atlas.function declaration if this document serves a specific system function"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "users/principals/u-chenqi.md",
+      "issues": [],
+      "passed": true
+    },
+    {
+      "path": "users/principals/u-li.md",
+      "issues": [],
+      "passed": true
+    },
+    {
+      "path": "users/principals/u-lisi.md",
+      "issues": [],
+      "passed": true
+    },
+    {
+      "path": "users/principals/u-liuba.md",
+      "issues": [],
+      "passed": true
+    },
+    {
+      "path": "users/principals/u-sunjiu.md",
+      "issues": [],
+      "passed": true
+    },
+    {
+      "path": "users/principals/u-wang.md",
+      "issues": [],
+      "passed": true
+    },
+    {
+      "path": "users/principals/u-wangwu.md",
+      "issues": [],
+      "passed": true
+    },
+    {
+      "path": "users/principals/u-wuyi.md",
+      "issues": [],
+      "passed": true
+    },
+    {
+      "path": "users/principals/u-zhang.md",
+      "issues": [],
+      "passed": true
+    },
+    {
+      "path": "users/principals/u-zhangsan.md",
+      "issues": [],
+      "passed": true
+    },
+    {
+      "path": "users/principals/u-zhaoliu.md",
+      "issues": [],
+      "passed": true
+    },
+    {
+      "path": "users/principals/u-zhenger.md",
+      "issues": [],
+      "passed": true
+    },
+    {
+      "path": "users/principals/u-zhoushi.md",
+      "issues": [],
+      "passed": true
+    },
+    {
+      "path": "users/profiles/client-contacts.md",
+      "issues": [
+        {
+          "level": "hint",
+          "rule": "atlas_not_declared",
+          "message": "Document has no atlas function declaration",
+          "location": {
+            "field": "atlas"
+          },
+          "suggestion": "Consider adding atlas.function declaration if this document serves a specific system function"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "users/profiles/employees.md",
+      "issues": [
+        {
+          "level": "hint",
+          "rule": "atlas_not_declared",
+          "message": "Document has no atlas function declaration",
+          "location": {
+            "field": "atlas"
+          },
+          "suggestion": "Consider adding atlas.function declaration if this document serves a specific system function"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "users/用户列表.md",
+      "issues": [
+        {
+          "level": "warning",
+          "rule": "entity_list_block_missing",
+          "message": "entity_list document should have a directory_index or entity_index block",
+          "location": {},
+          "suggestion": "Add a block with type: directory_index or type: entity_index"
+        },
+        {
+          "level": "warning",
+          "rule": "block_type_missing",
+          "message": "Block \"user-index\" has no type in machine zone",
+          "location": {
+            "block": "user-index",
+            "field": "type"
+          }
+        },
+        {
+          "level": "info",
+          "rule": "block_id_missing",
+          "message": "Block \"user-index\" has no id in machine zone",
+          "location": {
+            "block": "user-index",
+            "field": "id"
+          }
+        }
+      ],
+      "passed": true
+    }
+  ]
+}

@@ -77,7 +77,7 @@ export async function fetchWorkspaceTree(): Promise<TreeNode[]> {
 }
 
 /**
- * 重建索引
+ * 重建索引（仅 Workspace）
  */
 export async function rebuildWorkspaceIndex(): Promise<{ success: boolean; stats: WorkspaceIndex['stats'] }> {
   const res = await fetch(`${API_BASE}/rebuild`, {
@@ -86,6 +86,35 @@ export async function rebuildWorkspaceIndex(): Promise<{ success: boolean; stats
   });
   if (!res.ok) {
     throw new Error(`Failed to rebuild workspace index: ${res.statusText}`);
+  }
+  return res.json();
+}
+
+/**
+ * 全局重建索引
+ * 
+ * Phase 3.3: 「双向奔赴」原则
+ * 调用 /api/functions/rebuild 会：
+ * 1. 重建 WorkspaceIndex（发现新/移动的文档）
+ * 2. 刷新 Registry（更新 knownPaths）
+ * 3. 重建 FunctionRegistry（更新功能索引）
+ * 
+ * 适用于文档移动后需要系统重新发现的场景
+ */
+export async function rebuildGlobalIndex(): Promise<{
+  success: boolean;
+  message: string;
+  data: {
+    functions: Record<string, { count: number }>;
+    navigation: { sidebar: Array<{ path: string; label: string }> };
+  };
+}> {
+  const res = await fetch('/api/functions/rebuild', {
+    method: 'POST',
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to rebuild global index: ${res.statusText}`);
   }
   return res.json();
 }

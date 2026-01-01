@@ -168,3 +168,46 @@ export async function executeProposal(proposalId: string): Promise<ExecuteResult
   return res.json();
 }
 
+// ============================================================
+// Entity Index API - Phase 3.2: 关系型文档
+// ============================================================
+
+/**
+ * 解析后的实体数据
+ */
+export interface ResolvedEntity {
+  ref: string;
+  resolved: boolean;
+  data?: {
+    id: string;
+    type: string;
+    title: string;
+    display_name?: string;
+    status: string;
+    identity?: {
+      emails?: string[];
+      phones?: string[];
+    };
+    documentPath: string;
+    anchor: string;
+  };
+  error?: string;
+}
+
+/**
+ * 批量解析引用
+ * 用于 entity_index 类型的文档渲染
+ */
+export async function resolveRefs(refs: Array<{ ref: string }>): Promise<{ entities: ResolvedEntity[] }> {
+  const res = await fetch(`${API_BASE}/resolve-refs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refs }),
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to resolve refs: ${res.statusText}`);
+  }
+  return res.json();
+}
+

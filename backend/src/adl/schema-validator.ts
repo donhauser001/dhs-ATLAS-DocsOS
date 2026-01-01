@@ -152,6 +152,15 @@ const BUILTIN_TYPES: Record<string, TypeSchema> = {
       description: { type: 'string', required: false },
     },
   },
+  // Phase 3.2: 关系型文档 - 实体索引
+  entity_index: {
+    name: 'entity_index',
+    fields: {
+      entity_type: { type: 'string', required: true },
+      description: { type: 'string', required: false },
+      entries: { type: 'array', required: true },
+    },
+  },
 };
 
 interface FieldSchema {
@@ -259,6 +268,11 @@ export function validateBlock(block: Block): SchemaValidationResult {
   // 8. Phase 3.1: 检查 Profile 类型特定字段
   if (machine.type === 'profile') {
     validateProfileBlock(machine, anchor, errors, warnings);
+  }
+  
+  // 9. Phase 3.2: 检查 EntityIndex 类型特定字段
+  if (machine.type === 'entity_index') {
+    validateEntityIndexBlock(machine, anchor, errors, warnings);
   }
   
   return {
@@ -409,6 +423,60 @@ function validateProfileBlock(
         anchor,
         field: 'role_title',
       });
+    }
+  }
+}
+
+/**
+ * 校验 EntityIndex Block
+ */
+function validateEntityIndexBlock(
+  machine: MachineBlock,
+  anchor: string,
+  errors: SchemaError[],
+  warnings: SchemaError[]
+): void {
+  // 检查 entity_type
+  if (!machine.entity_type) {
+    errors.push({
+      code: 'E001',
+      message: 'EntityIndex missing required field: entity_type',
+      anchor,
+      field: 'entity_type',
+      suggestion: 'Add "entity_type" field (e.g., principal, client)',
+    });
+  }
+  
+  // 检查 entries
+  if (!machine.entries) {
+    errors.push({
+      code: 'E001',
+      message: 'EntityIndex missing required field: entries',
+      anchor,
+      field: 'entries',
+      suggestion: 'Add "entries" array with references to entities',
+    });
+  } else if (!Array.isArray(machine.entries)) {
+    errors.push({
+      code: 'E203',
+      message: 'Field "entries" must be an array',
+      anchor,
+      field: 'entries',
+    });
+  } else {
+    // 验证每个条目是否为有效引用
+    const entries = machine.entries as unknown[];
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+      if (!isAnchorRef(entry)) {
+        errors.push({
+          code: 'E102',
+          message: `Entry ${i} is not a valid anchor reference`,
+          anchor,
+          field: `entries[${i}]`,
+          suggestion: 'Use format: { ref: "path/to/doc.md#anchor" }',
+        });
+      }
     }
   }
 }

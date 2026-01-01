@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Mail, Phone, ChevronRight, Users } from 'lucide-react';
+import { User, Phone, ChevronRight, Users } from 'lucide-react';
 import { fetchClientContacts, type ClientContact } from '@/api/profiles';
 
 interface ClientContactsSectionProps {

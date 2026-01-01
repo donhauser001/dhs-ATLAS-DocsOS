@@ -2,10 +2,12 @@
  * Permission Middleware - 权限中间件
  * 
  * Phase 1: 实现路径权限检查
+ * Phase 3.3: 支持 Principal 文档认证
  */
 
 import { Request, Response, NextFunction } from 'express';
 import {
+  getUserByIdSync,
   getUserById,
   toPublicUser,
   checkPathPermission,
@@ -23,41 +25,66 @@ declare global {
   }
 }
 
+// 扩展 Session 类型
+declare module 'express-session' {
+  interface SessionData {
+    userId?: string;
+    authSource?: 'principal' | 'legacy';
+  }
+}
+
 /**
  * 认证中间件 - 检查用户是否已登录
+ * 
+ * Phase 3.3: 支持异步获取 Principal 用户
  */
-export function requireAuth(req: Request, res: Response, next: NextFunction): void {
+export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   const userId = req.session?.userId;
-  
+  const authSource = req.session?.authSource || 'legacy';
+
   if (!userId) {
     res.status(401).json({ error: 'Authentication required' });
     return;
   }
-  
-  const user = getUserById(userId);
-  
+
+  // 根据认证来源选择获取方式
+  let user = null;
+  if (authSource === 'principal') {
+    user = await getUserById(userId);
+  } else {
+    user = getUserByIdSync(userId);
+  }
+
   if (!user) {
     res.status(401).json({ error: 'User not found' });
     return;
   }
-  
-  req.user = toPublicUser(user);
+
+  req.user = toPublicUser(user, authSource);
   next();
 }
 
 /**
  * 可选认证中间件 - 如果有 session 则加载用户
+ * 
+ * Phase 3.3: 支持异步获取 Principal 用户
  */
-export function optionalAuth(req: Request, res: Response, next: NextFunction): void {
+export async function optionalAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   const userId = req.session?.userId;
-  
+  const authSource = req.session?.authSource || 'legacy';
+
   if (userId) {
-    const user = getUserById(userId);
+    let user = null;
+    if (authSource === 'principal') {
+      user = await getUserById(userId);
+    } else {
+      user = getUserByIdSync(userId);
+    }
     if (user) {
-      req.user = toPublicUser(user);
+      req.user = toPublicUser(user, authSource);
     }
   }
-  
+
   next();
 }
 
@@ -69,20 +96,20 @@ export function requirePathAccess(req: Request, res: Response, next: NextFunctio
     res.status(401).json({ error: 'Authentication required' });
     return;
   }
-  
+
   // 从 query 或 body 获取路径
   const path = (req.query.path as string) || (req.body.path as string) || (req.body.target_file as string);
-  
+
   if (!path) {
     next();
     return;
   }
-  
+
   if (!checkPathPermission(req.user, path)) {
     res.status(403).json({ error: 'Access denied', path });
     return;
   }
-  
+
   next();
 }
 
@@ -94,12 +121,12 @@ export function requireProposalCreate(req: Request, res: Response, next: NextFun
     res.status(401).json({ error: 'Authentication required' });
     return;
   }
-  
+
   if (!canCreateProposal(req.user)) {
     res.status(403).json({ error: 'You do not have permission to create proposals' });
     return;
   }
-  
+
   next();
 }
 
@@ -111,12 +138,12 @@ export function requireProposalExecute(req: Request, res: Response, next: NextFu
     res.status(401).json({ error: 'Authentication required' });
     return;
   }
-  
+
   if (!canExecuteProposal(req.user)) {
     res.status(403).json({ error: 'You do not have permission to execute proposals' });
     return;
   }
-  
+
   next();
 }
 

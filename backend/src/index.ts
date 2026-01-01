@@ -7,6 +7,10 @@ import authRouter from './api/auth.js';
 import tokensRouter from './api/tokens.js';
 import principalsRouter from './api/principals.js';
 import profilesRouter from './api/profiles.js';
+import functionsRouter from './api/functions.js';
+import lintRouter from './api/lint.js';
+import navigationRouter from './api/navigation.js';
+import labelsRouter from './api/labels.js';
 import { config, validateConfig, ensureDirectories } from './config.js';
 import { optionalAuth } from './middleware/permission.js';
 
@@ -48,9 +52,9 @@ app.use(optionalAuth);
 
 // Health check
 app.get('/health', (_req, res) => {
-  res.json({ 
-    status: 'ok', 
-    runtime: 'ATLAS', 
+  res.json({
+    status: 'ok',
+    runtime: 'ATLAS',
     version: '1.0.0',
     repository_root: config.repositoryRoot,
   });
@@ -64,6 +68,12 @@ app.use('/api/tokens', tokensRouter);
 // Phase 3.1: Principal + Profile 用户体系
 app.use('/api/principals', principalsRouter);
 app.use('/api/profiles', profilesRouter);
+// Phase 3.3: 功能声明系统
+app.use('/api/functions', functionsRouter);
+app.use('/api/lint', lintRouter);
+app.use('/api/navigation', navigationRouter);
+// Phase 3.3+: 标签注册表
+app.use('/api/labels', labelsRouter);
 
 app.listen(config.port, () => {
   console.log(`ATLAS Runtime listening on port ${config.port}`);

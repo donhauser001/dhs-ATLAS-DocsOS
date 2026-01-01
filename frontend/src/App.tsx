@@ -1,11 +1,12 @@
 import { useEffect } from 'react'
-import { Routes, Route, Link } from 'react-router-dom'
+import { Routes, Route, Link, Navigate } from 'react-router-dom'
 import { GenesisPage } from './pages/genesis'
 import { WorkspacePage, DocumentPage } from './pages/workspace'
-import { UsersPage, UserDetailPage } from './pages/users'
 import { LoginPage } from './pages/LoginPage'
+import { SettingsPage } from './pages/settings/SettingsPage'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { TokenProvider } from '@/components/tokens/TokenProvider'
+import { LabelProvider } from '@/providers/LabelProvider'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/auth-store'
@@ -23,13 +24,15 @@ function Home() {
           <p>Phase 1 / Workspace</p>
           <p className="text-sm">多文档工作空间 + 可检索 + 可控写入</p>
         </div>
-        <div className="mt-12 flex gap-4 justify-center">
+        <div className="mt-12 flex gap-4 justify-center flex-wrap">
           {user ? (
-            <Link to="/workspace">
-              <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100">
-                进入 Workspace
-              </Button>
-            </Link>
+            <>
+              <Link to="/workspace">
+                <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100">
+                  进入 Workspace
+                </Button>
+              </Link>
+            </>
           ) : (
             <Link to="/login">
               <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100">
@@ -66,34 +69,35 @@ function App() {
   
   return (
     <TokenProvider>
-      <TooltipProvider>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/genesis" element={<GenesisPage />} />
-          <Route path="/workspace" element={
-            <ProtectedRoute>
-              <WorkspacePage />
-            </ProtectedRoute>
-          } />
-          <Route path="/workspace/*" element={
-            <ProtectedRoute>
-              <DocumentPage />
-            </ProtectedRoute>
-          } />
-          {/* Phase 3.1: 用户管理页面 */}
-          <Route path="/users" element={
-            <ProtectedRoute>
-              <UsersPage />
-            </ProtectedRoute>
-          } />
-          <Route path="/users/:id" element={
-            <ProtectedRoute>
-              <UserDetailPage />
-            </ProtectedRoute>
-          } />
-        </Routes>
-      </TooltipProvider>
+      <LabelProvider>
+        <TooltipProvider>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/genesis" element={<GenesisPage />} />
+            <Route path="/workspace" element={
+              <ProtectedRoute>
+                <WorkspacePage />
+              </ProtectedRoute>
+            } />
+            <Route path="/workspace/*" element={
+              <ProtectedRoute>
+                <DocumentPage />
+              </ProtectedRoute>
+            } />
+            {/* Phase 3.3: 用户管理重定向到文档（位置由文档声明决定） */}
+            <Route path="/users" element={
+              <Navigate to="/workspace/用户列表.md" replace />
+            } />
+            {/* 系统设置 */}
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <SettingsPage />
+              </ProtectedRoute>
+            } />
+          </Routes>
+        </TooltipProvider>
+      </LabelProvider>
     </TokenProvider>
   )
 }

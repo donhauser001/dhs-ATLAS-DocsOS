@@ -1,137 +1,7 @@
 {
   "version": "1.0",
-  "generated_at": "2026-01-01T15:30:00.042Z",
+  "generated_at": "2026-01-01T18:24:51.033Z",
   "documents": [
-    {
-      "path": "contacts/客户-刘八.md",
-      "title": "刘八",
-      "document_type": "contact",
-      "block_count": 1,
-      "anchors": [
-        "contact-liu-ba"
-      ],
-      "types": [
-        "contact"
-      ],
-      "modified_at": "2025-12-31T18:32:33.785Z"
-    },
-    {
-      "path": "contacts/客户-吴一.md",
-      "title": "吴一",
-      "document_type": "contact",
-      "block_count": 1,
-      "anchors": [
-        "contact-wu-yi"
-      ],
-      "types": [
-        "contact"
-      ],
-      "modified_at": "2025-12-31T18:32:33.785Z"
-    },
-    {
-      "path": "contacts/客户-周十.md",
-      "title": "周十",
-      "document_type": "contact",
-      "block_count": 1,
-      "anchors": [
-        "contact-zhou-shi"
-      ],
-      "types": [
-        "contact"
-      ],
-      "modified_at": "2025-12-31T18:32:33.785Z"
-    },
-    {
-      "path": "contacts/客户-孙九.md",
-      "title": "孙九",
-      "document_type": "contact",
-      "block_count": 1,
-      "anchors": [
-        "contact-sun-jiu"
-      ],
-      "types": [
-        "contact"
-      ],
-      "modified_at": "2025-12-31T18:32:33.785Z"
-    },
-    {
-      "path": "contacts/客户-张三.md",
-      "title": "张三",
-      "document_type": "contact",
-      "block_count": 1,
-      "anchors": [
-        "contact-zhang-san"
-      ],
-      "types": [
-        "contact"
-      ],
-      "modified_at": "2025-12-31T18:32:33.784Z"
-    },
-    {
-      "path": "contacts/客户-李四.md",
-      "title": "李四",
-      "document_type": "contact",
-      "block_count": 1,
-      "anchors": [
-        "contact-li-si"
-      ],
-      "types": [
-        "contact"
-      ],
-      "modified_at": "2025-12-31T18:32:33.785Z"
-    },
-    {
-      "path": "contacts/客户-王五.md",
-      "title": "王五",
-      "document_type": "contact",
-      "block_count": 1,
-      "anchors": [
-        "contact-wang-wu"
-      ],
-      "types": [
-        "contact"
-      ],
-      "modified_at": "2025-12-31T18:32:33.785Z"
-    },
-    {
-      "path": "contacts/客户-赵六.md",
-      "title": "赵六",
-      "document_type": "contact",
-      "block_count": 1,
-      "anchors": [
-        "contact-zhao-liu"
-      ],
-      "types": [
-        "contact"
-      ],
-      "modified_at": "2025-12-31T18:32:33.785Z"
-    },
-    {
-      "path": "contacts/客户-郑二.md",
-      "title": "郑二",
-      "document_type": "contact",
-      "block_count": 1,
-      "anchors": [
-        "contact-zheng-er"
-      ],
-      "types": [
-        "contact"
-      ],
-      "modified_at": "2025-12-31T18:32:33.785Z"
-    },
-    {
-      "path": "contacts/客户-陈七.md",
-      "title": "陈七",
-      "document_type": "contact",
-      "block_count": 1,
-      "anchors": [
-        "contact-chen-qi"
-      ],
-      "types": [
-        "contact"
-      ],
-      "modified_at": "2025-12-31T18:32:33.785Z"
-    },
     {
       "path": "genesis/tokens.md",
       "title": "品牌色",
@@ -154,123 +24,6 @@
         "token_group"
       ],
       "modified_at": "2026-01-01T12:04:51.788Z"
-    },
-    {
-      "path": "genesis/客户管理.md",
-      "title": "中信出版社",
-      "document_type": "facts",
-      "block_count": 65,
-      "anchors": [
-        "client-zhongxin",
-        "client-beijing-press",
-        "client-youth-press",
-        "client-century",
-        "client-science-press",
-        "client-shuangluoxuan",
-        "client-shulang",
-        "client-motie",
-        "client-hunan-arts",
-        "client-zhejiang-arts",
-        "client-guangzhou",
-        "client-shenzhen-haipai",
-        "client-jingsirui",
-        "client-ptpress",
-        "client-guangchen",
-        "client-tianxi",
-        "client-rentian",
-        "client-xinzhao",
-        "client-youze",
-        "client-zige",
-        "client-qingdou",
-        "client-yuedumingpin",
-        "client-ziyunwenxin",
-        "client-zhejiang-people",
-        "client-yuelu",
-        "client-jiangbo",
-        "client-babel",
-        "client-guangdong-people",
-        "client-yixinzhicheng",
-        "client-tuanjie",
-        "client-tianyi",
-        "client-zhongyi",
-        "client-baimashiguang",
-        "client-shengyuan",
-        "client-xiangtan",
-        "client-lingtouyang",
-        "client-zishi",
-        "client-yourongshubang",
-        "client-renmin-university",
-        "client-huyang",
-        "client-guotuboya",
-        "client-lubai",
-        "client-hebei-shulang",
-        "client-memestory",
-        "client-lezhidu",
-        "client-paitang",
-        "client-napa",
-        "client-zhonghehengrun",
-        "client-dongfang",
-        "client-cdgdc",
-        "client-steinway",
-        "client-jiangxi-edu",
-        "client-pku-shanghai",
-        "client-daoshan",
-        "client-zhuowentianyu",
-        "client-shidaihuayu",
-        "client-xinyitianxia",
-        "client-zifan",
-        "client-aimi",
-        "client-kuaishou",
-        "client-qianweiwen",
-        "client-xingshengle",
-        "client-chongqing",
-        "client-xinshijie",
-        "client-zhuanzhuan"
-      ],
-      "types": [
-        "client"
-      ],
-      "modified_at": "2026-01-01T12:18:46.883Z"
-    },
-    {
-      "path": "genesis/服务示例.md",
-      "title": "品牌设计",
-      "document_type": "facts",
-      "block_count": 5,
-      "anchors": [
-        "cat-brand-design",
-        "cat-digital-product",
-        "svc-S-001",
-        "svc-S-002",
-        "svc-S-003"
-      ],
-      "types": [
-        "category",
-        "service"
-      ],
-      "modified_at": "2026-01-01T11:24:02.218Z"
-    },
-    {
-      "path": "genesis/联系人管理.md",
-      "title": "王编辑",
-      "document_type": "facts",
-      "block_count": 10,
-      "anchors": [
-        "contact-wang-editor",
-        "contact-li-director",
-        "contact-zhang-manager",
-        "contact-liu-chief",
-        "contact-chen-editor",
-        "contact-zhao-pm",
-        "contact-sun-designer",
-        "contact-zhou-boss",
-        "contact-wu-purchase",
-        "contact-zheng-finance"
-      ],
-      "types": [
-        "contact"
-      ],
-      "modified_at": "2026-01-01T14:32:41.981Z"
     },
     {
       "path": "projects/2025/P-001/项目主文档.md",
@@ -337,40 +90,305 @@
         "registry",
         "type_definition"
       ],
-      "modified_at": "2026-01-01T15:20:21.153Z"
+      "modified_at": "2026-01-01T16:55:38.776Z"
     },
     {
-      "path": "users/principals.md",
+      "path": "客户管理.md",
+      "title": "客户管理",
+      "document_type": "facts",
+      "block_count": 76,
+      "anchors": [
+        "client-index",
+        "client-zhongxin",
+        "client-beijing-press",
+        "client-youth-press",
+        "client-century",
+        "client-science-press",
+        "client-shuangluoxuan",
+        "client-shulang",
+        "client-motie",
+        "client-hunan-arts",
+        "client-zhejiang-arts",
+        "client-guangzhou",
+        "client-shenzhen-haipai",
+        "client-jingsirui",
+        "client-ptpress",
+        "client-guangchen",
+        "client-tianxi",
+        "client-rentian",
+        "client-xinzhao",
+        "client-youze",
+        "client-zige",
+        "client-qingdou",
+        "client-yuedumingpin",
+        "client-ziyunwenxin",
+        "client-zhejiang-people",
+        "client-yuelu",
+        "client-jiangbo",
+        "client-babel",
+        "client-guangdong-people",
+        "client-yixinzhicheng",
+        "client-tuanjie",
+        "client-tianyi",
+        "client-zhongyi",
+        "client-baimashiguang",
+        "client-shengyuan",
+        "client-xiangtan",
+        "client-lingtouyang",
+        "client-zishi",
+        "client-yourongshubang",
+        "client-renmin-university",
+        "client-huyang",
+        "client-guotuboya",
+        "client-lubai",
+        "client-hebei-shulang",
+        "client-memestory",
+        "client-lezhidu",
+        "client-paitang",
+        "client-napa",
+        "client-zhonghehengrun",
+        "client-dongfang",
+        "client-cdgdc",
+        "client-steinway",
+        "client-jiangxi-edu",
+        "client-pku-shanghai",
+        "client-daoshan",
+        "client-zhuowentianyu",
+        "client-shidaihuayu",
+        "client-xinyitianxia",
+        "client-zifan",
+        "client-aimi",
+        "client-kuaishou",
+        "client-qianweiwen",
+        "client-xingshengle",
+        "client-chongqing",
+        "client-xinshijie",
+        "client-zhuanzhuan",
+        "client-xingyun",
+        "client-lanhai",
+        "client-yunfeng",
+        "client-mingri",
+        "client-huachuang",
+        "client-shengshi",
+        "client-yuanhang",
+        "client-jinding",
+        "client-tianyu",
+        "client-haitong"
+      ],
+      "types": [
+        "client"
+      ],
+      "modified_at": "2026-01-01T16:55:58.978Z"
+    },
+    {
+      "path": "用户列表.md",
+      "title": "用户管理",
+      "document_type": "facts",
+      "block_count": 1,
+      "anchors": [
+        "user-index"
+      ],
+      "types": [
+        "directory_index"
+      ],
+      "modified_at": "2026-01-01T16:55:35.672Z"
+    },
+    {
+      "path": "联系人/principals/u-chenqi.md",
+      "title": "陈七",
+      "document_type": "facts",
+      "block_count": 1,
+      "anchors": [
+        "u-chenqi"
+      ],
+      "types": [
+        "principal"
+      ],
+      "modified_at": "2026-01-01T18:18:57.446Z"
+    },
+    {
+      "path": "联系人/principals/u-li.md",
+      "title": "李主管",
+      "document_type": "facts",
+      "block_count": 1,
+      "anchors": [
+        "u-li"
+      ],
+      "types": [
+        "principal"
+      ],
+      "modified_at": "2026-01-01T16:55:51.482Z"
+    },
+    {
+      "path": "联系人/principals/u-lisi.md",
+      "title": "李四",
+      "document_type": "facts",
+      "block_count": 1,
+      "anchors": [
+        "u-lisi"
+      ],
+      "types": [
+        "principal"
+      ],
+      "modified_at": "2026-01-01T16:55:51.908Z"
+    },
+    {
+      "path": "联系人/principals/u-liuba.md",
+      "title": "刘八",
+      "document_type": "facts",
+      "block_count": 1,
+      "anchors": [
+        "u-liuba"
+      ],
+      "types": [
+        "principal"
+      ],
+      "modified_at": "2026-01-01T16:55:52.315Z"
+    },
+    {
+      "path": "联系人/principals/u-sunjiu.md",
+      "title": "孙九",
+      "document_type": "facts",
+      "block_count": 1,
+      "anchors": [
+        "u-sunjiu"
+      ],
+      "types": [
+        "principal"
+      ],
+      "modified_at": "2026-01-01T16:55:52.706Z"
+    },
+    {
+      "path": "联系人/principals/u-wang.md",
       "title": "王编辑",
       "document_type": "facts",
-      "block_count": 3,
+      "block_count": 1,
       "anchors": [
-        "u-wang",
-        "u-li",
+        "u-wang"
+      ],
+      "types": [
+        "principal"
+      ],
+      "modified_at": "2026-01-01T16:55:50.718Z"
+    },
+    {
+      "path": "联系人/principals/u-wangwu.md",
+      "title": "王五",
+      "document_type": "facts",
+      "block_count": 1,
+      "anchors": [
+        "u-wangwu"
+      ],
+      "types": [
+        "principal"
+      ],
+      "modified_at": "2026-01-01T16:55:53.134Z"
+    },
+    {
+      "path": "联系人/principals/u-wuyi.md",
+      "title": "吴一",
+      "document_type": "facts",
+      "block_count": 1,
+      "anchors": [
+        "u-wuyi"
+      ],
+      "types": [
+        "principal"
+      ],
+      "modified_at": "2026-01-01T16:55:53.488Z"
+    },
+    {
+      "path": "联系人/principals/u-zhang.md",
+      "title": "张会计",
+      "document_type": "facts",
+      "block_count": 1,
+      "anchors": [
         "u-zhang"
       ],
       "types": [
         "principal"
       ],
-      "modified_at": "2026-01-01T15:20:40.297Z"
+      "modified_at": "2026-01-01T16:55:51.120Z"
     },
     {
-      "path": "users/profiles/client-contacts.md",
+      "path": "联系人/principals/u-zhangsan.md",
+      "title": "张三",
+      "document_type": "facts",
+      "block_count": 1,
+      "anchors": [
+        "u-zhangsan"
+      ],
+      "types": [
+        "principal"
+      ],
+      "modified_at": "2026-01-01T16:55:53.868Z"
+    },
+    {
+      "path": "联系人/principals/u-zhaoliu.md",
+      "title": "赵六",
+      "document_type": "facts",
+      "block_count": 1,
+      "anchors": [
+        "u-zhaoliu"
+      ],
+      "types": [
+        "principal"
+      ],
+      "modified_at": "2026-01-01T16:55:54.283Z"
+    },
+    {
+      "path": "联系人/principals/u-zhenger.md",
+      "title": "郑二",
+      "document_type": "facts",
+      "block_count": 1,
+      "anchors": [
+        "u-zhenger"
+      ],
+      "types": [
+        "principal"
+      ],
+      "modified_at": "2026-01-01T16:55:54.672Z"
+    },
+    {
+      "path": "联系人/principals/u-zhoushi.md",
+      "title": "周十",
+      "document_type": "facts",
+      "block_count": 1,
+      "anchors": [
+        "u-zhoushi"
+      ],
+      "types": [
+        "principal"
+      ],
+      "modified_at": "2026-01-01T16:55:55.114Z"
+    },
+    {
+      "path": "联系人/profiles/client-contacts.md",
       "title": "王编辑 - 中信出版社联系人",
       "document_type": "facts",
-      "block_count": 3,
+      "block_count": 13,
       "anchors": [
         "p-client-contact-u-wang",
         "p-client-contact-u-zhang",
-        "p-client-contact-zhao"
+        "p-client-contact-zhao",
+        "p-client-contact-zhangsan",
+        "p-client-contact-lisi",
+        "p-client-contact-wangwu",
+        "p-client-contact-zhaoliu",
+        "p-client-contact-chenqi",
+        "p-client-contact-liuba",
+        "p-client-contact-sunjiu",
+        "p-client-contact-zhoushi",
+        "p-client-contact-wuyi",
+        "p-client-contact-zhenger"
       ],
       "types": [
         "profile"
       ],
-      "modified_at": "2026-01-01T15:21:03.652Z"
+      "modified_at": "2026-01-01T16:06:08.084Z"
     },
     {
-      "path": "users/profiles/employees.md",
+      "path": "联系人/profiles/employees.md",
       "title": "王编辑 - 员工档案",
       "document_type": "facts",
       "block_count": 3,
@@ -382,19 +400,14 @@
       "types": [
         "profile"
       ],
-      "modified_at": "2026-01-01T15:20:51.003Z"
+      "modified_at": "2026-01-01T16:06:08.084Z"
     }
   ],
   "directories": [
     {
-      "path": "contacts",
-      "name": "contacts",
-      "document_count": 10
-    },
-    {
       "path": "genesis",
       "name": "genesis",
-      "document_count": 4
+      "document_count": 1
     },
     {
       "path": "projects/2025/P-001",
@@ -417,21 +430,21 @@
       "document_count": 1
     },
     {
-      "path": "users",
-      "name": "users",
-      "document_count": 1
+      "path": "联系人/principals",
+      "name": "principals",
+      "document_count": 13
     },
     {
-      "path": "users/profiles",
+      "path": "联系人/profiles",
       "name": "profiles",
       "document_count": 2
     }
   ],
   "stats": {
-    "total_documents": 21,
-    "total_blocks": 125,
-    "total_anchors": 125
+    "total_documents": 22,
+    "total_blocks": 132,
+    "total_anchors": 132
   },
-  "repo_head": "1870a0c4725e64063a3bed607b74c3a9be515b57",
+  "repo_head": "ed71c5a07df9533357b32f60872e8612aaee2f46",
   "stale": false
 }

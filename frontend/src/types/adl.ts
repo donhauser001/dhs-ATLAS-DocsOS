@@ -81,7 +81,51 @@ export interface Frontmatter {
   title?: string;
   tags?: string[];
   visibility?: string;
+  atlas?: AtlasFrontmatter;
   [key: string]: unknown;
+}
+
+/**
+ * Atlas 功能声明 (Phase 3.3)
+ */
+export type AtlasFunctionType =
+  | 'principal'
+  | 'entity_list'
+  | 'entity_detail'
+  | 'config'
+  | 'registry'
+  | 'client'
+  | 'dashboard';
+
+export type AtlasCapability =
+  | 'auth.login'
+  | 'auth.session'
+  | 'auth.oauth'
+  | 'nav.sidebar'
+  | 'nav.header'
+  | 'nav.breadcrumb'
+  | 'api.public'
+  | 'api.protected'
+  | 'api.admin'
+  | 'render.card'
+  | 'render.table'
+  | 'render.detail'
+  | 'render.form';
+
+export interface AtlasNavigationConfig {
+  visible: boolean;
+  icon?: string;
+  label?: string;
+  order?: number;
+  parent?: string;
+}
+
+export interface AtlasFrontmatter {
+  function: AtlasFunctionType;
+  entity_type?: string;
+  capabilities?: AtlasCapability[];
+  navigation?: AtlasNavigationConfig;
+  required_fields?: string[];
 }
 
 /**

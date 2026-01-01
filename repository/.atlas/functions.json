@@ -1,0 +1,389 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-01-01T18:24:51.037Z",
+  "repo_head": "ed71c5a07df9533357b32f60872e8612aaee2f46",
+  "functions": {
+    "entity_list": {
+      "documents": [
+        {
+          "path": "客户管理.md",
+          "id": "",
+          "title": "客户管理",
+          "capabilities": [
+            "nav.sidebar"
+          ],
+          "indexed_fields": {
+            "id": "",
+            "title": "",
+            "status": "draft"
+          },
+          "navigation": {
+            "visible": true,
+            "icon": "building",
+            "label": "客户管理",
+            "order": 20
+          },
+          "entity_type": "client"
+        },
+        {
+          "path": "用户列表.md",
+          "id": "user-list",
+          "title": "系统用户",
+          "capabilities": [
+            "nav.sidebar"
+          ],
+          "indexed_fields": {
+            "id": "user-list",
+            "title": "系统用户",
+            "status": "active",
+            "source.function": "principal"
+          },
+          "navigation": {
+            "visible": true,
+            "icon": "users",
+            "label": "用户管理",
+            "order": 10
+          },
+          "entity_type": "user"
+        }
+      ],
+      "count": 2
+    },
+    "principal": {
+      "documents": [
+        {
+          "path": "联系人/principals/u-chenqi.md",
+          "id": "u-chenqi",
+          "title": "陈七",
+          "capabilities": [
+            "auth.login",
+            "auth.session"
+          ],
+          "indexed_fields": {
+            "id": "u-chenqi",
+            "title": "",
+            "status": "active",
+            "display_name": "陈七",
+            "identity.emails": [
+              "chen-qi@example.com"
+            ],
+            "identity.phones": [
+              "13893649480"
+            ]
+          },
+          "navigation": {
+            "visible": false
+          }
+        },
+        {
+          "path": "联系人/principals/u-li.md",
+          "id": "u-li",
+          "title": "李主管",
+          "capabilities": [
+            "auth.login",
+            "auth.session"
+          ],
+          "indexed_fields": {
+            "id": "u-li",
+            "title": "",
+            "status": "active",
+            "display_name": "李主管",
+            "identity.emails": [
+              "li@company.com"
+            ],
+            "identity.phones": [
+              "139-0000-0002"
+            ]
+          },
+          "navigation": {
+            "visible": false
+          }
+        },
+        {
+          "path": "联系人/principals/u-lisi.md",
+          "id": "u-lisi",
+          "title": "李四",
+          "capabilities": [
+            "auth.login",
+            "auth.session"
+          ],
+          "indexed_fields": {
+            "id": "u-lisi",
+            "title": "",
+            "status": "active",
+            "display_name": "李四",
+            "identity.emails": [
+              "li-si@example.com"
+            ],
+            "identity.phones": [
+              "13867394852"
+            ]
+          },
+          "navigation": {
+            "visible": false
+          }
+        },
+        {
+          "path": "联系人/principals/u-liuba.md",
+          "id": "u-liuba",
+          "title": "刘八",
+          "capabilities": [
+            "auth.login",
+            "auth.session"
+          ],
+          "indexed_fields": {
+            "id": "u-liuba",
+            "title": "",
+            "status": "active",
+            "display_name": "刘八",
+            "identity.emails": [
+              "liu-ba@example.com"
+            ],
+            "identity.phones": [
+              "13857618579"
+            ]
+          },
+          "navigation": {
+            "visible": false
+          }
+        },
+        {
+          "path": "联系人/principals/u-sunjiu.md",
+          "id": "u-sunjiu",
+          "title": "孙九",
+          "capabilities": [
+            "auth.login",
+            "auth.session"
+          ],
+          "indexed_fields": {
+            "id": "u-sunjiu",
+            "title": "",
+            "status": "active",
+            "display_name": "孙九",
+            "identity.emails": [
+              "sun-jiu@example.com"
+            ],
+            "identity.phones": [
+              "13855909346"
+            ]
+          },
+          "navigation": {
+            "visible": false
+          }
+        },
+        {
+          "path": "联系人/principals/u-wang.md",
+          "id": "u-wang",
+          "title": "王编辑",
+          "capabilities": [
+            "auth.login",
+            "auth.session"
+          ],
+          "indexed_fields": {
+            "id": "u-wang",
+            "title": "",
+            "status": "active",
+            "display_name": "王编辑",
+            "identity.emails": [
+              "wang@zhongxin.com",
+              "wang.personal@gmail.com"
+            ],
+            "identity.phones": [
+              "138-0000-0001"
+            ]
+          },
+          "navigation": {
+            "visible": false
+          }
+        },
+        {
+          "path": "联系人/principals/u-wangwu.md",
+          "id": "u-wangwu",
+          "title": "王五",
+          "capabilities": [
+            "auth.login",
+            "auth.session"
+          ],
+          "indexed_fields": {
+            "id": "u-wangwu",
+            "title": "",
+            "status": "active",
+            "display_name": "王五",
+            "identity.emails": [
+              "wang-wu@example.com"
+            ],
+            "identity.phones": [
+              "13852435610"
+            ]
+          },
+          "navigation": {
+            "visible": false
+          }
+        },
+        {
+          "path": "联系人/principals/u-wuyi.md",
+          "id": "u-wuyi",
+          "title": "吴一",
+          "capabilities": [
+            "auth.login",
+            "auth.session"
+          ],
+          "indexed_fields": {
+            "id": "u-wuyi",
+            "title": "",
+            "status": "active",
+            "display_name": "吴一",
+            "identity.emails": [
+              "wu-yi@example.com"
+            ],
+            "identity.phones": [
+              "13802192418"
+            ]
+          },
+          "navigation": {
+            "visible": false
+          }
+        },
+        {
+          "path": "联系人/principals/u-zhang.md",
+          "id": "u-zhang",
+          "title": "张会计",
+          "capabilities": [
+            "auth.login",
+            "auth.session"
+          ],
+          "indexed_fields": {
+            "id": "u-zhang",
+            "title": "",
+            "status": "active",
+            "display_name": "张会计",
+            "identity.emails": [
+              "zhang@company.com"
+            ],
+            "identity.phones": [
+              "137-0000-0003"
+            ]
+          },
+          "navigation": {
+            "visible": false
+          }
+        },
+        {
+          "path": "联系人/principals/u-zhangsan.md",
+          "id": "u-zhangsan",
+          "title": "张三",
+          "capabilities": [
+            "auth.login",
+            "auth.session"
+          ],
+          "indexed_fields": {
+            "id": "u-zhangsan",
+            "title": "",
+            "status": "active",
+            "display_name": "张三",
+            "identity.emails": [
+              "zhang-san@example.com"
+            ],
+            "identity.phones": [
+              "13899213514"
+            ]
+          },
+          "navigation": {
+            "visible": false
+          }
+        },
+        {
+          "path": "联系人/principals/u-zhaoliu.md",
+          "id": "u-zhaoliu",
+          "title": "赵六",
+          "capabilities": [
+            "auth.login",
+            "auth.session"
+          ],
+          "indexed_fields": {
+            "id": "u-zhaoliu",
+            "title": "",
+            "status": "active",
+            "display_name": "赵六",
+            "identity.emails": [
+              "zhao-liu@example.com"
+            ],
+            "identity.phones": [
+              "13873954565"
+            ]
+          },
+          "navigation": {
+            "visible": false
+          }
+        },
+        {
+          "path": "联系人/principals/u-zhenger.md",
+          "id": "u-zhenger",
+          "title": "郑二",
+          "capabilities": [
+            "auth.login",
+            "auth.session"
+          ],
+          "indexed_fields": {
+            "id": "u-zhenger",
+            "title": "",
+            "status": "active",
+            "display_name": "郑二",
+            "identity.emails": [
+              "zheng-er@example.com"
+            ],
+            "identity.phones": [
+              "13822227739"
+            ]
+          },
+          "navigation": {
+            "visible": false
+          }
+        },
+        {
+          "path": "联系人/principals/u-zhoushi.md",
+          "id": "u-zhoushi",
+          "title": "周十",
+          "capabilities": [
+            "auth.login",
+            "auth.session"
+          ],
+          "indexed_fields": {
+            "id": "u-zhoushi",
+            "title": "",
+            "status": "active",
+            "display_name": "周十",
+            "identity.emails": [
+              "zhou-shi@example.com"
+            ],
+            "identity.phones": [
+              "13883841702"
+            ]
+          },
+          "navigation": {
+            "visible": false
+          }
+        }
+      ],
+      "count": 13
+    }
+  },
+  "navigation": {
+    "sidebar": [
+      {
+        "path": "用户列表.md",
+        "icon": "users",
+        "label": "用户管理",
+        "order": 10,
+        "url": "/workspace/用户列表.md"
+      },
+      {
+        "path": "客户管理.md",
+        "icon": "building",
+        "label": "客户管理",
+        "order": 20,
+        "url": "/workspace/客户管理.md"
+      }
+    ]
+  }
+}

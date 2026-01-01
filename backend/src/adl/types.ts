@@ -145,13 +145,143 @@ export interface MachineBlock {
 // ============================================================
 
 /**
+ * AtlasFunctionType - 功能类型枚举
+ * 
+ * Phase 3.3: 功能声明系统
+ */
+export type AtlasFunctionType = 
+  | 'principal'      // 登录主体
+  | 'entity_list'    // 实体列表页
+  | 'entity_detail'  // 实体详情页
+  | 'config'         // 系统配置
+  | 'registry'       // 注册表
+  | 'client'         // 客户
+  | 'dashboard';     // 仪表盘
+
+/**
+ * AtlasCapability - 能力标签
+ * 
+ * Phase 3.3: 文档能力声明
+ */
+export type AtlasCapability = 
+  // 认证能力
+  | 'auth.login'      // 可用于登录验证
+  | 'auth.session'    // 可创建用户会话
+  | 'auth.oauth'      // 支持 OAuth 登录
+  // 导航能力
+  | 'nav.sidebar'     // 显示在侧边栏
+  | 'nav.header'      // 显示在顶部导航
+  | 'nav.breadcrumb'  // 显示在面包屑
+  // API 能力
+  | 'api.public'      // 无需认证可访问
+  | 'api.protected'   // 需要认证
+  | 'api.admin'       // 需要管理员权限
+  // 渲染能力
+  | 'render.card'     // 支持卡片视图
+  | 'render.table'    // 支持表格视图
+  | 'render.detail'   // 支持详情视图
+  | 'render.form';    // 支持表单编辑
+
+/**
+ * AtlasNavigationConfig - 导航配置
+ * 
+ * Phase 3.3: 文档声明自己的导航配置
+ */
+export interface AtlasNavigationConfig {
+  /** 是否在导航中显示 */
+  visible: boolean;
+  /** 图标（Lucide icon name） */
+  icon?: string;
+  /** 显示名称 */
+  label?: string;
+  /** 排序权重（数字越小越靠前） */
+  order?: number;
+  /** 父级菜单 ID */
+  parent?: string;
+}
+
+/**
+ * AtlasFrontmatter - ATLAS 功能声明
+ * 
+ * Phase 3.3: 文档通过此结构声明自己的功能身份
+ * 
+ * 示例：
+ * ```yaml
+ * atlas:
+ *   function: principal
+ *   capabilities: [auth.login, auth.session]
+ *   navigation:
+ *     visible: false
+ * ```
+ */
+export interface AtlasFrontmatter {
+  /** 功能身份（必选） */
+  function: AtlasFunctionType;
+  /** 实体类型（当 function 为 entity_* 时使用） */
+  entity_type?: string;
+  /** 能力标签（可选） */
+  capabilities?: AtlasCapability[];
+  /** 导航配置（可选） */
+  navigation?: AtlasNavigationConfig;
+  /** 基础字段约束（可选，用于验证） */
+  required_fields?: string[];
+}
+
+/**
+ * 判断值是否为 AtlasFrontmatter
+ */
+export function isAtlasFrontmatter(value: unknown): value is AtlasFrontmatter {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const obj = value as Record<string, unknown>;
+  return typeof obj.function === 'string';
+}
+
+/**
+ * 已知的功能类型列表
+ */
+export const ATLAS_FUNCTION_TYPES: AtlasFunctionType[] = [
+  'principal',
+  'entity_list',
+  'entity_detail',
+  'config',
+  'registry',
+  'client',
+  'dashboard',
+];
+
+/**
+ * 已知的能力标签列表
+ */
+export const ATLAS_CAPABILITIES: AtlasCapability[] = [
+  'auth.login',
+  'auth.session',
+  'auth.oauth',
+  'nav.sidebar',
+  'nav.header',
+  'nav.breadcrumb',
+  'api.public',
+  'api.protected',
+  'api.admin',
+  'render.card',
+  'render.table',
+  'render.detail',
+  'render.form',
+];
+
+/**
  * ADL Document - 解析后的文档结构
+ * 
+ * Phase 3.3: 新增 atlas 字段
  */
 export interface ADLDocument {
   /** 文件路径 */
   path: string;
   /** Frontmatter 元数据 */
   frontmatter: Record<string, unknown>;
+  /** ATLAS 功能声明（从 frontmatter.atlas 提取） */
+  atlas?: AtlasFrontmatter;
   /** 所有 Block */
   blocks: Block[];
   /** 原始文本 */
