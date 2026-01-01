@@ -124,6 +124,97 @@ ADL v0.3 定义以下内置类型：
 | `project` | 项目 | client, services, timeline |
 | `event` | 事件记录 | timestamp, actor |
 | `token_group` | Token 定义组 | tokens |
+| `principal` | 登录主体 | display_name, identity, profiles |
+| `profile` | 业务档案 | profile_type, principal_ref |
+| `registry` | 类型注册表 | registry_type, types |
+| `client` | 客户 | address, category, rating |
+
+#### Principal（登录主体）
+
+Principal 是系统中的统一登录身份，一个人对应一个 Principal。
+
+```yaml
+type: principal
+id: u-wang
+display_name: 王编辑
+status: active
+
+identity:
+  emails: ["wang@example.com"]
+  phones: ["138-0000-0001"]
+  avatar: { token: avatar.default }
+  handles:
+    wechat: wang_editor
+
+profiles:
+  - { ref: "#p-employee-u-wang" }
+  - { ref: "#p-client-contact-u-wang" }
+
+$display:
+  color: { token: color.brand.primary }
+  icon: { token: icon.general.user }
+```
+
+| 字段 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| `display_name` | ✅ | string | 显示名称 |
+| `identity` | ✅ | object | 身份信息（emails, phones, avatar, handles） |
+| `profiles` | ❌ | array | 关联的业务档案引用列表 |
+
+#### Profile（业务档案）
+
+Profile 是 Principal 在特定业务语境下的身份投影。一个 Principal 可以有多个 Profile。
+
+```yaml
+type: profile
+profile_type: employee
+id: p-employee-u-wang
+principal_ref: { ref: "#u-wang" }
+status: active
+
+employee:
+  employee_no: DHS-0001
+  department: 设计部
+  title: 创意总监
+
+$display:
+  color: { token: color.status.active }
+  icon: { token: icon.general.user }
+```
+
+| 字段 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| `profile_type` | ✅ | string | 档案类型（employee, client_contact 等） |
+| `principal_ref` | ✅ | ref | 所属 Principal 的引用 |
+
+**Profile Types（档案类型）**:
+- `employee` - 员工档案，包含 employee_no, department, title
+- `client_contact` - 客户联系人档案，包含 client_ref, role_title
+
+#### Registry（类型注册表）
+
+Registry 用于定义和管理 Profile Types 等可扩展类型。
+
+```yaml
+type: registry
+registry_type: profile_types
+id: profile-type-registry
+title: Profile 类型注册表
+status: active
+
+types:
+  employee:
+    title: 员工档案
+    required_fields: [principal_ref, employee.employee_no]
+  client_contact:
+    title: 客户联系人档案
+    required_fields: [principal_ref, client_ref]
+```
+
+| 字段 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| `registry_type` | ✅ | string | 注册表类型（profile_types 等） |
+| `types` | ✅ | object | 类型定义映射 |
 
 ### 2.2 自定义类型
 
@@ -416,11 +507,16 @@ $display, $constraints, $meta, $computed
 | contact | con | con-zhang-san |
 | project | prj | prj-P-001 |
 | event | evt | evt-2025-01-01 |
+| principal | u | u-wang |
+| profile | p | p-employee-u-wang |
+| registry | reg | reg-profile-types |
+| client | client | client-zhongxin |
 
 ### C. 版本历史
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
+| v0.3.1 | 2025-01-01 | 新增 principal/profile/registry/client 类型 |
 | v0.3 | 2025-01-01 | 语义分层、字段分类、禁止写法 |
 | v1.1 | 2024-12-01 | Query 语言、Proposal reason |
 | v1.0 | 2024-11-01 | 初始规范 |

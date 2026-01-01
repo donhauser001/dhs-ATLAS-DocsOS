@@ -1,0 +1,60 @@
+{
+  "entries": {
+    "u-wang": {
+      "id": "u-wang",
+      "display_name": "王编辑",
+      "status": "active",
+      "emails": [
+        "wang@zhongxin.com",
+        "wang.personal@gmail.com"
+      ],
+      "phones": [
+        "138-0000-0001"
+      ],
+      "document": "users/principals.md",
+      "anchor": "u-wang",
+      "profile_count": 2,
+      "profile_ids": [
+        "p-employee-u-wang",
+        "p-client-contact-u-wang"
+      ]
+    },
+    "u-li": {
+      "id": "u-li",
+      "display_name": "李主管",
+      "status": "active",
+      "emails": [
+        "li@company.com"
+      ],
+      "phones": [
+        "139-0000-0002"
+      ],
+      "document": "users/principals.md",
+      "anchor": "u-li",
+      "profile_count": 1,
+      "profile_ids": [
+        "p-employee-u-li"
+      ]
+    },
+    "u-zhang": {
+      "id": "u-zhang",
+      "display_name": "张会计",
+      "status": "active",
+      "emails": [
+        "zhang@company.com"
+      ],
+      "phones": [
+        "137-0000-0003"
+      ],
+      "document": "users/principals.md",
+      "anchor": "u-zhang",
+      "profile_count": 2,
+      "profile_ids": [
+        "p-employee-u-zhang",
+        "p-client-contact-u-zhang"
+      ]
+    }
+  },
+  "updated_at": "2026-01-01T15:30:00.060Z",
+  "count": 3
+}

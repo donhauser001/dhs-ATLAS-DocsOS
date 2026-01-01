@@ -1,0 +1,14 @@
+{
+  "edges": {
+    "client-zhongxin": [
+      "p-client-contact-u-wang"
+    ],
+    "client-kuaishou": [
+      "p-client-contact-u-zhang"
+    ],
+    "client-xinshijie": [
+      "p-client-contact-zhao"
+    ]
+  },
+  "updated_at": "2026-01-01T15:30:00.060Z"
+}

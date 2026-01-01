@@ -1,0 +1,19 @@
+{
+  "edges": {
+    "u-wang": [
+      "p-client-contact-u-wang",
+      "p-employee-u-wang"
+    ],
+    "u-zhang": [
+      "p-client-contact-u-zhang",
+      "p-employee-u-zhang"
+    ],
+    "u-zhao": [
+      "p-client-contact-zhao"
+    ],
+    "u-li": [
+      "p-employee-u-li"
+    ]
+  },
+  "updated_at": "2026-01-01T15:30:00.060Z"
+}

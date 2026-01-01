@@ -5,6 +5,8 @@ import adlRouter from './api/adl.js';
 import workspaceRouter from './api/workspace.js';
 import authRouter from './api/auth.js';
 import tokensRouter from './api/tokens.js';
+import principalsRouter from './api/principals.js';
+import profilesRouter from './api/profiles.js';
 import { config, validateConfig, ensureDirectories } from './config.js';
 import { optionalAuth } from './middleware/permission.js';
 
@@ -59,6 +61,9 @@ app.use('/api/auth', authRouter);
 app.use('/api/adl', adlRouter);
 app.use('/api/workspace', workspaceRouter);
 app.use('/api/tokens', tokensRouter);
+// Phase 3.1: Principal + Profile 用户体系
+app.use('/api/principals', principalsRouter);
+app.use('/api/profiles', profilesRouter);
 
 app.listen(config.port, () => {
   console.log(`ATLAS Runtime listening on port ${config.port}`);

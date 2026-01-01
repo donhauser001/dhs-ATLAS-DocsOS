@@ -103,6 +103,55 @@ const BUILTIN_TYPES: Record<string, TypeSchema> = {
       fields: { type: 'array', required: true },
     },
   },
+  // Phase 3.1: Principal + Profile 用户体系
+  principal: {
+    name: 'principal',
+    fields: {
+      display_name: { type: 'string', required: true },
+      identity: { type: 'object', required: true },
+      profiles: { type: 'array', required: false },
+    },
+  },
+  profile: {
+    name: 'profile',
+    fields: {
+      profile_type: { type: 'string', required: true },
+      principal_ref: { type: 'ref', required: true },
+      // employee 类型的字段
+      employee: { type: 'object', required: false },
+      // client_contact 类型的字段
+      client_ref: { type: 'ref', required: false },
+      role_title: { type: 'string', required: false },
+      department: { type: 'string', required: false },
+      relationship_strength: { type: 'number', required: false },
+      notes: { type: 'string', required: false },
+      tags: { type: 'array', required: false },
+      default_roles: { type: 'array', required: false },
+    },
+  },
+  registry: {
+    name: 'registry',
+    fields: {
+      registry_type: { type: 'string', required: true },
+      types: { type: 'object', required: true },
+    },
+  },
+  client: {
+    name: 'client',
+    fields: {
+      address: { type: 'string', required: false },
+      category: { type: 'ref', required: false },
+      rating: { type: 'number', required: false },
+      invoiceType: { type: 'string', required: false },
+      invoiceInfo: { type: 'string', required: false },
+    },
+  },
+  'client-category': {
+    name: 'client-category',
+    fields: {
+      description: { type: 'string', required: false },
+    },
+  },
 };
 
 interface FieldSchema {
@@ -202,11 +251,166 @@ export function validateBlock(block: Block): SchemaValidationResult {
     validateDisplayFields(machine.$display as Record<string, unknown>, anchor, errors, warnings);
   }
   
+  // 7. Phase 3.1: 检查 Principal 类型特定字段
+  if (machine.type === 'principal') {
+    validatePrincipalBlock(machine, anchor, errors, warnings);
+  }
+  
+  // 8. Phase 3.1: 检查 Profile 类型特定字段
+  if (machine.type === 'profile') {
+    validateProfileBlock(machine, anchor, errors, warnings);
+  }
+  
   return {
     valid: errors.length === 0,
     errors,
     warnings,
   };
+}
+
+/**
+ * 校验 Principal Block
+ */
+function validatePrincipalBlock(
+  machine: MachineBlock,
+  anchor: string,
+  errors: SchemaError[],
+  warnings: SchemaError[]
+): void {
+  // 检查 display_name
+  if (!machine.display_name) {
+    errors.push({
+      code: 'E001',
+      message: 'Principal missing required field: display_name',
+      anchor,
+      field: 'display_name',
+      suggestion: 'Add "display_name" field to the principal block',
+    });
+  }
+  
+  // 检查 identity
+  if (!machine.identity) {
+    errors.push({
+      code: 'E001',
+      message: 'Principal missing required field: identity',
+      anchor,
+      field: 'identity',
+      suggestion: 'Add "identity" object with emails/phones fields',
+    });
+  } else {
+    const identity = machine.identity as Record<string, unknown>;
+    // identity 应该至少有 emails 或 phones
+    if (!identity.emails && !identity.phones) {
+      warnings.push({
+        code: 'W005',
+        message: 'Principal identity should have at least emails or phones',
+        anchor,
+        field: 'identity',
+        suggestion: 'Add "emails" or "phones" array to identity',
+      });
+    }
+  }
+  
+  // 检查 profiles 是否为数组
+  if (machine.profiles && !Array.isArray(machine.profiles)) {
+    errors.push({
+      code: 'E203',
+      message: 'Field "profiles" must be an array',
+      anchor,
+      field: 'profiles',
+    });
+  }
+}
+
+/**
+ * 校验 Profile Block
+ */
+function validateProfileBlock(
+  machine: MachineBlock,
+  anchor: string,
+  errors: SchemaError[],
+  warnings: SchemaError[]
+): void {
+  // 检查 profile_type
+  if (!machine.profile_type) {
+    errors.push({
+      code: 'E001',
+      message: 'Profile missing required field: profile_type',
+      anchor,
+      field: 'profile_type',
+      suggestion: 'Add "profile_type" field (employee or client_contact)',
+    });
+  }
+  
+  // 检查 principal_ref
+  if (!machine.principal_ref) {
+    errors.push({
+      code: 'E001',
+      message: 'Profile missing required field: principal_ref',
+      anchor,
+      field: 'principal_ref',
+      suggestion: 'Add "principal_ref" reference to the associated principal',
+    });
+  }
+  
+  const profileType = machine.profile_type as string;
+  
+  // 根据 profile_type 检查特定字段
+  if (profileType === 'employee') {
+    const employee = machine.employee as Record<string, unknown> | undefined;
+    if (!employee) {
+      errors.push({
+        code: 'E001',
+        message: 'Employee profile missing required field: employee',
+        anchor,
+        field: 'employee',
+        suggestion: 'Add "employee" object with employee_no, department, title',
+      });
+    } else {
+      if (!employee.employee_no) {
+        errors.push({
+          code: 'E001',
+          message: 'Employee profile missing required field: employee.employee_no',
+          anchor,
+          field: 'employee.employee_no',
+        });
+      }
+      if (!employee.department) {
+        errors.push({
+          code: 'E001',
+          message: 'Employee profile missing required field: employee.department',
+          anchor,
+          field: 'employee.department',
+        });
+      }
+      if (!employee.title) {
+        errors.push({
+          code: 'E001',
+          message: 'Employee profile missing required field: employee.title',
+          anchor,
+          field: 'employee.title',
+        });
+      }
+    }
+  } else if (profileType === 'client_contact') {
+    if (!machine.client_ref) {
+      errors.push({
+        code: 'E001',
+        message: 'Client contact profile missing required field: client_ref',
+        anchor,
+        field: 'client_ref',
+        suggestion: 'Add "client_ref" reference to the associated client',
+      });
+    }
+    if (!machine.role_title) {
+      errors.push({
+        code: 'E001',
+        message: 'Client contact profile missing required field: role_title',
+        anchor,
+        field: 'role_title',
+      });
+    }
+  }
 }
 
 /**

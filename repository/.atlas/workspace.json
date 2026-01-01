@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2026-01-01T14:34:11.679Z",
+  "generated_at": "2026-01-01T15:30:00.042Z",
   "documents": [
     {
       "path": "contacts/客户-刘八.md",
@@ -322,6 +322,67 @@
         "milestone"
       ],
       "modified_at": "2025-12-31T18:32:33.784Z"
+    },
+    {
+      "path": "system/profile-types.md",
+      "title": "Profile 类型注册表",
+      "document_type": "facts",
+      "block_count": 3,
+      "anchors": [
+        "reg-profile-types",
+        "profile-type-employee",
+        "profile-type-client-contact"
+      ],
+      "types": [
+        "registry",
+        "type_definition"
+      ],
+      "modified_at": "2026-01-01T15:20:21.153Z"
+    },
+    {
+      "path": "users/principals.md",
+      "title": "王编辑",
+      "document_type": "facts",
+      "block_count": 3,
+      "anchors": [
+        "u-wang",
+        "u-li",
+        "u-zhang"
+      ],
+      "types": [
+        "principal"
+      ],
+      "modified_at": "2026-01-01T15:20:40.297Z"
+    },
+    {
+      "path": "users/profiles/client-contacts.md",
+      "title": "王编辑 - 中信出版社联系人",
+      "document_type": "facts",
+      "block_count": 3,
+      "anchors": [
+        "p-client-contact-u-wang",
+        "p-client-contact-u-zhang",
+        "p-client-contact-zhao"
+      ],
+      "types": [
+        "profile"
+      ],
+      "modified_at": "2026-01-01T15:21:03.652Z"
+    },
+    {
+      "path": "users/profiles/employees.md",
+      "title": "王编辑 - 员工档案",
+      "document_type": "facts",
+      "block_count": 3,
+      "anchors": [
+        "p-employee-u-wang",
+        "p-employee-u-li",
+        "p-employee-u-zhang"
+      ],
+      "types": [
+        "profile"
+      ],
+      "modified_at": "2026-01-01T15:20:51.003Z"
     }
   ],
   "directories": [
@@ -349,13 +410,28 @@
       "path": "projects/2025/P-003",
       "name": "P-003",
       "document_count": 1
+    },
+    {
+      "path": "system",
+      "name": "system",
+      "document_count": 1
+    },
+    {
+      "path": "users",
+      "name": "users",
+      "document_count": 1
+    },
+    {
+      "path": "users/profiles",
+      "name": "profiles",
+      "document_count": 2
     }
   ],
   "stats": {
-    "total_documents": 17,
-    "total_blocks": 113,
-    "total_anchors": 113
+    "total_documents": 21,
+    "total_blocks": 125,
+    "total_anchors": 125
   },
-  "repo_head": "e1c4da4375afbc389fad10d531ac12814c96ea8b",
+  "repo_head": "1870a0c4725e64063a3bed607b74c3a9be515b57",
   "stale": false
 }

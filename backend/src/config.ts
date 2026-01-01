@@ -55,6 +55,11 @@ export const config = {
   // Blocks 索引文件路径
   blocksIndexPath: join(PROJECT_ROOT, 'repository', '.atlas', 'index', 'blocks.json'),
   
+  // Phase 3.1: Principal/Profile 索引目录
+  entitiesDir: join(PROJECT_ROOT, 'repository', '.atlas', 'entities'),
+  edgesDir: join(PROJECT_ROOT, 'repository', '.atlas', 'edges'),
+  searchDir: join(PROJECT_ROOT, 'repository', '.atlas', 'search'),
+  
   // 用户数据文件路径
   usersPath: join(PROJECT_ROOT, 'repository', '.atlas', 'users.json'),
   
@@ -80,6 +85,10 @@ export function ensureDirectories(): void {
     config.atlasDataDir,
     config.proposalsDir,
     config.indexDir,
+    // Phase 3.1: Principal/Profile 索引目录
+    config.entitiesDir,
+    config.edgesDir,
+    config.searchDir,
   ];
   
   for (const dir of dirs) {

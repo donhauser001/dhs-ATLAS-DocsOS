@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Routes, Route, Link } from 'react-router-dom'
 import { GenesisPage } from './pages/genesis'
 import { WorkspacePage, DocumentPage } from './pages/workspace'
+import { UsersPage, UserDetailPage } from './pages/users'
 import { LoginPage } from './pages/LoginPage'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { TokenProvider } from '@/components/tokens/TokenProvider'
@@ -78,6 +79,17 @@ function App() {
           <Route path="/workspace/*" element={
             <ProtectedRoute>
               <DocumentPage />
+            </ProtectedRoute>
+          } />
+          {/* Phase 3.1: 用户管理页面 */}
+          <Route path="/users" element={
+            <ProtectedRoute>
+              <UsersPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/users/:id" element={
+            <ProtectedRoute>
+              <UserDetailPage />
             </ProtectedRoute>
           } />
         </Routes>
