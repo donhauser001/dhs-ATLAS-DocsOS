@@ -4,6 +4,7 @@ import session from 'express-session';
 import adlRouter from './api/adl.js';
 import workspaceRouter from './api/workspace.js';
 import authRouter from './api/auth.js';
+import tokensRouter from './api/tokens.js';
 import { config, validateConfig, ensureDirectories } from './config.js';
 import { optionalAuth } from './middleware/permission.js';
 
@@ -57,6 +58,7 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/adl', adlRouter);
 app.use('/api/workspace', workspaceRouter);
+app.use('/api/tokens', tokensRouter);
 
 app.listen(config.port, () => {
   console.log(`ATLAS Runtime listening on port ${config.port}`);

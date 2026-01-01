@@ -1,12 +1,17 @@
 /**
  * Block Renderer - ADL Block 渲染器
  * 
+ * Phase 2.5: 语义驱动渲染
+ * 
  * 根据 ViewMode 渲染 Block 的阅读态或编辑态
+ * 颜色和图标从 Token 系统获取，而非硬编码
  */
 
 import { type Block, type UpdateYamlOp } from '@/api/adl';
 import { FieldRenderer } from './FieldRenderer';
 import ReactMarkdown from 'react-markdown';
+import { useDisplayConfigs, getStatusDisplaySync, getTypeDisplaySync } from '@/hooks/useTokens';
+import * as LucideIcons from 'lucide-react';
 
 interface BlockRendererProps {
   block: Block;
@@ -15,36 +20,53 @@ interface BlockRendererProps {
   pendingChanges: UpdateYamlOp[];
 }
 
-// 根据 type 获取状态颜色
-function getStatusColor(status: string): string {
-  switch (status) {
-    case 'active':
-      return 'bg-green-100 text-green-800';
-    case 'draft':
-      return 'bg-amber-100 text-amber-800';
-    case 'archived':
-      return 'bg-slate-100 text-slate-800';
-    default:
-      return 'bg-slate-100 text-slate-800';
+/**
+ * 获取 Lucide 图标组件
+ */
+function getLucideIcon(name: string | null): React.ComponentType<{ className?: string }> | null {
+  if (!name) return null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const icons = LucideIcons as any;
+  const Icon = icons[name];
+  if (typeof Icon === 'function') {
+    return Icon as React.ComponentType<{ className?: string }>;
   }
+  return null;
 }
 
-// 根据 type 获取类型标签颜色
-function getTypeColor(type: string): string {
-  switch (type) {
-    case 'service':
-      return 'bg-blue-100 text-blue-800';
-    case 'category':
-      return 'bg-purple-100 text-purple-800';
-    case 'event':
-      return 'bg-orange-100 text-orange-800';
-    default:
-      return 'bg-slate-100 text-slate-800';
-  }
+/**
+ * 判断字段是否为系统命名空间（以 $ 开头）
+ */
+function isSystemField(key: string): boolean {
+  return key.startsWith('$');
+}
+
+/**
+ * 过滤出业务字段（排除系统字段和基础字段）
+ */
+function getBusinessFields(machine: Record<string, unknown>): [string, unknown][] {
+  const excludedKeys = ['type', 'id', 'status', 'title'];
+  return Object.entries(machine).filter(
+    ([key]) => !excludedKeys.includes(key) && !isSystemField(key)
+  );
 }
 
 export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }: BlockRendererProps) {
   const { machine, body, anchor, heading } = block;
+  
+  // Phase 2.5: 从 Token 系统获取状态和类型的显现配置
+  const { statusDisplay, typeDisplay, loading } = useDisplayConfigs(
+    machine.status as string,
+    machine.type
+  );
+  
+  // 使用同步版本作为回退（当 Token 系统未加载完成时）
+  const finalStatusDisplay = statusDisplay || getStatusDisplaySync(machine.status as string);
+  const finalTypeDisplay = typeDisplay || getTypeDisplaySync(machine.type);
+  
+  // 获取图标组件
+  const StatusIcon = getLucideIcon(finalStatusDisplay.icon);
+  const TypeIcon = getLucideIcon(finalTypeDisplay.icon);
   
   // 检查字段是否有 pending change
   function getPendingValue(path: string): unknown | undefined {
@@ -64,14 +86,29 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
     onFieldChange(anchor, path, value, originalValue);
   }
   
+  // 生成动态样式（基于 Token 系统的颜色）
+  const typeStyle = {
+    backgroundColor: finalTypeDisplay.bg || '#F1F5F9',
+    color: finalTypeDisplay.text || '#475569',
+  };
+  
+  const statusStyle = {
+    backgroundColor: finalStatusDisplay.bg || '#F1F5F9',
+    color: finalStatusDisplay.text || '#475569',
+  };
+  
   return (
     <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
       {/* Header */}
       <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {/* Type Badge */}
-            <span className={`px-2 py-0.5 text-xs font-medium rounded ${getTypeColor(machine.type)}`}>
+            {/* Type Badge - 语义驱动 */}
+            <span 
+              className="px-2 py-0.5 text-xs font-medium rounded inline-flex items-center gap-1"
+              style={typeStyle}
+            >
+              {TypeIcon && <TypeIcon className="w-3 h-3" />}
               {machine.type}
             </span>
             
@@ -80,8 +117,12 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
               {machine.title || heading}
             </h3>
             
-            {/* Status Badge */}
-            <span className={`px-2 py-0.5 text-xs font-medium rounded ${getStatusColor(machine.status)}`}>
+            {/* Status Badge - 语义驱动 */}
+            <span 
+              className="px-2 py-0.5 text-xs font-medium rounded inline-flex items-center gap-1"
+              style={statusStyle}
+            >
+              {StatusIcon && <StatusIcon className="w-3 h-3" />}
               {machine.status}
             </span>
           </div>
@@ -104,21 +145,19 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
           // Read View
           <div>
             {/* Machine fields as read-only display */}
+            {/* Phase 2.5: 只显示业务字段，过滤掉 $display 等系统字段 */}
             <div className="grid grid-cols-2 gap-4 mb-6">
-              {Object.entries(machine)
-                .filter(([key]) => !['type', 'id', 'status', 'title'].includes(key))
-                .map(([key, value]) => (
-                  <div key={key}>
-                    <div className="text-sm text-slate-500 mb-1">{key}</div>
-                    <div className="text-slate-900">
-                      {typeof value === 'object' 
-                        ? JSON.stringify(value, null, 2)
-                        : String(value)
-                      }
-                    </div>
+              {getBusinessFields(machine).map(([key, value]) => (
+                <div key={key}>
+                  <div className="text-sm text-slate-500 mb-1">{key}</div>
+                  <div className="text-slate-900">
+                    {typeof value === 'object' 
+                      ? JSON.stringify(value, null, 2)
+                      : String(value)
+                    }
                   </div>
-                ))
-              }
+                </div>
+              ))}
             </div>
             
             {/* Body as Markdown */}
@@ -154,56 +193,60 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
                 hasChange={getPendingValue('title') !== undefined}
               />
               
-              {/* Other fields based on machine block */}
-              {Object.entries(machine)
-                .filter(([key]) => !['type', 'id', 'status', 'title'].includes(key))
-                .map(([key, value]) => {
-                  const fieldType = inferFieldType(value);
-                  const displayValue = getDisplayValue(key, value);
-                  
-                  // 处理嵌套对象（如 price）
-                  if (fieldType === 'object' && typeof value === 'object' && value !== null) {
-                    return (
-                      <div key={key} className="border border-slate-200 rounded-lg p-4">
-                        <div className="text-sm font-medium text-slate-700 mb-3">{key}</div>
-                        <div className="space-y-3">
-                          {Object.entries(value as Record<string, unknown>).map(([subKey, subValue]) => {
-                            const path = `${key}.${subKey}`;
-                            const subType = inferFieldType(subValue);
-                            return (
-                              <FieldRenderer
-                                key={path}
-                                label={subKey}
-                                path={path}
-                                value={getDisplayValue(path, subValue)}
-                                type={subType}
-                                onChange={(v) => handleChange(path, v)}
-                                hasChange={getPendingValue(path) !== undefined}
-                              />
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  }
-                  
+              {/* Other business fields (exclude system fields like $display) */}
+              {getBusinessFields(machine).map(([key, value]) => {
+                const fieldType = inferFieldType(value);
+                const displayValue = getDisplayValue(key, value);
+                
+                // 处理嵌套对象（如 price）
+                if (fieldType === 'object' && typeof value === 'object' && value !== null) {
                   return (
-                    <FieldRenderer
-                      key={key}
-                      label={key}
-                      path={key}
-                      value={displayValue}
-                      type={fieldType}
-                      onChange={(v) => handleChange(key, v)}
-                      hasChange={getPendingValue(key) !== undefined}
-                    />
+                    <div key={key} className="border border-slate-200 rounded-lg p-4">
+                      <div className="text-sm font-medium text-slate-700 mb-3">{key}</div>
+                      <div className="space-y-3">
+                        {Object.entries(value as Record<string, unknown>).map(([subKey, subValue]) => {
+                          const path = `${key}.${subKey}`;
+                          const subType = inferFieldType(subValue);
+                          return (
+                            <FieldRenderer
+                              key={path}
+                              label={subKey}
+                              path={path}
+                              value={getDisplayValue(path, subValue)}
+                              type={subType}
+                              onChange={(v) => handleChange(path, v)}
+                              hasChange={getPendingValue(path) !== undefined}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
                   );
-                })
-              }
+                }
+                
+                return (
+                  <FieldRenderer
+                    key={key}
+                    label={key}
+                    path={key}
+                    value={displayValue}
+                    type={fieldType}
+                    onChange={(v) => handleChange(key, v)}
+                    hasChange={getPendingValue(key) !== undefined}
+                  />
+                );
+              })}
             </div>
           </div>
         )}
       </div>
+      
+      {/* Loading indicator for Token system */}
+      {loading && (
+        <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
+          <div className="text-sm text-slate-400">加载语义系统...</div>
+        </div>
+      )}
     </div>
   );
 }
@@ -233,4 +276,3 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
 }
 
 export default BlockRenderer;
-

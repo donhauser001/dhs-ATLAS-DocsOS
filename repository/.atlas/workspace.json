@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2026-01-01T03:20:36.698Z",
+  "generated_at": "2026-01-01T03:33:39.065Z",
   "documents": [
     {
       "path": "contacts/客户-刘八.md",
@@ -133,6 +133,25 @@
       "modified_at": "2025-12-31T18:32:33.785Z"
     },
     {
+      "path": "genesis/tokens.md",
+      "title": "品牌色",
+      "document_type": "facts",
+      "block_count": 7,
+      "anchors": [
+        "color-brand",
+        "color-status",
+        "color-type",
+        "icon-general",
+        "icon-status",
+        "icon-type",
+        "spacing-base"
+      ],
+      "types": [
+        "token_group"
+      ],
+      "modified_at": "2026-01-01T03:27:11.279Z"
+    },
+    {
       "path": "genesis/服务示例.md",
       "title": "品牌设计",
       "document_type": "facts",
@@ -148,7 +167,7 @@
         "category",
         "service"
       ],
-      "modified_at": "2026-01-01T03:20:36.552Z"
+      "modified_at": "2026-01-01T03:33:38.918Z"
     },
     {
       "path": "projects/2025/P-001/项目主文档.md",
@@ -211,7 +230,7 @@
     {
       "path": "genesis",
       "name": "genesis",
-      "document_count": 1
+      "document_count": 2
     },
     {
       "path": "projects/2025/P-001",
@@ -230,10 +249,10 @@
     }
   ],
   "stats": {
-    "total_documents": 14,
-    "total_blocks": 27,
-    "total_anchors": 27
+    "total_documents": 15,
+    "total_blocks": 34,
+    "total_anchors": 34
   },
-  "repo_head": "df4786b52b610b0e0829e00529639ea7efe29cb1",
+  "repo_head": "ed2fea9e84abb179bf185c01783868b81a768f8d",
   "stale": false
 }

@@ -131,6 +131,84 @@
       }
     },
     {
+      "anchor": "color-brand",
+      "document": "genesis/tokens.md",
+      "heading": "品牌色",
+      "title": "品牌色系统",
+      "type": "token_group",
+      "status": "active",
+      "searchable": {
+        "id": "color.brand",
+        "title": "品牌色系统",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "color-status",
+      "document": "genesis/tokens.md",
+      "heading": "状态色",
+      "title": "状态色系统",
+      "type": "token_group",
+      "status": "active",
+      "searchable": {
+        "id": "color.status",
+        "title": "状态色系统",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "color-type",
+      "document": "genesis/tokens.md",
+      "heading": "类型色",
+      "title": "类型色系统",
+      "type": "token_group",
+      "status": "active",
+      "searchable": {
+        "id": "color.type",
+        "title": "类型色系统",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "icon-general",
+      "document": "genesis/tokens.md",
+      "heading": "通用图标",
+      "title": "通用图标",
+      "type": "token_group",
+      "status": "active",
+      "searchable": {
+        "id": "icon.general",
+        "title": "通用图标",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "icon-status",
+      "document": "genesis/tokens.md",
+      "heading": "状态图标",
+      "title": "状态图标",
+      "type": "token_group",
+      "status": "active",
+      "searchable": {
+        "id": "icon.status",
+        "title": "状态图标",
+        "status": "active"
+      }
+    },
+    {
+      "anchor": "icon-type",
+      "document": "genesis/tokens.md",
+      "heading": "类型图标",
+      "title": "类型图标",
+      "type": "token_group",
+      "status": "active",
+      "searchable": {
+        "id": "icon.type",
+        "title": "类型图标",
+        "status": "active"
+      }
+    },
+    {
       "anchor": "proj-P-001",
       "document": "projects/2025/P-001/项目主文档.md",
       "heading": "星云科技品牌升级项目",
@@ -290,12 +368,12 @@
       "anchor": "cat-brand-design",
       "document": "genesis/服务示例.md",
       "heading": "品牌设计",
-      "title": "品牌设计1",
+      "title": "品牌设计",
       "type": "category",
       "status": "active",
       "searchable": {
         "id": "brand-design",
-        "title": "品牌设计1",
+        "title": "品牌设计",
         "status": "active"
       }
     },
@@ -323,7 +401,9 @@
         "id": "S-001",
         "title": "品牌VI设计",
         "status": "active",
-        "category": "cat-brand-design"
+        "category": {
+          "ref": "#cat-brand-design"
+        }
       }
     },
     {
@@ -337,7 +417,9 @@
         "id": "S-002",
         "title": "产品界面设计",
         "status": "active",
-        "category": "cat-digital-product"
+        "category": {
+          "ref": "#cat-digital-product"
+        }
       }
     },
     {
@@ -351,9 +433,11 @@
         "id": "S-003",
         "title": "品牌策略咨询",
         "status": "draft",
-        "category": "cat-brand-design"
+        "category": {
+          "ref": "#cat-brand-design"
+        }
       }
     }
   ],
-  "updated_at": "2026-01-01T03:20:36.684Z"
+  "updated_at": "2026-01-01T03:33:39.051Z"
 }

@@ -2,7 +2,92 @@
  * ADL Types - Atlas Document Language 类型定义
  * 
  * 基于 ADL Spec v1.0
+ * Phase 2.5: 语义引用类型
  */
+
+// ============================================================
+// 语义引用类型（Phase 2.5）
+// ============================================================
+
+/**
+ * TokenRef - Token 语义引用
+ * 
+ * 用于引用 Design Tokens 中定义的语义值
+ * 例如：{ token: "color.brand.primary" }
+ */
+export interface TokenRef {
+  token: string;
+}
+
+/**
+ * AnchorRef - Anchor 引用
+ * 
+ * 用于引用其他 Block
+ * 例如：{ ref: "#cat-brand-design" }
+ */
+export interface AnchorRef {
+  ref: string;
+}
+
+/**
+ * SemanticValue - 语义化值
+ * 
+ * 可以是字面量，也可以是语义引用
+ */
+export type SemanticValue = 
+  | string 
+  | number 
+  | boolean 
+  | TokenRef 
+  | AnchorRef;
+
+/**
+ * DisplayHints - 显现提示
+ * 
+ * 给渲染器的指令，告诉 UI 如何显现这个对象
+ * 在 Machine Block 中使用 $display 命名空间
+ */
+export interface DisplayHints {
+  /** 主色引用 */
+  color?: TokenRef;
+  /** 图标引用 */
+  icon?: TokenRef;
+  /** 背景色引用 */
+  bgColor?: TokenRef;
+  /** 其他显现提示 */
+  [key: string]: TokenRef | undefined;
+}
+
+/**
+ * 判断值是否为 TokenRef
+ */
+export function isTokenRef(value: unknown): value is TokenRef {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'token' in value &&
+    typeof (value as TokenRef).token === 'string'
+  );
+}
+
+/**
+ * 判断值是否为 AnchorRef
+ */
+export function isAnchorRef(value: unknown): value is AnchorRef {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'ref' in value &&
+    typeof (value as AnchorRef).ref === 'string'
+  );
+}
+
+/**
+ * 判断值是否为语义引用（TokenRef 或 AnchorRef）
+ */
+export function isSemanticRef(value: unknown): value is TokenRef | AnchorRef {
+  return isTokenRef(value) || isAnchorRef(value);
+}
 
 // ============================================================
 // Block 相关类型
@@ -30,6 +115,8 @@ export interface Block {
 
 /**
  * Machine Block - 机器可解析的结构化数据
+ * 
+ * Phase 2.5: 支持 $display 命名空间
  */
 export interface MachineBlock {
   /** 对象类型 */
@@ -40,6 +127,15 @@ export interface MachineBlock {
   status: 'active' | 'archived' | 'draft';
   /** 显示标题 */
   title: string;
+  
+  /**
+   * 显现提示（Phase 2.5）
+   * 
+   * 给渲染器的指令，告诉 UI 如何显现这个对象
+   * 普通字段是业务数据，$display 是显现指令
+   */
+  $display?: DisplayHints;
+  
   /** 其他字段 */
   [key: string]: unknown;
 }

@@ -16,7 +16,7 @@
  * 6. 移除 repositoryRoot 参数，通过 Registry 获取文档
  */
 
-import { findBlockByAnchor, getBlockValue } from './parser.js';
+import { findBlockByAnchor, getBlockValue, parseADL } from './parser.js';
 // Phase 1.5/2: 使用 Registry 作为文档发现的唯一入口
 import { getDocument, resolveSafePath } from '../services/workspace-registry.js';
 import type { Proposal, ValidationResult, ValidationError, Operation } from './types.js';
