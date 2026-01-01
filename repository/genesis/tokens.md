@@ -2,6 +2,7 @@
 # ============================================================
 # Design Tokens 定义文档
 # Phase 2.5: 语言与显现校正
+# Phase 3.0: Token 角色分类
 # ============================================================
 version: "1.0"
 document_type: facts
@@ -16,6 +17,18 @@ author: system
 > 
 > 其他文档通过 `{ token: xxx }` 引用这些语义定义，
 > 而不是直接写字面量值。
+
+---
+
+## Token 角色分类
+
+Phase 3.0 将 Token 分为三类角色：
+
+| 类型 | 示例 | 作用 |
+|------|------|------|
+| **Semantic Token** | `brand.primary` | 业务语义 - 表达品牌、业务概念 |
+| **UI Role Token** | `block.header.bg` | 显现角色 - 定义 UI 组件的视觉属性 |
+| **System Token** | `status.draft` | 状态语义 - 表达系统状态、类型 |
 
 ---
 
@@ -270,6 +283,155 @@ tokens:
 ```
 
 间距系统基于 4px 网格，与 Tailwind CSS 兼容。
+
+---
+
+## UI 角色 Token（Phase 3.0）
+
+### Block 显现角色 {#ui-block}
+
+```yaml
+type: token_group
+id: ui.block
+status: active
+title: Block 显现角色
+role: ui_role
+tokens:
+  header.bg:
+    value: "#F8FAFC"
+    description: Block 头部背景色
+  header.border:
+    value: "#E2E8F0"
+    description: Block 头部边框色
+  body.bg:
+    value: "#FFFFFF"
+    description: Block 内容区背景色
+  body.border:
+    value: "#E2E8F0"
+    description: Block 边框色
+  hover.bg:
+    value: "#F1F5F9"
+    description: Block 悬停背景色
+  selected.border:
+    value: "#8B5CF6"
+    description: Block 选中边框色
+```
+
+Block 显现角色定义了 Block 卡片的视觉属性，确保所有 Block 具有一致的外观。
+
+---
+
+### 字段显现角色 {#ui-field}
+
+```yaml
+type: token_group
+id: ui.field
+status: active
+title: 字段显现角色
+role: ui_role
+tokens:
+  label.color:
+    value: "#64748B"
+    description: 字段标签颜色
+  value.color:
+    value: "#1E293B"
+    description: 字段值颜色
+  input.bg:
+    value: "#FFFFFF"
+    description: 输入框背景色
+  input.border:
+    value: "#CBD5E1"
+    description: 输入框边框色
+  input.focus.border:
+    value: "#8B5CF6"
+    description: 输入框聚焦边框色
+  readonly.bg:
+    value: "#F8FAFC"
+    description: 只读字段背景色
+  changed.bg:
+    value: "#FEF3C7"
+    description: 已修改字段背景色
+  changed.border:
+    value: "#F59E0B"
+    description: 已修改字段边框色
+```
+
+字段显现角色定义了表单字段的视觉属性，包括正常态、聚焦态、只读态和修改态。
+
+---
+
+### 导航显现角色 {#ui-nav}
+
+```yaml
+type: token_group
+id: ui.nav
+status: active
+title: 导航显现角色
+role: ui_role
+tokens:
+  sidebar.bg:
+    value: "#1E293B"
+    description: 侧边栏背景色
+  sidebar.text:
+    value: "#CBD5E1"
+    description: 侧边栏文字色
+  sidebar.active.bg:
+    value: "#334155"
+    description: 侧边栏激活项背景色
+  sidebar.active.text:
+    value: "#FFFFFF"
+    description: 侧边栏激活项文字色
+  breadcrumb.text:
+    value: "#64748B"
+    description: 面包屑文字色
+  breadcrumb.separator:
+    value: "#CBD5E1"
+    description: 面包屑分隔符颜色
+  breadcrumb.current:
+    value: "#1E293B"
+    description: 面包屑当前项颜色
+```
+
+导航显现角色定义了侧边栏和面包屑导航的视觉属性。
+
+---
+
+### Proposal 显现角色 {#ui-proposal}
+
+```yaml
+type: token_group
+id: ui.proposal
+status: active
+title: Proposal 显现角色
+role: ui_role
+tokens:
+  pending.bg:
+    value: "#FEF3C7"
+    description: 待审批 Proposal 背景色
+  pending.border:
+    value: "#F59E0B"
+    description: 待审批 Proposal 边框色
+  approved.bg:
+    value: "#DCFCE7"
+    description: 已批准 Proposal 背景色
+  approved.border:
+    value: "#22C55E"
+    description: 已批准 Proposal 边框色
+  rejected.bg:
+    value: "#FEE2E2"
+    description: 已拒绝 Proposal 背景色
+  rejected.border:
+    value: "#EF4444"
+    description: 已拒绝 Proposal 边框色
+  diff.added.bg:
+    value: "#DCFCE7"
+    description: Diff 新增内容背景色
+  diff.removed.bg:
+    value: "#FEE2E2"
+    description: Diff 删除内容背景色
+```
+
+Proposal 显现角色定义了变更提案相关的视觉属性。
 
 ---
 

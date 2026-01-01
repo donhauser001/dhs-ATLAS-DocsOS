@@ -2,6 +2,7 @@
  * Token Resolver - Design Tokens 解析服务
  * 
  * Phase 2.5: 语言与显现校正
+ * Phase 3.0: 确定性显现映射
  * 
  * 职责：
  * 1. 从 genesis/tokens.md 加载 Token 定义
@@ -12,6 +13,11 @@
  * - Token 文档是事实源
  * - .atlas/tokens.json 是派生缓存
  * - 所有语义引用必须能回溯到 Token 定义
+ * 
+ * Phase 3.0 规则：
+ * - 不允许模糊匹配
+ * - 不允许 fallback 魔法
+ * - 未定义的 token 必须报错
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'fs';
@@ -174,6 +180,24 @@ export function clearTokenCache(): void {
 }
 
 // ============================================================
+// Phase 3.0: 错误类型
+// ============================================================
+
+/**
+ * Token 解析错误
+ */
+export class TokenResolveError extends Error {
+  constructor(
+    public code: string,
+    message: string,
+    public tokenPath: string
+  ) {
+    super(message);
+    this.name = 'TokenResolveError';
+  }
+}
+
+// ============================================================
 // Token 解析
 // ============================================================
 
@@ -197,6 +221,66 @@ export async function getTokenDefinition(path: string): Promise<TokenDefinition 
 export async function resolveToken(path: string): Promise<string | null> {
   const def = await getTokenDefinition(path);
   return def?.value || null;
+}
+
+/**
+ * Phase 3.0: 严格模式解析 Token
+ * 
+ * 不允许模糊匹配，未定义的 token 抛出错误
+ * 
+ * @param path Token 路径
+ * @throws TokenResolveError 如果 token 不存在
+ */
+export async function resolveTokenStrict(path: string): Promise<string> {
+  const def = await getTokenDefinition(path);
+  
+  if (!def) {
+    throw new TokenResolveError(
+      'E101',
+      `Token '${path}' not found`,
+      path
+    );
+  }
+  
+  if (!def.value) {
+    throw new TokenResolveError(
+      'E102',
+      `Token '${path}' has no value defined`,
+      path
+    );
+  }
+  
+  return def.value;
+}
+
+/**
+ * Phase 3.0: 严格模式解析 Token 变体
+ * 
+ * @param path Token 路径
+ * @param variant 变体名
+ * @throws TokenResolveError 如果 token 或变体不存在
+ */
+export async function resolveTokenVariantStrict(path: string, variant: string): Promise<string> {
+  const def = await getTokenDefinition(path);
+  
+  if (!def) {
+    throw new TokenResolveError(
+      'E101',
+      `Token '${path}' not found`,
+      path
+    );
+  }
+  
+  const value = def[variant];
+  if (!value) {
+    throw new TokenResolveError(
+      'E103',
+      `Token '${path}' has no variant '${variant}'`,
+      path
+    );
+  }
+  
+  return value;
 }
 
 /**
@@ -227,6 +311,26 @@ export async function resolveValue(value: unknown): Promise<unknown> {
 }
 
 /**
+ * Phase 3.0: 严格模式解析值
+ * 
+ * 如果是 TokenRef 则严格解析，字面量值会被拒绝
+ * 
+ * @param value 必须是 TokenRef
+ * @throws TokenResolveError 如果不是 TokenRef 或 token 不存在
+ */
+export async function resolveValueStrict(value: unknown): Promise<string> {
+  if (!isTokenRef(value)) {
+    throw new TokenResolveError(
+      'E104',
+      'Value must be a token reference, literal values are not allowed',
+      String(value)
+    );
+  }
+  
+  return resolveTokenStrict(value.token);
+}
+
+/**
  * 解析 DisplayHints 中的所有 TokenRef
  * 
  * @param hints DisplayHints 对象
@@ -238,6 +342,25 @@ export async function resolveDisplayHints(hints: DisplayHints): Promise<Record<s
   for (const [key, tokenRef] of Object.entries(hints)) {
     if (tokenRef && isTokenRef(tokenRef)) {
       result[key] = await resolveToken(tokenRef.token);
+    }
+  }
+  
+  return result;
+}
+
+/**
+ * Phase 3.0: 严格模式解析 DisplayHints
+ * 
+ * 所有字段必须使用 TokenRef，且 token 必须存在
+ * 
+ * @throws TokenResolveError 如果任何 token 不存在
+ */
+export async function resolveDisplayHintsStrict(hints: DisplayHints): Promise<Record<string, string>> {
+  const result: Record<string, string> = {};
+  
+  for (const [key, tokenRef] of Object.entries(hints)) {
+    if (tokenRef && isTokenRef(tokenRef)) {
+      result[key] = await resolveTokenStrict(tokenRef.token);
     }
   }
   

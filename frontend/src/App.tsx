@@ -4,9 +4,11 @@ import { GenesisPage } from './pages/genesis'
 import { WorkspacePage, DocumentPage } from './pages/workspace'
 import { LoginPage } from './pages/LoginPage'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { TokenProvider } from '@/components/tokens/TokenProvider'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/auth-store'
+import '@/styles/tokens.css'
 
 function Home() {
   const { user } = useAuthStore()
@@ -62,23 +64,25 @@ function App() {
   }, [checkAuth])
   
   return (
-    <TooltipProvider>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/genesis" element={<GenesisPage />} />
-        <Route path="/workspace" element={
-          <ProtectedRoute>
-            <WorkspacePage />
-          </ProtectedRoute>
-        } />
-        <Route path="/workspace/*" element={
-          <ProtectedRoute>
-            <DocumentPage />
-          </ProtectedRoute>
-        } />
-      </Routes>
-    </TooltipProvider>
+    <TokenProvider>
+      <TooltipProvider>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/genesis" element={<GenesisPage />} />
+          <Route path="/workspace" element={
+            <ProtectedRoute>
+              <WorkspacePage />
+            </ProtectedRoute>
+          } />
+          <Route path="/workspace/*" element={
+            <ProtectedRoute>
+              <DocumentPage />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </TooltipProvider>
+    </TokenProvider>
   )
 }
 

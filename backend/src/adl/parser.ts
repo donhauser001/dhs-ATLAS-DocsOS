@@ -62,7 +62,7 @@ function parseFrontmatter(lines: string[]): { frontmatter: Record<string, unknow
 /**
  * 解析所有 Blocks
  */
-function parseBlocks(lines: string[], startLine: number): Block[] {
+export function parseBlocks(lines: string[], startLine: number = 0): Block[] {
   const blocks: Block[] = [];
   const headingRegex = /^(#{1,6})\s+(.+?)\s*\{#([a-zA-Z0-9_-]+)\}\s*$/;
   

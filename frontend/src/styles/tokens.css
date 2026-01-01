@@ -1,0 +1,116 @@
+/**
+ * Design Tokens CSS 变量
+ * 
+ * Phase 3.0: 驱逐编码值
+ * 
+ * 这些变量由 Token 系统在运行时注入
+ * UI 组件应该使用这些变量而非硬编码色值
+ * 
+ * 注意：这里提供的是 fallback 值，实际值由 JS 注入
+ */
+
+:root {
+  /* ============================================================
+     品牌色（Semantic Token）
+     ============================================================ */
+  --color-brand-primary: #8B5CF6;
+  --color-brand-secondary: #3B82F6;
+  --color-brand-accent: #EC4899;
+  
+  /* ============================================================
+     状态色（System Token）
+     ============================================================ */
+  --color-status-active: #22C55E;
+  --color-status-active-bg: #DCFCE7;
+  --color-status-active-text: #166534;
+  
+  --color-status-draft: #F59E0B;
+  --color-status-draft-bg: #FEF3C7;
+  --color-status-draft-text: #92400E;
+  
+  --color-status-archived: #64748B;
+  --color-status-archived-bg: #F1F5F9;
+  --color-status-archived-text: #475569;
+  
+  --color-status-error: #EF4444;
+  --color-status-error-bg: #FEE2E2;
+  --color-status-error-text: #991B1B;
+  
+  --color-status-info: #3B82F6;
+  --color-status-info-bg: #DBEAFE;
+  --color-status-info-text: #1E40AF;
+  
+  /* ============================================================
+     类型色（System Token）
+     ============================================================ */
+  --color-type-service: #3B82F6;
+  --color-type-service-bg: #DBEAFE;
+  --color-type-service-text: #1E40AF;
+  
+  --color-type-category: #8B5CF6;
+  --color-type-category-bg: #EDE9FE;
+  --color-type-category-text: #6D28D9;
+  
+  --color-type-event: #F97316;
+  --color-type-event-bg: #FFEDD5;
+  --color-type-event-text: #C2410C;
+  
+  --color-type-contact: #06B6D4;
+  --color-type-contact-bg: #CFFAFE;
+  --color-type-contact-text: #0E7490;
+  
+  --color-type-project: #10B981;
+  --color-type-project-bg: #D1FAE5;
+  --color-type-project-text: #047857;
+  
+  /* ============================================================
+     UI 角色色（UI Role Token）
+     ============================================================ */
+  
+  /* Block */
+  --ui-block-header-bg: #F8FAFC;
+  --ui-block-header-border: #E2E8F0;
+  --ui-block-body-bg: #FFFFFF;
+  --ui-block-body-border: #E2E8F0;
+  --ui-block-hover-bg: #F1F5F9;
+  --ui-block-selected-border: #8B5CF6;
+  
+  /* Field */
+  --ui-field-label-color: #64748B;
+  --ui-field-value-color: #1E293B;
+  --ui-field-input-bg: #FFFFFF;
+  --ui-field-input-border: #CBD5E1;
+  --ui-field-input-focus-border: #8B5CF6;
+  --ui-field-readonly-bg: #F8FAFC;
+  --ui-field-changed-bg: #FEF3C7;
+  --ui-field-changed-border: #F59E0B;
+  
+  /* Navigation */
+  --ui-nav-sidebar-bg: #1E293B;
+  --ui-nav-sidebar-text: #CBD5E1;
+  --ui-nav-sidebar-active-bg: #334155;
+  --ui-nav-sidebar-active-text: #FFFFFF;
+  --ui-nav-breadcrumb-text: #64748B;
+  --ui-nav-breadcrumb-separator: #CBD5E1;
+  --ui-nav-breadcrumb-current: #1E293B;
+  
+  /* Proposal */
+  --ui-proposal-pending-bg: #FEF3C7;
+  --ui-proposal-pending-border: #F59E0B;
+  --ui-proposal-approved-bg: #DCFCE7;
+  --ui-proposal-approved-border: #22C55E;
+  --ui-proposal-rejected-bg: #FEE2E2;
+  --ui-proposal-rejected-border: #EF4444;
+  --ui-proposal-diff-added-bg: #DCFCE7;
+  --ui-proposal-diff-removed-bg: #FEE2E2;
+  
+  /* ============================================================
+     间距（Spacing Token）
+     ============================================================ */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+}
+
