@@ -56,6 +56,101 @@ function isSystemField(key: string): boolean {
 }
 
 /**
+ * 判断值是否为锚点引用
+ */
+function isAnchorRef(value: unknown): value is { ref: string } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'ref' in value &&
+    typeof (value as { ref: string }).ref === 'string'
+  );
+}
+
+/**
+ * 判断值是否为价格对象
+ */
+function isPriceObject(value: unknown): value is { base: number; unit?: string; currency?: string } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'base' in value &&
+    typeof (value as { base: number }).base === 'number'
+  );
+}
+
+/**
+ * 格式化价格显示
+ */
+function formatPrice(price: { base: number; unit?: string; currency?: string }): string {
+  const currencySymbols: Record<string, string> = {
+    CNY: '¥',
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+  };
+  const symbol = price.currency ? currencySymbols[price.currency] || price.currency : '¥';
+  const formatted = price.base.toLocaleString('zh-CN');
+  const unit = price.unit ? `/${price.unit}` : '';
+  return `${symbol}${formatted}${unit}`;
+}
+
+/**
+ * 渲染语义字段值
+ */
+function renderFieldValue(value: unknown): React.ReactNode {
+  // 锚点引用 - 显示为链接
+  if (isAnchorRef(value)) {
+    const anchorId = value.ref.replace(/^#/, '');
+    return (
+      <a 
+        href={value.ref} 
+        className="text-purple-600 hover:text-purple-800 hover:underline"
+      >
+        → {anchorId}
+      </a>
+    );
+  }
+  
+  // 价格对象 - 格式化显示
+  if (isPriceObject(value)) {
+    return (
+      <span className="font-medium text-emerald-600">
+        {formatPrice(value)}
+      </span>
+    );
+  }
+  
+  // 数组 - 显示为列表
+  if (Array.isArray(value)) {
+    return (
+      <ul className="list-disc list-inside">
+        {value.map((item, i) => (
+          <li key={i}>{typeof item === 'object' ? JSON.stringify(item) : String(item)}</li>
+        ))}
+      </ul>
+    );
+  }
+  
+  // 其他对象 - 显示为键值对
+  if (typeof value === 'object' && value !== null) {
+    return (
+      <dl className="text-sm">
+        {Object.entries(value).map(([k, v]) => (
+          <div key={k} className="flex gap-2">
+            <dt className="text-slate-500">{k}:</dt>
+            <dd>{typeof v === 'object' ? JSON.stringify(v) : String(v)}</dd>
+          </div>
+        ))}
+      </dl>
+    );
+  }
+  
+  // 简单值
+  return String(value);
+}
+
+/**
  * 过滤出业务字段（排除系统字段和基础字段）
  */
 function getBusinessFields(machine: Record<string, unknown>): [string, unknown][] {
@@ -227,16 +322,13 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
           // Read View
           <div>
             {/* Machine fields as read-only display */}
-            {/* Phase 2.5: 只显示业务字段，过滤掉 $display 等系统字段 */}
+            {/* Phase 3.0: 语义字段渲染 */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               {getBusinessFields(machine).map(([key, value]) => (
                 <div key={key}>
                   <div className="text-sm text-slate-500 mb-1">{key}</div>
                   <div className="text-slate-900">
-                    {typeof value === 'object' 
-                      ? JSON.stringify(value, null, 2)
-                      : String(value)
-                    }
+                    {renderFieldValue(value)}
                   </div>
                 </div>
               ))}
