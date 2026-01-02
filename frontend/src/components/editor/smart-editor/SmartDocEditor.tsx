@@ -2,7 +2,7 @@
  * SmartDocEditor - 固定键感知的智能文档编辑器
  */
 
-import { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
   Save, X, ChevronDown, ChevronUp,
   Lock, Loader2, Info, Code,
@@ -215,26 +215,57 @@ function FixedKeysSection({ fixedKeys, showFixedKeys, onToggle, onChange, getLab
   );
 }
 
-// 文档内容编辑区 - 可编辑的源码
+// 文档内容编辑区 - 带行号的可编辑源码
 function ContentEditor({ content, onChange }: { content: string; onChange: (value: string) => void }) {
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const lineNumbersRef = React.useRef<HTMLDivElement>(null);
+
+  // 计算行号
+  const lineCount = content.split('\n').length;
+  const lineNumbers = Array.from({ length: Math.max(lineCount, 20) }, (_, i) => i + 1);
+
+  // 同步滚动
+  const handleScroll = useCallback(() => {
+    if (textareaRef.current && lineNumbersRef.current) {
+      lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
+    }
+  }, []);
+
   return (
     <div className="px-6 py-4">
       <div className="mb-3 text-xs text-slate-500 flex items-center gap-2">
         <Code className="w-3.5 h-3.5" />
         文档内容（标题 + Machine Zone + Human Zone）
+        <span className="text-slate-400">· {lineCount} 行</span>
       </div>
-      <textarea
-        value={content}
-        onChange={(e) => onChange(e.target.value)}
-        spellCheck={false}
-        className={cn(
-          'w-full min-h-[400px] resize-y',
-          'bg-slate-900 text-slate-100 rounded-lg p-4',
-          'text-sm font-mono leading-relaxed',
-          'focus:outline-none focus:ring-2 focus:ring-blue-500/50',
-          'placeholder:text-slate-600'
-        )}
-        placeholder="# 文档标题 {#anchor}
+      <div className="relative flex rounded-lg overflow-hidden border border-slate-700">
+        {/* 行号区 */}
+        <div
+          ref={lineNumbersRef}
+          className="bg-slate-800 text-slate-500 text-right select-none overflow-hidden"
+          style={{ width: '3rem' }}
+        >
+          <div className="py-4 pr-2 text-sm font-mono leading-relaxed">
+            {lineNumbers.map((num) => (
+              <div key={num} className="h-[1.625rem]">{num}</div>
+            ))}
+          </div>
+        </div>
+        {/* 编辑区 */}
+        <textarea
+          ref={textareaRef}
+          value={content}
+          onChange={(e) => onChange(e.target.value)}
+          onScroll={handleScroll}
+          spellCheck={false}
+          className={cn(
+            'flex-1 min-h-[400px] resize-y',
+            'bg-slate-900 text-slate-100 p-4 pl-3',
+            'text-sm font-mono leading-relaxed',
+            'focus:outline-none',
+            'placeholder:text-slate-600'
+          )}
+          placeholder="# 文档标题 {#anchor}
 
 ```yaml
 type: principal
@@ -244,7 +275,8 @@ status: active
 ```
 
 这是文档的人类可读内容..."
-      />
+        />
+      </div>
     </div>
   );
 }
