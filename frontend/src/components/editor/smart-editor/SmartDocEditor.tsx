@@ -67,6 +67,18 @@ export function SmartDocEditor({
       });
   }, [documentPath]);
 
+  // 清除草稿（保存成功后）- 必须在 handleSave 之前定义
+  const clearDraft = useCallback(() => {
+    if (!documentPath) return;
+    const draftKey = `atlas-draft-${documentPath}`;
+    try {
+      localStorage.removeItem(draftKey);
+      setShowDraftRecovery(false);
+    } catch (e) {
+      console.warn('Failed to clear draft:', e);
+    }
+  }, [documentPath]);
+
   // 保存处理 - 集成自动补齐
   const handleSave = useCallback(async () => {
     if (!document || isSaving) return;
@@ -181,18 +193,6 @@ export function SmartDocEditor({
 
     return () => clearTimeout(timer);
   }, [documentPath, isDirty, buildFrontmatter, documentContent]);
-
-  // 清除草稿（保存成功后）
-  const clearDraft = useCallback(() => {
-    if (!documentPath) return;
-    const draftKey = `atlas-draft-${documentPath}`;
-    try {
-      localStorage.removeItem(draftKey);
-      setShowDraftRecovery(false);
-    } catch (e) {
-      console.warn('Failed to clear draft:', e);
-    }
-  }, [documentPath]);
 
   // 检测是否有未保存的草稿
   useEffect(() => {
