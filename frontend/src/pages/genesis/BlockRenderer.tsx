@@ -7,6 +7,7 @@
  * 颜色和图标从 Token 系统获取，而非硬编码
  */
 
+import { useState, useCallback } from 'react';
 import { type Block, type UpdateYamlOp } from '@/api/adl';
 import { FieldRenderer } from './FieldRenderer';
 import ReactMarkdown from 'react-markdown';
@@ -15,6 +16,7 @@ import { isTokenRef, type TokenRef } from '@/api/tokens';
 import * as LucideIcons from 'lucide-react';
 import { EntityIndexRenderer } from '@/components/EntityIndexRenderer';
 import { useLabels } from '@/providers/LabelProvider';
+import { SemanticYamlEditor } from '@/components/editor/semantic-yaml';
 
 interface BlockRendererProps {
   block: Block;
@@ -512,76 +514,23 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
             )}
           </div>
         ) : (
-          // Edit View
-          <div>
-            {/* Editable fields */}
-            <div className="space-y-4">
-              {/* Status field */}
-              <FieldRenderer
-                label="状态"
-                path="status"
-                value={getDisplayValue('status', machine.status)}
-                type="enum"
-                options={['active', 'draft', 'archived']}
-                onChange={(value) => handleChange('status', value)}
-                hasChange={getPendingValue('status') !== undefined}
-              />
-
-              {/* Title field */}
-              <FieldRenderer
-                label="标题"
-                path="title"
-                value={getDisplayValue('title', machine.title)}
-                type="string"
-                onChange={(value) => handleChange('title', value)}
-                hasChange={getPendingValue('title') !== undefined}
-              />
-
-              {/* Other business fields (exclude system fields like $display) */}
-              {getBusinessFields(machine).map(([key, value]) => {
-                const fieldType = inferFieldType(value);
-                const displayValue = getDisplayValue(key, value);
-
-                // 处理嵌套对象（如 price）
-                if (fieldType === 'object' && typeof value === 'object' && value !== null) {
-                  return (
-                    <div key={key} className="border border-slate-200 rounded-lg p-4">
-                      <div className="text-sm font-medium text-slate-700 mb-3">{key}</div>
-                      <div className="space-y-3">
-                        {Object.entries(value as Record<string, unknown>).map(([subKey, subValue]) => {
-                          const path = `${key}.${subKey}`;
-                          const subType = inferFieldType(subValue);
-                          return (
-                            <FieldRenderer
-                              key={path}
-                              label={subKey}
-                              path={path}
-                              value={getDisplayValue(path, subValue)}
-                              type={subType}
-                              onChange={(v) => handleChange(path, v)}
-                              hasChange={getPendingValue(path) !== undefined}
-                            />
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
+          // Edit View - Phase 3.7: 语义化 YAML 编辑
+          <SemanticYamlEditor
+            data={machine}
+            entityType={machine.type as string}
+            onChange={(newData) => {
+              // 找出变更的字段并触发 onFieldChange
+              for (const [key, newValue] of Object.entries(newData)) {
+                const oldValue = machine[key];
+                if (JSON.stringify(newValue) !== JSON.stringify(oldValue)) {
+                  onFieldChange(anchor, key, newValue, oldValue);
                 }
-
-                return (
-                  <FieldRenderer
-                    key={key}
-                    label={key}
-                    path={key}
-                    value={displayValue}
-                    type={fieldType}
-                    onChange={(v) => handleChange(key, v)}
-                    hasChange={getPendingValue(key) !== undefined}
-                  />
-                );
-              })}
-            </div>
-          </div>
+              }
+            }}
+            title={machine.title as string || machine.display_name as string || heading}
+            collapsible={false}
+            defaultExpanded={true}
+          />
         )}
       </div>
 
