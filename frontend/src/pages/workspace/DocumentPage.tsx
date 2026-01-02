@@ -2,6 +2,8 @@
  * DocumentPage - 文档详情页
  * 
  * Phase 3.3: 使用 RendererSelector 根据功能声明选择渲染器
+ * Phase 3.5: 添加智能 MD 编辑器模式
+ * Phase 3.6: 场景化视图系统
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -12,32 +14,57 @@ import { AnchorList } from '@/components/workspace/AnchorList';
 import { BlockRenderer } from '@/pages/genesis/BlockRenderer';
 import { ProposalPreview } from '@/pages/genesis/ProposalPreview';
 import { RendererSelector } from '@/components/RendererSelector';
+import { SmartDocEditor } from '@/components/editor/SmartDocEditor';
+import { ActionBar } from '@/components/action-bar';
+import { useViewModeConfig, useActionConfig, DefaultReadView } from '@/components/views';
+import { FunctionViewRegistry } from '@/registry';
 import { fetchDocument, type ADLDocument, type UpdateYamlOp } from '@/api/adl';
 import { fetchWorkspaceTree, type TreeNode } from '@/api/workspace';
 import { Button } from '@/components/ui/button';
 import { useLabels } from '@/providers/LabelProvider';
+import { FileText, FormInput, Code, List, Eye, Edit, Settings } from 'lucide-react';
+import type { ViewMode } from '@/registry/types';
 
-type ViewMode = 'read' | 'edit';
+// 视图模式图标映射
+const MODE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  read: FileText,
+  form: FormInput,
+  md: Code,
+  '阅读': FileText,
+  '列表': List,
+  '看板': Eye,
+  '表单': FormInput,
+  '编辑': Edit,
+  '配置': Settings,
+  '预览': Eye,
+  'MD编辑': Code,
+  'JSON': Code,
+  '批量编辑': FormInput,
+};
 
 /**
  * 判断是否使用特殊渲染器
- * 
- * Phase 3.3: 某些功能类型有专用渲染器
  */
 function shouldUseSpecialRenderer(doc: ADLDocument): boolean {
-  const atlasFunction = doc.frontmatter?.atlas?.function;
-
-  // 这些功能类型使用专用渲染器
+  const atlas = doc.frontmatter?.atlas as Record<string, unknown> | undefined;
+  const atlasFunction = atlas?.function as string | undefined;
   const specialFunctions = ['entity_list', 'dashboard'];
-
   return atlasFunction !== undefined && specialFunctions.includes(atlasFunction);
+}
+
+/**
+ * 获取功能标识
+ */
+function getDocumentFunction(doc: ADLDocument | null): string | undefined {
+  if (!doc) return undefined;
+  const atlas = doc.frontmatter?.atlas as Record<string, unknown> | undefined;
+  return atlas?.function as string | undefined;
 }
 
 export function DocumentPage() {
   const params = useParams();
   const docPath = params['*'] || '';
   
-  // Phase 3.3+: 注册制标签系统
   const { resolveLabel, isHidden } = useLabels();
 
   const [tree, setTree] = useState<TreeNode[]>([]);
@@ -46,6 +73,10 @@ export function DocumentPage() {
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('read');
   const [activeAnchor, setActiveAnchor] = useState<string | undefined>();
+
+  // Phase 3.6: 场景化视图配置
+  const viewModeConfig = useViewModeConfig(doc);
+  const actions = useActionConfig(doc);
 
   // Pending changes for proposal
   const [pendingChanges, setPendingChanges] = useState<UpdateYamlOp[]>([]);
@@ -63,6 +94,16 @@ export function DocumentPage() {
       loadDocument();
     }
   }, [docPath]);
+
+  // 文档加载后，设置默认视图模式
+  useEffect(() => {
+    if (doc && viewModeConfig.availableModes.length > 0) {
+      // 如果当前模式不可用，切换到默认模式
+      if (!viewModeConfig.availableModes.includes(viewMode)) {
+        setViewMode(viewModeConfig.defaultMode);
+      }
+    }
+  }, [doc, viewModeConfig.availableModes, viewModeConfig.defaultMode]);
 
   async function loadTree() {
     try {
@@ -111,7 +152,7 @@ export function DocumentPage() {
     setPendingChanges([]);
     setShowProposalPreview(false);
     loadDocument();
-    loadTree(); // Refresh tree to update stats
+    loadTree();
   }
 
   function handleAnchorClick(anchor: string) {
@@ -120,6 +161,11 @@ export function DocumentPage() {
     if (ref) {
       ref.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+  }
+
+  function handleAction(actionId: string) {
+    console.log('Action triggered:', actionId, doc);
+    // TODO: 实现具体操作逻辑
   }
 
   const sidebar = <WorkspaceTree tree={tree} />;
@@ -131,6 +177,12 @@ export function DocumentPage() {
       onAnchorClick={handleAnchorClick}
     />
   ) : null;
+
+  // 获取模式图标
+  const getModeIcon = (mode: ViewMode, label: string) => {
+    const Icon = MODE_ICONS[label] || MODE_ICONS[mode] || FileText;
+    return <Icon className="w-4 h-4" />;
+  };
 
   const content = (
     <div className="min-h-full">
@@ -144,27 +196,36 @@ export function DocumentPage() {
             </div>
 
             <div className="flex items-center gap-4">
-              {/* View Mode Toggle */}
+              {/* Phase 3.6: 场景化视图模式切换 */}
               <div className="flex bg-muted rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode('read')}
-                  className={`px-3 py-1.5 text-sm rounded-md transition-colors ${viewMode === 'read'
-                      ? 'bg-background shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                >
-                  阅读
-                </button>
-                <button
-                  onClick={() => setViewMode('edit')}
-                  className={`px-3 py-1.5 text-sm rounded-md transition-colors ${viewMode === 'edit'
-                      ? 'bg-background shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                >
-                  编辑
-                </button>
+                {viewModeConfig.availableModes.map(mode => {
+                  const label = viewModeConfig.getModeLabel(mode);
+                  return (
+                    <button
+                      key={mode}
+                      onClick={() => setViewMode(mode)}
+                      className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ${
+                        viewMode === mode
+                          ? 'bg-background shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {getModeIcon(mode, label)}
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
+
+              {/* Phase 3.6: 操作按钮 */}
+              {actions.length > 0 && viewMode === 'read' && (
+                <ActionBar
+                  actions={actions}
+                  document={doc}
+                  onAction={handleAction}
+                  onEdit={() => setViewMode('form')}
+                />
+              )}
 
               {/* Pending Changes */}
               {pendingChanges.length > 0 && (
@@ -205,87 +266,8 @@ export function DocumentPage() {
           <Button onClick={loadDocument}>重试</Button>
         </div>
       ) : doc ? (
-        // Phase 3.3: 根据功能声明选择渲染模式
-        shouldUseSpecialRenderer(doc) ? (
-          <RendererSelector
-            document={doc}
-            selectedAnchor={activeAnchor}
-            onBlockClick={(block) => handleAnchorClick(block.anchor)}
-          />
-        ) : (
-          <div className="p-6 max-w-4xl">
-            {/* Frontmatter - Phase 3.3+: 使用注册制标签 */}
-            {doc.frontmatter && Object.keys(doc.frontmatter).length > 0 && (
-              <div className="mb-6 p-4 bg-muted rounded-lg text-sm">
-                <div className="font-medium mb-2">文档元数据</div>
-                <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                  {Object.entries(doc.frontmatter).map(([key, value]) => {
-                    // 跳过敏感字段
-                    if (isHidden(key)) return null;
-                    
-                    // 特殊处理 atlas 对象
-                    if (key === 'atlas' && typeof value === 'object' && value !== null) {
-                      const atlas = value as Record<string, unknown>;
-                      return (
-                        <div key={key} className="col-span-2 border-t pt-2 mt-2">
-                          <div className="font-medium mb-1">功能声明</div>
-                          <div className="grid grid-cols-2 gap-2 pl-2">
-                            {atlas.function && (
-                              <div>
-                                <span className="opacity-70">功能类型:</span>{' '}
-                                <span className="text-foreground">{resolveLabel(atlas.function as string).label}</span>
-                              </div>
-                            )}
-                            {atlas.entity_type && (
-                              <div>
-                                <span className="opacity-70">实体类型:</span>{' '}
-                                <span className="text-foreground">{resolveLabel(atlas.entity_type as string).label}</span>
-                              </div>
-                            )}
-                            {Array.isArray(atlas.capabilities) && (
-                              <div className="col-span-2">
-                                <span className="opacity-70">功能能力:</span>{' '}
-                                <span className="text-foreground">
-                                  {atlas.capabilities.map((cap: string) => resolveLabel(cap).label).join(', ')}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    }
-                    
-                    // 普通字段 - 使用注册制标签
-                    const resolved = resolveLabel(key);
-                    return (
-                      <div key={key}>
-                        <span className="opacity-70">{resolved.label}:</span>{' '}
-                        <span className="text-foreground">{String(value)}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Blocks */}
-            <div className="space-y-6">
-              {doc.blocks.map((block) => (
-                <div
-                  key={block.anchor}
-                  ref={(el) => { blockRefs.current[block.anchor] = el; }}
-                >
-                  <BlockRenderer
-                    block={block}
-                    viewMode={viewMode}
-                    onFieldChange={handleFieldChange}
-                    pendingChanges={pendingChanges.filter(c => c.anchor === block.anchor)}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        )
+        // Phase 3.6: 场景化视图渲染
+        renderView()
       ) : null}
 
       {/* Proposal Preview Modal */}
@@ -300,6 +282,89 @@ export function DocumentPage() {
     </div>
   );
 
+  // 渲染视图内容
+  function renderView() {
+    if (!doc) return null;
+
+    const fn = getDocumentFunction(doc);
+
+    // MD 编辑模式 - 统一使用 SmartDocEditor
+    if (viewMode === 'md') {
+      return (
+        <SmartDocEditor
+          document={doc}
+          rawContent={doc.raw || ''}
+          documentPath={docPath}
+          onSave={async () => {
+            await loadDocument();
+          }}
+          onCancel={() => setViewMode('read')}
+        />
+      );
+    }
+
+    // 特殊渲染器（entity_list 等）
+    if (shouldUseSpecialRenderer(doc)) {
+      return (
+        <RendererSelector
+          document={doc}
+          selectedAnchor={activeAnchor}
+          onBlockClick={(block) => handleAnchorClick(block.anchor)}
+        />
+      );
+    }
+
+    // Phase 3.6: 场景化视图选择
+    // 尝试从注册表获取专属视图
+    const RegisteredView = fn ? FunctionViewRegistry.getViewComponent(fn, viewMode) : undefined;
+
+    if (RegisteredView) {
+      return (
+        <RegisteredView
+          document={doc}
+          onSave={async (data) => {
+            console.log('Save data:', data);
+            await loadDocument();
+          }}
+          onCancel={() => setViewMode('read')}
+          onViewModeChange={setViewMode}
+        />
+      );
+    }
+
+    // 表单模式 - 回退到默认 BlockRenderer
+    if (viewMode === 'form') {
+      return (
+        <div className="p-6 max-w-4xl">
+          {/* Blocks - 表单编辑模式 */}
+          <div className="space-y-6">
+            {doc.blocks.map((block) => (
+              <div
+                key={block.anchor}
+                ref={(el) => { blockRefs.current[block.anchor] = el; }}
+              >
+                <BlockRenderer
+                  block={block}
+                  viewMode="edit"
+                  onFieldChange={handleFieldChange}
+                  pendingChanges={pendingChanges.filter(c => c.anchor === block.anchor)}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // 阅读模式 - 使用默认阅读视图
+    return (
+      <DefaultReadView
+        document={doc}
+        onViewModeChange={setViewMode}
+      />
+    );
+  }
+
   return (
     <WorkspaceLayout
       sidebar={sidebar}
@@ -308,4 +373,3 @@ export function DocumentPage() {
     />
   );
 }
-

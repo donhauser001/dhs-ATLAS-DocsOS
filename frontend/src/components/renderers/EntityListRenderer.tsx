@@ -79,6 +79,41 @@ export function EntityListRenderer({
     const sourceFunction = (directoryBlock?.machine?.source as { function?: string })?.function;
     const targetFunction = sourceFunction || entityType || 'principal';
 
+    // 从文档 blocks 提取实体数据
+    const extractEntitiesFromBlocks = (): FunctionEntry[] => {
+        const blockEntities: FunctionEntry[] = [];
+        
+        for (const block of document.blocks) {
+            // 跳过没有 machine 数据的 blocks
+            if (!block.machine || typeof block.machine !== 'object') continue;
+            
+            // 跳过 directory_index 类型的 blocks
+            if (block.machine.type === 'directory_index' || block.machine.type === 'entity_index') continue;
+            
+            // 检查是否有 type 字段
+            const blockType = block.machine.type as string | undefined;
+            if (!blockType) continue;
+            
+            // 构建实体数据
+            const entity: FunctionEntry = {
+                path: `${document.path}#${block.anchor}`,
+                id: block.machine.id as string || block.anchor,
+                title: block.machine.title as string || block.machine.display_name as string || block.heading || block.anchor,
+                capabilities: [],
+                indexed_fields: {
+                    status: block.machine.status,
+                    category: block.machine.category,
+                    ...block.machine,
+                },
+                entity_type: blockType,
+            };
+            
+            blockEntities.push(entity);
+        }
+        
+        return blockEntities;
+    };
+
     // 获取数据
     useEffect(() => {
         async function fetchData() {
@@ -91,20 +126,34 @@ export function EntityListRenderer({
                     throw new Error('Failed to fetch entities');
                 }
                 const result = await response.json();
-                if (result.success) {
-                    setEntities(result.data.documents || []);
+                if (result.success && result.data.documents && result.data.documents.length > 0) {
+                    // API 有数据，使用 API 数据
+                    setEntities(result.data.documents);
                 } else {
-                    throw new Error(result.error || 'Unknown error');
+                    // API 无数据，尝试从文档 blocks 提取
+                    const blockEntities = extractEntitiesFromBlocks();
+                    if (blockEntities.length > 0) {
+                        setEntities(blockEntities);
+                    } else {
+                        setEntities([]);
+                    }
                 }
             } catch (err) {
-                setError(err instanceof Error ? err.message : 'Unknown error');
+                // API 失败，尝试从文档 blocks 提取
+                const blockEntities = extractEntitiesFromBlocks();
+                if (blockEntities.length > 0) {
+                    setEntities(blockEntities);
+                    setError(null);
+                } else {
+                    setError(err instanceof Error ? err.message : 'Unknown error');
+                }
             } finally {
                 setLoading(false);
             }
         }
 
         fetchData();
-    }, [targetFunction]);
+    }, [targetFunction, document.blocks]);
 
     // 过滤和分页
     const filteredEntities = entities.filter(entity => {

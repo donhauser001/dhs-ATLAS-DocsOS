@@ -311,6 +311,50 @@
       ]
     },
     {
+      "id": "document_types",
+      "name": "文档类型值",
+      "description": "document_type 字段的可选值",
+      "isSystem": false,
+      "items": [
+        {
+          "key": "facts",
+          "label": "事实文档",
+          "icon": "file-text",
+          "isSystem": true
+        },
+        {
+          "key": "project",
+          "label": "项目文档",
+          "icon": "folder-kanban",
+          "isSystem": true
+        },
+        {
+          "key": "note",
+          "label": "笔记",
+          "icon": "pencil",
+          "isSystem": true
+        },
+        {
+          "key": "system",
+          "label": "系统文档",
+          "icon": "settings",
+          "isSystem": true
+        },
+        {
+          "key": "navigation",
+          "label": "导航文档",
+          "icon": "compass",
+          "isSystem": true
+        },
+        {
+          "key": "config",
+          "label": "配置文档",
+          "icon": "sliders",
+          "isSystem": true
+        }
+      ]
+    },
+    {
       "id": "atlas_functions",
       "name": "ATLAS 功能类型",
       "description": "文档的功能声明类型",
@@ -344,6 +388,128 @@
           "key": "registry",
           "label": "注册表",
           "icon": "database",
+          "isSystem": true
+        },
+        {
+          "key": "client",
+          "label": "客户",
+          "icon": "building",
+          "isSystem": true
+        },
+        {
+          "key": "service",
+          "label": "服务",
+          "icon": "server",
+          "isSystem": true
+        },
+        {
+          "key": "category",
+          "label": "分类",
+          "icon": "folder-tree",
+          "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "capabilities",
+      "name": "能力类型",
+      "description": "文档的能力声明类型",
+      "isSystem": true,
+      "items": [
+        {
+          "key": "auth.login",
+          "label": "登录认证",
+          "icon": "key",
+          "color": "blue",
+          "category": "认证",
+          "isSystem": true
+        },
+        {
+          "key": "auth.session",
+          "label": "会话管理",
+          "icon": "shield",
+          "color": "blue",
+          "category": "认证",
+          "isSystem": true
+        },
+        {
+          "key": "crud.read",
+          "label": "读取",
+          "icon": "eye",
+          "color": "emerald",
+          "category": "数据操作",
+          "isSystem": true
+        },
+        {
+          "key": "crud.list",
+          "label": "列表查询",
+          "icon": "list",
+          "color": "emerald",
+          "category": "数据操作",
+          "isSystem": true
+        },
+        {
+          "key": "crud.filter",
+          "label": "筛选过滤",
+          "icon": "filter",
+          "color": "emerald",
+          "category": "数据操作",
+          "isSystem": true
+        },
+        {
+          "key": "crud.search",
+          "label": "搜索",
+          "icon": "search",
+          "color": "emerald",
+          "category": "数据操作",
+          "isSystem": true
+        },
+        {
+          "key": "crud.update",
+          "label": "更新",
+          "icon": "edit",
+          "color": "amber",
+          "category": "数据操作",
+          "isSystem": true
+        },
+        {
+          "key": "crud.delete",
+          "label": "删除",
+          "icon": "trash",
+          "color": "red",
+          "category": "数据操作",
+          "isSystem": true
+        },
+        {
+          "key": "workflow.status",
+          "label": "状态流转",
+          "icon": "git-branch",
+          "color": "violet",
+          "category": "工作流",
+          "isSystem": true
+        },
+        {
+          "key": "nav.group",
+          "label": "分组导航",
+          "icon": "compass",
+          "color": "slate",
+          "category": "导航",
+          "isSystem": true
+        },
+        {
+          "key": "system.config",
+          "label": "系统配置",
+          "icon": "settings",
+          "color": "purple",
+          "category": "系统",
+          "isSystem": true
+        },
+        {
+          "key": "system.registry",
+          "label": "注册表",
+          "icon": "database",
+          "color": "purple",
+          "category": "系统",
           "isSystem": true
         }
       ]

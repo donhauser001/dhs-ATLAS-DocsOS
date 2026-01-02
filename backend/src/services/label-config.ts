@@ -282,27 +282,36 @@ function mergeWithSystemLabels(userConfig: LabelConfig): LabelConfig {
 
     if (userCategory) {
       // 合并用户修改的映射名和图标
+      const mergedItems = sysCategory.items.map(sysItem => {
+        const userItem = userCategory.items.find(i => i.key === sysItem.key);
+        return userItem ? {
+          ...sysItem,
+          label: userItem.label || sysItem.label,
+          icon: userItem.icon || sysItem.icon,
+          color: userItem.color || sysItem.color,
+          description: userItem.description || sysItem.description,
+        } : sysItem;
+      });
+      
+      // 🔑 添加用户在系统分类中新增的项目
+      for (const userItem of userCategory.items) {
+        if (!sysCategory.items.find(i => i.key === userItem.key)) {
+          mergedItems.push(userItem);
+        }
+      }
+      
       merged.categories.push({
         ...sysCategory,
-        items: sysCategory.items.map(sysItem => {
-          const userItem = userCategory.items.find(i => i.key === sysItem.key);
-          return userItem ? {
-            ...sysItem,
-            label: userItem.label || sysItem.label,
-            icon: userItem.icon || sysItem.icon,
-            color: userItem.color || sysItem.color,
-            description: userItem.description || sysItem.description,
-          } : sysItem;
-        }),
+        items: mergedItems,
       });
     } else {
       merged.categories.push(sysCategory);
     }
   }
 
-  // 添加用户自定义分类
+  // 🔑 添加用户自定义分类（不管 isSystem 标记，只要不在系统分类中就添加）
   for (const userCategory of userConfig.categories) {
-    if (!userCategory.isSystem && !merged.categories.find(c => c.id === userCategory.id)) {
+    if (!merged.categories.find(c => c.id === userCategory.id)) {
       merged.categories.push(userCategory);
     }
   }

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2026-01-01T18:24:51.033Z",
+  "generated_at": "2026-01-02T18:38:59.844Z",
   "documents": [
     {
       "path": "genesis/tokens.md",
@@ -24,73 +24,6 @@
         "token_group"
       ],
       "modified_at": "2026-01-01T12:04:51.788Z"
-    },
-    {
-      "path": "projects/2025/P-001/项目主文档.md",
-      "title": "星云科技品牌升级项目",
-      "document_type": "project",
-      "block_count": 4,
-      "anchors": [
-        "proj-P-001",
-        "milestone-P-001-1",
-        "milestone-P-001-2",
-        "milestone-P-001-3"
-      ],
-      "types": [
-        "project",
-        "milestone"
-      ],
-      "modified_at": "2025-12-31T18:32:33.784Z"
-    },
-    {
-      "path": "projects/2025/P-002/项目主文档.md",
-      "title": "蓝海集团官网重构",
-      "document_type": "project",
-      "block_count": 4,
-      "anchors": [
-        "proj-P-002",
-        "milestone-P-002-1",
-        "milestone-P-002-2",
-        "milestone-P-002-3"
-      ],
-      "types": [
-        "project",
-        "milestone"
-      ],
-      "modified_at": "2025-12-31T18:32:33.784Z"
-    },
-    {
-      "path": "projects/2025/P-003/项目主文档.md",
-      "title": "云峰数字化转型咨询",
-      "document_type": "project",
-      "block_count": 4,
-      "anchors": [
-        "proj-P-003",
-        "milestone-P-003-1",
-        "milestone-P-003-2",
-        "milestone-P-003-3"
-      ],
-      "types": [
-        "project",
-        "milestone"
-      ],
-      "modified_at": "2025-12-31T18:32:33.784Z"
-    },
-    {
-      "path": "system/profile-types.md",
-      "title": "Profile 类型注册表",
-      "document_type": "facts",
-      "block_count": 3,
-      "anchors": [
-        "reg-profile-types",
-        "profile-type-employee",
-        "profile-type-client-contact"
-      ],
-      "types": [
-        "registry",
-        "type_definition"
-      ],
-      "modified_at": "2026-01-01T16:55:38.776Z"
     },
     {
       "path": "客户管理.md",
@@ -410,26 +343,6 @@
       "document_count": 1
     },
     {
-      "path": "projects/2025/P-001",
-      "name": "P-001",
-      "document_count": 1
-    },
-    {
-      "path": "projects/2025/P-002",
-      "name": "P-002",
-      "document_count": 1
-    },
-    {
-      "path": "projects/2025/P-003",
-      "name": "P-003",
-      "document_count": 1
-    },
-    {
-      "path": "system",
-      "name": "system",
-      "document_count": 1
-    },
-    {
       "path": "联系人/principals",
       "name": "principals",
       "document_count": 13
@@ -441,10 +354,10 @@
     }
   ],
   "stats": {
-    "total_documents": 22,
-    "total_blocks": 132,
-    "total_anchors": 132
+    "total_documents": 18,
+    "total_blocks": 117,
+    "total_anchors": 117
   },
-  "repo_head": "ed71c5a07df9533357b32f60872e8612aaee2f46",
+  "repo_head": "8b189279635003c0d25b5f643fddf0b09bbd121e",
   "stale": false
 }
