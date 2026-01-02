@@ -1,0 +1,53 @@
+{
+  "version": "1.0",
+  "zones": {
+    "hero": {
+      "description": "标题区，显示核心身份信息",
+      "fields": ["title", "display_name", "status"],
+      "showStatusBadge": true
+    },
+    "body": {
+      "description": "主体区，显示业务字段",
+      "exclude": ["type", "id", "status", "title", "display_name", "$display", "_*"],
+      "excludeMetadata": true
+    },
+    "footer": {
+      "description": "底部区，显示文档元数据",
+      "fields": ["created", "updated", "author", "version", "document_type"],
+      "defaultCollapsed": true,
+      "showToggle": true
+    }
+  },
+  "fieldZoneOverrides": {
+    "client": {
+      "footer": {
+        "description": "客户底部区",
+        "fields": ["created", "updated", "author", "version", "contract_date", "last_contact"],
+        "defaultCollapsed": true,
+        "showToggle": true
+      }
+    },
+    "project": {
+      "hero": {
+        "description": "项目标题区",
+        "fields": ["title", "status", "priority"],
+        "showStatusBadge": true
+      }
+    }
+  },
+  "metadataFields": [
+    "version",
+    "document_type",
+    "created",
+    "updated",
+    "author",
+    "atlas"
+  ],
+  "systemFields": [
+    "_checksum",
+    "_indexed_at",
+    "_source_hash",
+    "$display"
+  ]
+}
+

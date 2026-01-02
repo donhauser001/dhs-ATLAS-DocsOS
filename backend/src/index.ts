@@ -11,6 +11,8 @@ import functionsRouter from './api/functions.js';
 import lintRouter from './api/lint.js';
 import navigationRouter from './api/navigation.js';
 import labelsRouter from './api/labels.js';
+import autoCompleteRouter from './api/auto-complete.js';
+import displayConfigRouter from './api/display-config.js';
 import { config, validateConfig, ensureDirectories } from './config.js';
 import { optionalAuth } from './middleware/permission.js';
 
@@ -74,6 +76,10 @@ app.use('/api/lint', lintRouter);
 app.use('/api/navigation', navigationRouter);
 // Phase 3.3+: 标签注册表
 app.use('/api/labels', labelsRouter);
+// Phase 3.5: 自动补齐系统
+app.use('/api/documents', autoCompleteRouter);
+// Phase 3.5: 显示配置
+app.use('/api/display-config', displayConfigRouter);
 
 app.listen(config.port, () => {
   console.log(`ATLAS Runtime listening on port ${config.port}`);

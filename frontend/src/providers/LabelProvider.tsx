@@ -8,7 +8,7 @@
  * 文档始终使用原始名，映射名只影响 UI 显示
  */
 
-import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { fetchLabelConfig, type LabelConfig, type LabelItem, type ResolvedLabel } from '@/api/labels';
 
 // ============================================================

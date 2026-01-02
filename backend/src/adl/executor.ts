@@ -398,3 +398,58 @@ function getCommitMessage(proposal: Proposal): string {
   
   return opSummary;
 }
+
+// ============================================================
+// Phase 3.5: 序列化 ADL 文档
+// ============================================================
+
+import type { ADLDocument, AtlasFrontmatter } from './types.js';
+
+/**
+ * 将 ADL 文档序列化为 Markdown 字符串
+ * 
+ * Phase 3.5: 用于自动补齐后写回文件
+ */
+export function serializeADL(doc: ADLDocument): string {
+  const lines: string[] = [];
+  
+  // 1. 序列化 Frontmatter
+  if (doc.frontmatter && Object.keys(doc.frontmatter).length > 0) {
+    lines.push('---');
+    lines.push(yaml.dump(doc.frontmatter, config.yamlDumpOptions).trim());
+    lines.push('---');
+    lines.push('');
+  }
+  
+  // 2. 序列化每个 Block
+  for (let i = 0; i < doc.blocks.length; i++) {
+    const block = doc.blocks[i];
+    
+    // 添加 Block 分隔符（第一个 Block 除外）
+    if (i > 0) {
+      lines.push('');
+      lines.push('---');
+      lines.push('');
+    }
+    
+    // Heading
+    lines.push(block.heading);
+    lines.push('');
+    
+    // Machine Zone (YAML)
+    if (block.machine && Object.keys(block.machine).length > 0) {
+      lines.push('```yaml');
+      lines.push(yaml.dump(block.machine, config.yamlDumpOptions).trim());
+      lines.push('```');
+      lines.push('');
+    }
+    
+    // Human Zone (Body)
+    if (block.body && block.body.trim()) {
+      lines.push(block.body.trim());
+      lines.push('');
+    }
+  }
+  
+  return lines.join('\n');
+}

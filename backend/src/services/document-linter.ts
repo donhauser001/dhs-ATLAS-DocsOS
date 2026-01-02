@@ -18,6 +18,7 @@ import { parseADL } from '../adl/parser.js';
 import { getWorkspaceIndex } from './workspace-service.js';
 import { ATLAS_FUNCTION_TYPES, ATLAS_CAPABILITIES } from '../adl/types.js';
 import type { ADLDocument, AtlasFrontmatter, Block } from '../adl/types.js';
+import { validateFixedKeys } from './fixed-keys.js';
 
 // ============================================================
 // 类型定义
@@ -110,6 +111,8 @@ export interface LintConfig {
         block_structure: boolean;
         /** anchor 唯一性检查 */
         anchor_unique: boolean;
+        /** 固定键校验 (Phase 3.5) */
+        fixed_keys_validation: boolean;
     };
     /** 严格模式（warning 也算失败） */
     strict: boolean;
@@ -127,6 +130,7 @@ const DEFAULT_LINT_CONFIG: LintConfig = {
         function_specific: true,
         block_structure: true,
         anchor_unique: true,
+        fixed_keys_validation: true,
     },
     strict: false,
 };
@@ -365,6 +369,11 @@ export function lintDocument(doc: ADLDocument, lintConfig?: LintConfig): LintIss
     // 本文档内 anchor 唯一性检查
     if (cfg.rules.anchor_unique) {
         issues.push(...lintAnchorUnique(doc));
+    }
+
+    // Phase 3.5: 固定键校验
+    if (cfg.rules.fixed_keys_validation) {
+        issues.push(...lintFixedKeys(doc));
     }
 
     return issues;
@@ -762,6 +771,45 @@ function lintAnchorUnique(doc: ADLDocument): LintIssue[] {
                 suggestion: 'Each anchor within a document must be unique',
             });
         }
+    }
+
+    return issues;
+}
+
+/**
+ * Phase 3.5: 固定键校验
+ * 
+ * 检查文档的固定键（Structural / Metadata / Function）是否符合规范
+ */
+function lintFixedKeys(doc: ADLDocument): LintIssue[] {
+    const issues: LintIssue[] = [];
+    const result = validateFixedKeys(doc);
+
+    // 转换固定键验证错误为 LintIssue
+    for (const error of result.errors) {
+        issues.push({
+            level: 'error',
+            rule: `fixed_key_${error.category}`,
+            message: error.message,
+            location: {
+                block: error.location?.block,
+                field: error.location?.field,
+            },
+        });
+    }
+
+    // 转换固定键验证警告为 LintIssue
+    for (const warning of result.warnings) {
+        issues.push({
+            level: 'warning',
+            rule: `fixed_key_${warning.category}`,
+            message: warning.message,
+            location: {
+                block: warning.location?.block,
+                field: warning.location?.field,
+            },
+            suggestion: warning.suggestion,
+        });
     }
 
     return issues;

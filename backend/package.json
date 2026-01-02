@@ -15,6 +15,7 @@
     "express-session": "^1.18.2",
     "js-yaml": "^4.1.0",
     "minimatch": "^10.1.1",
+    "pinyin-pro": "^3.26.0",
     "remark-frontmatter": "^5.0.0",
     "remark-parse": "^11.0.0",
     "simple-git": "^3.22.0",
