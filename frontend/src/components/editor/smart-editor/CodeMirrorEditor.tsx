@@ -12,9 +12,8 @@ import { EditorState, Compartment } from '@codemirror/state';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
-import { search, searchKeymap, highlightSelectionMatches, openSearchPanel, replaceAll, findNext, findPrevious } from '@codemirror/search';
+import { search, searchKeymap, highlightSelectionMatches, openSearchPanel, gotoLine } from '@codemirror/search';
 import { syntaxHighlighting, defaultHighlightStyle, bracketMatching } from '@codemirror/language';
-import { gotoLine } from '@codemirror/commands';
 
 interface CodeMirrorEditorProps {
   value: string;
