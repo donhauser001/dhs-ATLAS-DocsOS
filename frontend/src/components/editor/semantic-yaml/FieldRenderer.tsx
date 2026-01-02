@@ -18,6 +18,7 @@ import {
   ReadonlyField,
   NumberField,
   ColorField,
+  ObjectField,
 } from './fields';
 
 // 字段类型到组件的映射
@@ -34,7 +35,7 @@ const FIELD_COMPONENTS: Record<FieldType, React.ComponentType<SemanticFieldProps
   number: NumberField,
   color: ColorField,
   ref: TextField, // 暂时用文本框
-  object: TextField, // 暂时用文本框显示 JSON
+  object: ObjectField, // 嵌套对象
   unknown: TextField,
 };
 
@@ -54,15 +55,6 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   disabled,
 }) => {
   const Component = FIELD_COMPONENTS[config.type] || TextField;
-
-  // 特殊处理 object 类型
-  if (config.type === 'object' && typeof value === 'object' && value !== null) {
-    return (
-      <div className="text-sm text-slate-500 bg-slate-50 rounded-md p-3 font-mono">
-        {JSON.stringify(value, null, 2)}
-      </div>
-    );
-  }
 
   return (
     <Component

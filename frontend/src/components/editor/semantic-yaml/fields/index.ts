@@ -13,4 +13,5 @@ export { TagsField } from './TagsField';
 export { ReadonlyField } from './ReadonlyField';
 export { NumberField } from './NumberField';
 export { ColorField } from './ColorField';
+export { ObjectField } from './ObjectField';
 

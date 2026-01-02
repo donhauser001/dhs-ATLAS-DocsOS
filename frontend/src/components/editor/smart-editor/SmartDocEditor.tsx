@@ -2,19 +2,21 @@
  * SmartDocEditor - 固定键感知的智能文档编辑器
  */
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { EditorContent } from '@tiptap/react';
 import {
   Save, X, ChevronDown, ChevronUp,
-  FileText, Lock, Loader2, Info,
+  FileText, Lock, Loader2, Info, Code, FormInput,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLabels } from '@/providers/LabelProvider';
+import yaml from 'js-yaml';
 
 import type { ADLDocument } from './types';
 import { FixedKeyField } from './FixedKeyField';
 import { useEditorState } from './useEditorState';
 import { createFixedKeyConfig } from './fixedKeyConfig';
+import { SemanticYamlEditor } from '../semantic-yaml';
 
 export interface SmartDocEditorProps {
   document: ADLDocument | null;
@@ -217,21 +219,238 @@ function FixedKeysSection({ fixedKeys, showFixedKeys, onToggle, onChange, getLab
   );
 }
 
-// 内容预览子组件
-function ContentPreview({ content }: { content: string }) {
+// 内容预览子组件 - Phase 3.7: YAML 语义化渲染
+interface ContentPreviewProps {
+  content: string;
+  onContentChange?: (newContent: string) => void;
+}
+
+interface ContentBlock {
+  type: 'heading' | 'yaml' | 'text';
+  content: string;
+  anchor?: string;
+  parsedYaml?: Record<string, unknown>;
+}
+
+function parseContentBlocks(content: string): ContentBlock[] {
+  const blocks: ContentBlock[] = [];
+  const lines = content.split('\n');
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // 检测标题（包含锚点）
+    const headingMatch = line.match(/^(#+)\s*(.+?)(?:\s*\{#([^}]+)\})?\s*$/);
+    if (headingMatch) {
+      blocks.push({
+        type: 'heading',
+        content: line,
+        anchor: headingMatch[3],
+      });
+      i++;
+      continue;
+    }
+
+    // 检测 YAML 代码块
+    if (line.trim() === '```yaml' || line.trim() === '```yml') {
+      const yamlLines: string[] = [];
+      i++;
+      while (i < lines.length && lines[i].trim() !== '```') {
+        yamlLines.push(lines[i]);
+        i++;
+      }
+      const yamlContent = yamlLines.join('\n');
+      let parsedYaml: Record<string, unknown> | undefined;
+      try {
+        parsedYaml = yaml.load(yamlContent) as Record<string, unknown>;
+      } catch (e) {
+        // YAML 解析失败，保持原始内容
+      }
+      blocks.push({
+        type: 'yaml',
+        content: yamlContent,
+        parsedYaml,
+      });
+      i++; // 跳过结束的 ```
+      continue;
+    }
+
+    // 普通文本行
+    const textLines: string[] = [line];
+    i++;
+    while (i < lines.length) {
+      const nextLine = lines[i];
+      // 如果遇到标题或 YAML 块，停止
+      if (nextLine.match(/^#+\s/) || nextLine.trim() === '```yaml' || nextLine.trim() === '```yml') {
+        break;
+      }
+      textLines.push(nextLine);
+      i++;
+    }
+    const textContent = textLines.join('\n').trim();
+    if (textContent) {
+      blocks.push({
+        type: 'text',
+        content: textContent,
+      });
+    }
+  }
+
+  return blocks;
+}
+
+function ContentPreview({ content, onContentChange }: ContentPreviewProps) {
+  const [viewMode, setViewMode] = useState<'semantic' | 'raw'>('semantic');
+  const blocks = useMemo(() => parseContentBlocks(content), [content]);
+
+  // 处理 YAML 数据变更
+  const handleYamlChange = useCallback((blockIndex: number, newData: Record<string, unknown>) => {
+    if (!onContentChange) return;
+
+    // 重建内容
+    const newBlocks = [...blocks];
+    newBlocks[blockIndex] = {
+      ...newBlocks[blockIndex],
+      parsedYaml: newData,
+      content: yaml.dump(newData, { indent: 2, lineWidth: -1 }).trim(),
+    };
+
+    // 序列化回字符串
+    const newContent = newBlocks.map(block => {
+      if (block.type === 'heading') return block.content;
+      if (block.type === 'yaml') return '```yaml\n' + block.content + '\n```';
+      return block.content;
+    }).join('\n\n');
+
+    onContentChange(newContent);
+  }, [blocks, onContentChange]);
+
   return (
     <div className="px-6 py-4">
-      <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-        <strong>📝 文档内容编辑区</strong>
-        <p className="mt-1 text-xs text-amber-600">
-          以下是文档的实际内容（标题 + Machine Zone + Human Zone）
-        </p>
+      {/* 视图切换 */}
+      <div className="mb-4 flex items-center justify-between">
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800 flex-1 mr-4">
+          <strong>📝 文档内容编辑区</strong>
+          <p className="mt-1 text-xs text-amber-600">
+            以下是文档的实际内容（标题 + Machine Zone + Human Zone）
+          </p>
+        </div>
+        <div className="flex bg-slate-100 rounded-lg p-0.5">
+          <button
+            onClick={() => setViewMode('semantic')}
+            className={cn(
+              'px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-1.5',
+              viewMode === 'semantic' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            )}
+          >
+            <FormInput className="w-3.5 h-3.5" />
+            语义化
+          </button>
+          <button
+            onClick={() => setViewMode('raw')}
+            className={cn(
+              'px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-1.5',
+              viewMode === 'raw' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            )}
+          >
+            <Code className="w-3.5 h-3.5" />
+            源码
+          </button>
+        </div>
       </div>
-      <pre className="bg-slate-900 text-slate-100 rounded-lg p-4 overflow-x-auto text-sm font-mono leading-relaxed whitespace-pre-wrap">
-        {content || '（空文档）'}
-      </pre>
+
+      {viewMode === 'raw' ? (
+        // 原始源码视图
+        <pre className="bg-slate-900 text-slate-100 rounded-lg p-4 overflow-x-auto text-sm font-mono leading-relaxed whitespace-pre-wrap">
+          {content || '（空文档）'}
+        </pre>
+      ) : (
+        // 语义化视图
+        <div className="space-y-4">
+          {blocks.map((block, index) => (
+            <ContentBlockRenderer
+              key={index}
+              block={block}
+              onChange={(newData) => handleYamlChange(index, newData)}
+            />
+          ))}
+          {blocks.length === 0 && (
+            <div className="text-center py-8 text-slate-400">（空文档）</div>
+          )}
+        </div>
+      )}
     </div>
   );
+}
+
+// 内容块渲染器
+function ContentBlockRenderer({
+  block,
+  onChange,
+}: {
+  block: ContentBlock;
+  onChange: (newData: Record<string, unknown>) => void;
+}) {
+  if (block.type === 'heading') {
+    const level = (block.content.match(/^#+/)?.[0].length || 1);
+    const text = block.content.replace(/^#+\s*/, '').replace(/\s*\{#[^}]+\}$/, '');
+    const HeadingTag = `h${Math.min(level, 6)}` as keyof JSX.IntrinsicElements;
+    
+    return (
+      <div className="flex items-center gap-2">
+        <HeadingTag className={cn(
+          'font-bold text-slate-800',
+          level === 1 && 'text-2xl',
+          level === 2 && 'text-xl',
+          level === 3 && 'text-lg',
+          level >= 4 && 'text-base'
+        )}>
+          {text}
+        </HeadingTag>
+        {block.anchor && (
+          <code className="text-xs text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+            #{block.anchor}
+          </code>
+        )}
+      </div>
+    );
+  }
+
+  if (block.type === 'yaml' && block.parsedYaml) {
+    return (
+      <SemanticYamlEditor
+        data={block.parsedYaml}
+        entityType={block.parsedYaml.type as string}
+        onChange={onChange}
+        title={block.parsedYaml.title as string || block.parsedYaml.display_name as string}
+        collapsible={true}
+        defaultExpanded={true}
+      />
+    );
+  }
+
+  if (block.type === 'yaml') {
+    // YAML 解析失败，显示原始代码
+    return (
+      <pre className="bg-slate-900 text-slate-100 rounded-lg p-4 overflow-x-auto text-sm font-mono">
+        {block.content}
+      </pre>
+    );
+  }
+
+  // 普通文本
+  if (block.content.trim()) {
+    return (
+      <div className="prose prose-slate max-w-none text-slate-600">
+        {block.content.split('\n').map((line, i) => (
+          <p key={i} className="my-1">{line || <br />}</p>
+        ))}
+      </div>
+    );
+  }
+
+  return null;
 }
 
 // 富文本编辑器子组件
