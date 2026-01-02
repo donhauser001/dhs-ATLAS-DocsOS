@@ -24,13 +24,13 @@ import { cn } from '@/lib/utils';
  */
 function getLucideIcon(name: string | undefined): React.ComponentType<{ className?: string; size?: number }> | null {
   if (!name) return null;
-  
+
   // 将 kebab-case 转换为 PascalCase
   const pascalCase = name
     .split('-')
     .map(part => part.charAt(0).toUpperCase() + part.slice(1))
     .join('');
-  
+
   // @ts-expect-error - 动态访问
   const Icon = LucideIcons[pascalCase];
   return Icon || null;
@@ -59,18 +59,18 @@ export function LabeledField({
 }: LabeledFieldProps) {
   const { resolveLabel } = useLabels();
   const resolved = resolveLabel(field);
-  
+
   // 敏感字段不显示
   if (resolved.hidden) {
     return null;
   }
-  
+
   const Icon = getLucideIcon(resolved.icon);
-  
+
   if (iconOnly && Icon) {
     return <Icon size={iconSize} className={cn('text-muted-foreground', className)} />;
   }
-  
+
   return (
     <span className={cn('inline-flex items-center gap-1', className)}>
       {Icon && <Icon size={iconSize} className="text-muted-foreground flex-shrink-0" />}
@@ -101,15 +101,15 @@ export function FieldValue({
   valueClassName,
 }: FieldValueProps) {
   const { resolveLabel, isHidden } = useLabels();
-  
+
   // 敏感字段不显示
   if (isHidden(field)) {
     return null;
   }
-  
+
   const resolved = resolveLabel(field);
   const Icon = getLucideIcon(resolved.icon);
-  
+
   return (
     <div className={cn('flex items-start gap-2', className)}>
       <span className="text-muted-foreground flex items-center gap-1 flex-shrink-0">
@@ -135,9 +135,9 @@ interface StatusBadgeProps {
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   const { resolveLabel } = useLabels();
   const resolved = resolveLabel(status);
-  
+
   const Icon = getLucideIcon(resolved.icon);
-  
+
   // 颜色映射
   const colorMap: Record<string, string> = {
     green: 'bg-green-100 text-green-800 border-green-200',
@@ -146,9 +146,9 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
     gray: 'bg-gray-100 text-gray-800 border-gray-200',
     blue: 'bg-blue-100 text-blue-800 border-blue-200',
   };
-  
+
   const colorClass = colorMap[resolved.color || 'gray'] || colorMap.gray;
-  
+
   return (
     <span className={cn(
       'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border',
@@ -179,16 +179,16 @@ interface TypeBadgeProps {
 export function TypeBadge({ type, className, bgColor, textColor }: TypeBadgeProps) {
   const { resolveLabel } = useLabels();
   const resolved = resolveLabel(type);
-  
+
   const Icon = getLucideIcon(resolved.icon);
-  
+
   const style = {
     backgroundColor: bgColor || '#F1F5F9',
     color: textColor || '#475569',
   };
-  
+
   return (
-    <span 
+    <span
       className={cn(
         'inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium',
         className

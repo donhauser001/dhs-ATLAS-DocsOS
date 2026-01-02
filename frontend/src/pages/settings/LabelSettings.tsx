@@ -67,13 +67,13 @@ function LabelCard({
       <div className="w-6 h-6 flex items-center justify-center bg-slate-100 rounded">
         {Icon ? <Icon className="h-3.5 w-3.5 text-slate-500" /> : <span className="text-slate-300 text-xs">-</span>}
       </div>
-      
+
       {/* 内容 */}
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium truncate">{item.label}</div>
         <code className="text-[10px] text-slate-400 truncate block">{item.key}</code>
       </div>
-      
+
       {/* 操作 */}
       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
         {item.isSystem && (
@@ -122,12 +122,12 @@ function CategoryPanel({
   const [expanded, setExpanded] = useState(true);
   const [editingItem, setEditingItem] = useState<LabelItem | null>(null);
   const [addingLabel, setAddingLabel] = useState(false);
-  
+
   // 编辑状态
   const [editLabel, setEditLabel] = useState('');
   const [editIcon, setEditIcon] = useState('');
   const [saving, setSaving] = useState(false);
-  
+
   // 新增状态
   const [newKey, setNewKey] = useState('');
   const [newLabel, setNewLabel] = useState('');

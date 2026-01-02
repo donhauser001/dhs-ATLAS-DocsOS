@@ -14,7 +14,7 @@ import '@/styles/tokens.css'
 
 function Home() {
   const { user } = useAuthStore()
-  
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
       <div className="text-center">
@@ -46,7 +46,7 @@ function Home() {
             </Button>
           </Link>
         </div>
-        
+
         {user && (
           <div className="mt-8 text-slate-400">
             <span>欢迎, {user.name}</span>
@@ -61,12 +61,12 @@ function Home() {
 
 function App() {
   const { checkAuth } = useAuthStore()
-  
+
   // 启动时检查认证状态
   useEffect(() => {
     checkAuth()
   }, [checkAuth])
-  
+
   return (
     <TokenProvider>
       <LabelProvider>

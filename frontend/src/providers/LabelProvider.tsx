@@ -22,34 +22,34 @@ interface LabelContextValue {
   loading: boolean;
   /** 错误信息 */
   error: string | null;
-  
+
   /**
    * 解析原始名 -> 显示信息
    * @param key 原始名（如 project_name）
    * @returns { key, label, icon, color, hidden }
    */
   resolveLabel: (key: string) => ResolvedLabel;
-  
+
   /**
    * 获取映射名
    */
   getLabel: (key: string) => string;
-  
+
   /**
    * 获取图标
    */
   getIcon: (key: string) => string | undefined;
-  
+
   /**
    * 获取颜色
    */
   getColor: (key: string) => string | undefined;
-  
+
   /**
    * 检查是否是敏感字段
    */
   isHidden: (key: string) => boolean;
-  
+
   /**
    * 刷新配置
    */
@@ -74,7 +74,7 @@ export function LabelProvider({ children }: LabelProviderProps) {
   const [config, setConfig] = useState<LabelConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // 缓存：key -> LabelItem
   const [labelCache, setLabelCache] = useState<Map<string, LabelItem>>(new Map());
 
@@ -85,7 +85,7 @@ export function LabelProvider({ children }: LabelProviderProps) {
       setError(null);
       const data = await fetchLabelConfig();
       setConfig(data);
-      
+
       // 构建缓存
       const cache = new Map<string, LabelItem>();
       for (const category of data.categories) {
@@ -95,7 +95,7 @@ export function LabelProvider({ children }: LabelProviderProps) {
         }
       }
       setLabelCache(cache);
-      
+
       console.log(`[LabelProvider] Loaded ${cache.size / 2} labels`);
     } catch (err) {
       console.error('[LabelProvider] Failed to load config:', err);
@@ -121,10 +121,10 @@ export function LabelProvider({ children }: LabelProviderProps) {
           hidden: true,
         };
       }
-      
+
       // 从缓存获取
       const item = labelCache.get(key) || labelCache.get(key.toLowerCase());
-      
+
       return {
         key,
         label: item?.label || key,

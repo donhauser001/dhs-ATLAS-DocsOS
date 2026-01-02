@@ -74,7 +74,7 @@ router.get('/resolve/:key', (req: Request, res: Response) => {
   try {
     const key = decodeURIComponent(req.params.key);
     const hidden = isHiddenField(key);
-    
+
     if (hidden) {
       res.json({
         success: true,
@@ -86,7 +86,7 @@ router.get('/resolve/:key', (req: Request, res: Response) => {
       });
       return;
     }
-    
+
     const item = getLabel(key);
     res.json({
       success: true,
@@ -114,7 +114,7 @@ router.get('/resolve/:key', (req: Request, res: Response) => {
 router.post('/resolve', (req: Request, res: Response) => {
   try {
     const { keys } = req.body as { keys: string[] };
-    
+
     if (!keys || !Array.isArray(keys)) {
       res.status(400).json({
         success: false,
@@ -122,7 +122,7 @@ router.post('/resolve', (req: Request, res: Response) => {
       });
       return;
     }
-    
+
     const results: Record<string, {
       key: string;
       label: string;
@@ -130,7 +130,7 @@ router.post('/resolve', (req: Request, res: Response) => {
       color?: string;
       hidden: boolean;
     }> = {};
-    
+
     for (const key of keys) {
       const hidden = isHiddenField(key);
       if (hidden) {
@@ -146,7 +146,7 @@ router.post('/resolve', (req: Request, res: Response) => {
         };
       }
     }
-    
+
     res.json({
       success: true,
       data: results,
@@ -191,7 +191,7 @@ router.post('/clear-cache', (_req: Request, res: Response) => {
 router.post('/categories', (req: Request, res: Response) => {
   try {
     const { id, name, description } = req.body as { id: string; name: string; description?: string };
-    
+
     if (!id || !name) {
       res.status(400).json({
         success: false,
@@ -199,7 +199,7 @@ router.post('/categories', (req: Request, res: Response) => {
       });
       return;
     }
-    
+
     const category = addCategory({ id, name, description, items: [] });
     res.json({
       success: true,
@@ -222,7 +222,7 @@ router.put('/categories/:id', (req: Request, res: Response) => {
   try {
     const id = req.params.id;
     const { name, description } = req.body as { name?: string; description?: string };
-    
+
     const category = updateCategory(id, { name, description });
     res.json({
       success: true,
@@ -270,7 +270,7 @@ router.post('/items/:categoryId', (req: Request, res: Response) => {
   try {
     const categoryId = req.params.categoryId;
     const { key, label, icon, color, description } = req.body as LabelItem;
-    
+
     if (!key || !label) {
       res.status(400).json({
         success: false,
@@ -278,7 +278,7 @@ router.post('/items/:categoryId', (req: Request, res: Response) => {
       });
       return;
     }
-    
+
     const item = addLabel(categoryId, { key, label, icon, color, description });
     res.json({
       success: true,
@@ -301,7 +301,7 @@ router.put('/items/:key', (req: Request, res: Response) => {
   try {
     const key = decodeURIComponent(req.params.key);
     const { label, icon, color, description } = req.body as Partial<LabelItem>;
-    
+
     const item = updateLabel(key, { label, icon, color, description });
     res.json({
       success: true,

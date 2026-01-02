@@ -159,7 +159,7 @@ export async function rebuildLabelRegistry(): Promise<LabelRegistry> {
           aliasIndex[alias.toLowerCase()] = labelName;
         }
       }
-      
+
       // 标签名本身也加入索引（用于反向查找）
       aliasIndex[labelName] = labelName;
     }
@@ -204,11 +204,11 @@ export async function getLabel(fieldName: string): Promise<{
   hideIcon: boolean;
 } | null> {
   const registry = await getLabelRegistry();
-  
+
   // 检查是否有 ! 后缀（隐藏图标标记）
   const hideIcon = fieldName.endsWith('!');
   const cleanName = hideIcon ? fieldName.slice(0, -1) : fieldName;
-  
+
   // 1. 直接查找标签名
   if (registry.labels[cleanName]) {
     const def = registry.labels[cleanName];
@@ -219,7 +219,7 @@ export async function getLabel(fieldName: string): Promise<{
       hideIcon,
     };
   }
-  
+
   // 2. 通过别名查找
   const labelName = registry.aliasIndex[cleanName] || registry.aliasIndex[cleanName.toLowerCase()];
   if (labelName && registry.labels[labelName]) {
@@ -231,7 +231,7 @@ export async function getLabel(fieldName: string): Promise<{
       hideIcon,
     };
   }
-  
+
   // 3. 未找到，返回原字段名
   return {
     label: cleanName,
@@ -256,14 +256,14 @@ export async function getLabels(fieldNames: string[]): Promise<Record<string, {
     color?: string;
     hideIcon: boolean;
   }> = {};
-  
+
   for (const fieldName of fieldNames) {
     const labelInfo = await getLabel(fieldName);
     if (labelInfo) {
       result[fieldName] = labelInfo;
     }
   }
-  
+
   return result;
 }
 

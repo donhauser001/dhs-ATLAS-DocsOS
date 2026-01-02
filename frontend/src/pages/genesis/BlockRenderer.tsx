@@ -51,14 +51,14 @@ function toPascalCase(str: string): string {
  */
 function getLucideIcon(name: string | null): React.ComponentType<{ className?: string }> | null {
   if (!name) return null;
-  
+
   // 转换为 PascalCase
   const pascalName = toPascalCase(name);
-  
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const icons = LucideIcons as any;
   const Icon = icons[pascalName];
-  
+
   // React 组件可能是 function 或 object（forwardRef/memo 组件）
   if (Icon && (typeof Icon === 'function' || typeof Icon === 'object')) {
     return Icon as React.ComponentType<{ className?: string }>;
@@ -147,15 +147,15 @@ function renderFieldValue(value: unknown, resolveLabel?: ResolveLabelFn): React.
   if (isAnchorRef(value)) {
     const anchorId = value.ref.replace(/^#/, '');
     return (
-      <a 
-        href={value.ref} 
+      <a
+        href={value.ref}
         className="text-purple-600 hover:text-purple-800 hover:underline"
       >
         → {anchorId}
       </a>
     );
   }
-  
+
   // 价格对象 - 格式化显示
   if (isPriceObject(value)) {
     return (
@@ -173,14 +173,14 @@ function renderFieldValue(value: unknown, resolveLabel?: ResolveLabelFn): React.
       </span>
     );
   }
-  
+
   // 数组 - 智能显示
   if (Array.isArray(value)) {
     // 空数组
     if (value.length === 0) {
       return <span className="text-slate-400 italic">无</span>;
     }
-    
+
     // 单元素数组 - 直接显示值
     if (value.length === 1) {
       const item = value[0];
@@ -189,13 +189,13 @@ function renderFieldValue(value: unknown, resolveLabel?: ResolveLabelFn): React.
       }
       return <span>{String(item)}</span>;
     }
-    
+
     // 多元素数组 - 用逗号分隔显示
     const allSimple = value.every(item => typeof item !== 'object');
     if (allSimple) {
       return <span>{value.join('、')}</span>;
     }
-    
+
     // 复杂数组 - 紧凑列表
     return (
       <ul className="space-y-1">
@@ -208,7 +208,7 @@ function renderFieldValue(value: unknown, resolveLabel?: ResolveLabelFn): React.
       </ul>
     );
   }
-  
+
   // 其他对象 - 显示为键值对（使用注册制标签 + 图标）
   if (typeof value === 'object' && value !== null) {
     return (
@@ -230,7 +230,7 @@ function renderFieldValue(value: unknown, resolveLabel?: ResolveLabelFn): React.
       </dl>
     );
   }
-  
+
   // 布尔值 - 友好显示
   if (typeof value === 'boolean') {
     return value ? (
@@ -239,12 +239,12 @@ function renderFieldValue(value: unknown, resolveLabel?: ResolveLabelFn): React.
       <span className="text-slate-400">否</span>
     );
   }
-  
+
   // null/undefined - 友好显示
   if (value === null || value === undefined) {
     return <span className="text-slate-400 italic">无</span>;
   }
-  
+
   // 简单值
   return String(value);
 }
@@ -266,15 +266,15 @@ function getBusinessFields(machine: Record<string, unknown>): [string, unknown][
 
 export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }: BlockRendererProps) {
   const { machine, body, anchor, heading } = block;
-  
+
   // Phase 3.3+: 注册制标签系统
   const { resolveLabel, isHidden } = useLabels();
-  
+
   // Phase 3.2: 特殊处理 entity_index 类型
   if (machine.type === 'entity_index') {
     const entries = machine.entries as Array<{ ref: string }> | undefined;
     const entityType = machine.entity_type as string | undefined;
-    
+
     return (
       <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
         {/* Header */}
@@ -296,12 +296,12 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
             <p className="mt-2 text-sm text-slate-600">{machine.description}</p>
           )}
         </div>
-        
+
         {/* Entity List */}
         <div className="p-6">
           {entries && entries.length > 0 ? (
-            <EntityIndexRenderer 
-              entries={entries} 
+            <EntityIndexRenderer
+              entries={entries}
               entityType={entityType || 'entity'}
               title={machine.title as string}
             />
@@ -311,7 +311,7 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
             </div>
           )}
         </div>
-        
+
         {/* Body as Markdown */}
         {body && (
           <div className="px-6 pb-6 prose prose-slate max-w-none">
@@ -321,27 +321,27 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
       </div>
     );
   }
-  
+
   // Phase 2.5: 从 Token 系统获取状态和类型的显现配置
   const { statusDisplay, typeDisplay, loading } = useDisplayConfigs(
     machine.status as string,
     machine.type
   );
-  
+
   // Phase 3.0: 获取 Token 解析能力
   const { resolveToken, resolveTokenVariant, cache: tokenCache } = useTokens();
-  
+
   // 使用同步版本作为回退（当 Token 系统未加载完成时）
   const fallbackStatusDisplay = statusDisplay || getStatusDisplaySync(machine.status as string);
   const fallbackTypeDisplay = typeDisplay || getTypeDisplaySync(machine.type);
-  
+
   // Phase 3.0: 检查 Block 的 $display 字段并解析 Token
   const blockDisplay = machine.$display as {
     color?: string | TokenRef;
     icon?: string | TokenRef;
   } | undefined;
-  
-  
+
+
   // 解析 $display 中的 color token
   let customColor: string | null = null;
   let customColorBg: string | null = null;
@@ -350,19 +350,19 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
     if (isTokenRef(blockDisplay.color)) {
       const tokenPath = blockDisplay.color.token;
       customColor = resolveToken(tokenPath);
-      
+
       // 检查 token 是否有专门的 bg/text 变体（通过检查 tokenCache）
       const tokenDef = tokenCache?.index[tokenPath];
       const hasBgVariant = tokenDef && 'bg' in tokenDef;
       const hasTextVariant = tokenDef && 'text' in tokenDef;
-      
+
       if (hasBgVariant) {
         customColorBg = resolveTokenVariant(tokenPath, 'bg');
       } else if (customColor) {
         // 没有 bg 变体，使用主色生成透明背景
         customColorBg = hexToRgba(customColor, 0.15);
       }
-      
+
       if (hasTextVariant) {
         customColorText = resolveTokenVariant(tokenPath, 'text');
       } else if (customColor) {
@@ -375,7 +375,7 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
       customColorText = blockDisplay.color;
     }
   }
-  
+
   // 解析 $display 中的 icon token
   let customIcon: string | null = null;
   if (blockDisplay?.icon) {
@@ -386,7 +386,7 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
       customIcon = blockDisplay.icon;
     }
   }
-  
+
   // 最终显示配置：优先使用 $display，回退到系统默认
   const finalStatusDisplay = fallbackStatusDisplay;
   const finalTypeDisplay = {
@@ -397,42 +397,42 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
     ...(customColorText && { text: customColorText }),
     ...(customIcon && { icon: customIcon }),
   };
-  
+
   // 获取图标组件
   const StatusIcon = getLucideIcon(finalStatusDisplay.icon);
   const TypeIcon = getLucideIcon(finalTypeDisplay.icon);
-  
-  
+
+
   // 检查字段是否有 pending change
   function getPendingValue(path: string): unknown | undefined {
     const change = pendingChanges.find(c => c.path === path);
     return change?.value;
   }
-  
+
   // 获取字段当前显示值（pending 优先）
   function getDisplayValue(path: string, originalValue: unknown): unknown {
     const pending = getPendingValue(path);
     return pending !== undefined ? pending : originalValue;
   }
-  
+
   // 处理字段变更
   function handleChange(path: string, value: unknown) {
     const originalValue = getNestedValue(machine, path);
     onFieldChange(anchor, path, value, originalValue);
   }
-  
+
   // 生成动态样式（基于 Token 系统的颜色）
   const typeStyle = {
     backgroundColor: finalTypeDisplay.bg || '#F1F5F9',
     color: finalTypeDisplay.text || '#475569',
   };
-  
-  
+
+
   const statusStyle = {
     backgroundColor: finalStatusDisplay.bg || '#F1F5F9',
     color: finalStatusDisplay.text || '#475569',
   };
-  
+
   return (
     <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
       {/* Header */}
@@ -440,21 +440,21 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Type Badge - 语义驱动 + 注册制标签 */}
-            <span 
+            <span
               className="px-2 py-0.5 text-xs font-medium rounded inline-flex items-center gap-1"
               style={typeStyle}
             >
               {TypeIcon && <TypeIcon className="w-3 h-3" />}
               {resolveLabel(machine.type as string).label}
             </span>
-            
+
             {/* Title */}
             <h3 className="text-lg font-semibold text-slate-900">
               {machine.title || machine.display_name || heading}
             </h3>
-            
+
             {/* Status Badge - 语义驱动 + 注册制标签 */}
-            <span 
+            <span
               className="px-2 py-0.5 text-xs font-medium rounded inline-flex items-center gap-1"
               style={statusStyle}
             >
@@ -462,19 +462,19 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
               {resolveLabel(machine.status as string).label}
             </span>
           </div>
-          
+
           {/* Anchor */}
           <code className="text-xs text-slate-400 font-mono">
             #{anchor}
           </code>
         </div>
-        
+
         {/* ID */}
         <div className="mt-1 text-sm text-slate-500">
           ID: {machine.id}
         </div>
       </div>
-      
+
       {/* Content */}
       <div className="p-6">
         {viewMode === 'read' ? (
@@ -486,10 +486,10 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
               {getBusinessFields(machine).map(([key, value]) => {
                 // 检查是否是敏感字段
                 if (isHidden(key)) return null;
-                
+
                 const resolved = resolveLabel(key);
                 const Icon = getLucideIcon(resolved.icon || null);
-                
+
                 return (
                   <div key={key}>
                     <div className="text-sm text-slate-500 mb-1 flex items-center gap-1">
@@ -503,7 +503,7 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
                 );
               })}
             </div>
-            
+
             {/* Body as Markdown */}
             {body && (
               <div className="prose prose-slate max-w-none">
@@ -526,7 +526,7 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
                 onChange={(value) => handleChange('status', value)}
                 hasChange={getPendingValue('status') !== undefined}
               />
-              
+
               {/* Title field */}
               <FieldRenderer
                 label="标题"
@@ -536,12 +536,12 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
                 onChange={(value) => handleChange('title', value)}
                 hasChange={getPendingValue('title') !== undefined}
               />
-              
+
               {/* Other business fields (exclude system fields like $display) */}
               {getBusinessFields(machine).map(([key, value]) => {
                 const fieldType = inferFieldType(value);
                 const displayValue = getDisplayValue(key, value);
-                
+
                 // 处理嵌套对象（如 price）
                 if (fieldType === 'object' && typeof value === 'object' && value !== null) {
                   return (
@@ -567,7 +567,7 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
                     </div>
                   );
                 }
-                
+
                 return (
                   <FieldRenderer
                     key={key}
@@ -584,7 +584,7 @@ export function BlockRenderer({ block, viewMode, onFieldChange, pendingChanges }
           </div>
         )}
       </div>
-      
+
       {/* Loading indicator for Token system */}
       {loading && (
         <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
@@ -608,14 +608,14 @@ function inferFieldType(value: unknown): 'string' | 'number' | 'boolean' | 'enum
 function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
   const parts = path.split('.');
   let current: unknown = obj;
-  
+
   for (const part of parts) {
     if (current === null || current === undefined) {
       return undefined;
     }
     current = (current as Record<string, unknown>)[part];
   }
-  
+
   return current;
 }
 

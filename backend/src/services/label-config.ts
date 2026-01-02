@@ -231,17 +231,17 @@ function ensureConfigDir(): void {
  */
 export function getLabelConfig(): LabelConfig {
   ensureConfigDir();
-  
+
   // 如果配置文件不存在，使用系统默认值
   if (!existsSync(CONFIG_PATH)) {
     saveLabelConfig(SYSTEM_LABELS);
     return SYSTEM_LABELS;
   }
-  
+
   try {
     const content = readFileSync(CONFIG_PATH, 'utf-8');
     const userConfig = JSON.parse(content) as LabelConfig;
-    
+
     // 合并系统标签（确保系统标签不会被删除）
     return mergeWithSystemLabels(userConfig);
   } catch (error) {
@@ -255,13 +255,13 @@ export function getLabelConfig(): LabelConfig {
  */
 export function saveLabelConfig(config: LabelConfig): void {
   ensureConfigDir();
-  
+
   config.updatedAt = new Date().toISOString();
   writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2), 'utf-8');
-  
+
   // 清除缓存
   clearLabelCache();
-  
+
   console.log(`[LabelConfig] Saved: ${countLabels(config)} labels in ${config.categories.length} categories`);
 }
 
@@ -275,11 +275,11 @@ function mergeWithSystemLabels(userConfig: LabelConfig): LabelConfig {
     categories: [],
     hiddenFields: [...new Set([...SYSTEM_LABELS.hiddenFields, ...(userConfig.hiddenFields || [])])],
   };
-  
+
   // 先添加系统分类（保证顺序）
   for (const sysCategory of SYSTEM_LABELS.categories) {
     const userCategory = userConfig.categories.find(c => c.id === sysCategory.id);
-    
+
     if (userCategory) {
       // 合并用户修改的映射名和图标
       merged.categories.push({
@@ -299,14 +299,14 @@ function mergeWithSystemLabels(userConfig: LabelConfig): LabelConfig {
       merged.categories.push(sysCategory);
     }
   }
-  
+
   // 添加用户自定义分类
   for (const userCategory of userConfig.categories) {
     if (!userCategory.isSystem && !merged.categories.find(c => c.id === userCategory.id)) {
       merged.categories.push(userCategory);
     }
   }
-  
+
   return merged;
 }
 
@@ -329,17 +329,17 @@ let labelCache: Map<string, LabelItem> | null = null;
  */
 function buildCache(): Map<string, LabelItem> {
   if (labelCache) return labelCache;
-  
+
   const config = getLabelConfig();
   const cache = new Map<string, LabelItem>();
-  
+
   for (const category of config.categories) {
     for (const item of category.items) {
       cache.set(item.key, item);
       cache.set(item.key.toLowerCase(), item);
     }
   }
-  
+
   labelCache = cache;
   return cache;
 }
@@ -400,20 +400,20 @@ export function isHiddenField(key: string): boolean {
  */
 export function addCategory(category: Omit<LabelCategory, 'isSystem'>): LabelCategory {
   const config = getLabelConfig();
-  
+
   // 检查 ID 冲突
   if (config.categories.find(c => c.id === category.id)) {
     throw new Error(`Category ${category.id} already exists`);
   }
-  
+
   const newCategory: LabelCategory = {
     ...category,
     isSystem: false,
   };
-  
+
   config.categories.push(newCategory);
   saveLabelConfig(config);
-  
+
   return newCategory;
 }
 
@@ -423,14 +423,14 @@ export function addCategory(category: Omit<LabelCategory, 'isSystem'>): LabelCat
 export function updateCategory(id: string, updates: { name?: string; description?: string }): LabelCategory {
   const config = getLabelConfig();
   const category = config.categories.find(c => c.id === id);
-  
+
   if (!category) {
     throw new Error(`Category ${id} not found`);
   }
-  
+
   if (updates.name) category.name = updates.name;
   if (updates.description !== undefined) category.description = updates.description;
-  
+
   saveLabelConfig(config);
   return category;
 }
@@ -441,15 +441,15 @@ export function updateCategory(id: string, updates: { name?: string; description
 export function deleteCategory(id: string): void {
   const config = getLabelConfig();
   const index = config.categories.findIndex(c => c.id === id);
-  
+
   if (index === -1) {
     throw new Error(`Category ${id} not found`);
   }
-  
+
   if (config.categories[index].isSystem) {
     throw new Error(`Cannot delete system category ${id}`);
   }
-  
+
   config.categories.splice(index, 1);
   saveLabelConfig(config);
 }
@@ -464,30 +464,30 @@ export function deleteCategory(id: string): void {
 export function addLabel(categoryId: string, label: Omit<LabelItem, 'isSystem'>): LabelItem {
   const config = getLabelConfig();
   const category = config.categories.find(c => c.id === categoryId);
-  
+
   if (!category) {
     throw new Error(`Category ${categoryId} not found`);
   }
-  
+
   // 验证 key 格式（英文、数字、下划线）
   if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(label.key)) {
     throw new Error(`Invalid key format: ${label.key}. Must start with letter, contain only letters, numbers, and underscores.`);
   }
-  
+
   // 检查 key 冲突
   const cache = buildCache();
   if (cache.has(label.key)) {
     throw new Error(`Label key ${label.key} already exists`);
   }
-  
+
   const newLabel: LabelItem = {
     ...label,
     isSystem: false,
   };
-  
+
   category.items.push(newLabel);
   saveLabelConfig(config);
-  
+
   return newLabel;
 }
 
@@ -496,7 +496,7 @@ export function addLabel(categoryId: string, label: Omit<LabelItem, 'isSystem'>)
  */
 export function updateLabel(key: string, updates: Partial<Omit<LabelItem, 'key' | 'isSystem'>>): LabelItem {
   const config = getLabelConfig();
-  
+
   for (const category of config.categories) {
     const item = category.items.find(i => i.key === key);
     if (item) {
@@ -505,12 +505,12 @@ export function updateLabel(key: string, updates: Partial<Omit<LabelItem, 'key' 
       if (updates.icon !== undefined) item.icon = updates.icon;
       if (updates.color !== undefined) item.color = updates.color;
       if (updates.description !== undefined) item.description = updates.description;
-      
+
       saveLabelConfig(config);
       return item;
     }
   }
-  
+
   throw new Error(`Label ${key} not found`);
 }
 
@@ -519,7 +519,7 @@ export function updateLabel(key: string, updates: Partial<Omit<LabelItem, 'key' 
  */
 export function deleteLabel(key: string): void {
   const config = getLabelConfig();
-  
+
   for (const category of config.categories) {
     const index = category.items.findIndex(i => i.key === key);
     if (index !== -1) {
@@ -531,7 +531,7 @@ export function deleteLabel(key: string): void {
       return;
     }
   }
-  
+
   throw new Error(`Label ${key} not found`);
 }
 
