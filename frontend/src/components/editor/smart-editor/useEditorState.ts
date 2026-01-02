@@ -48,11 +48,17 @@ export function useEditorState({ document, rawContent }: UseEditorStateProps) {
     }
   }, [document]);
 
-  // 提取文档内容（去掉 frontmatter）
-  const documentContent = useMemo(() => {
-    if (!rawContent) return '';
+  // 文档内容状态（去掉 frontmatter）
+  const [documentContent, setDocumentContent] = useState('');
+
+  // 初始化文档内容
+  useEffect(() => {
+    if (!rawContent) {
+      setDocumentContent('');
+      return;
+    }
     const match = rawContent.match(/^---\n[\s\S]*?\n---\n*/);
-    return match ? rawContent.slice(match[0].length) : rawContent;
+    setDocumentContent(match ? rawContent.slice(match[0].length) : rawContent);
   }, [rawContent]);
 
   // 富文本编辑器
@@ -152,6 +158,12 @@ export function useEditorState({ document, rawContent }: UseEditorStateProps) {
     return lines.join('\n');
   }, [fixedKeyValues, document]);
 
+  // 处理内容变化
+  const handleContentChange = useCallback((newContent: string) => {
+    setDocumentContent(newContent);
+    setIsDirty(true);
+  }, []);
+
   return {
     // 状态
     isSaving,
@@ -166,6 +178,7 @@ export function useEditorState({ document, rawContent }: UseEditorStateProps) {
     editor,
     // 方法
     handleFixedKeyChange,
+    handleContentChange,
     buildFrontmatter,
   };
 }

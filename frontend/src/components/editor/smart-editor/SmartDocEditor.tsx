@@ -38,7 +38,7 @@ export function SmartDocEditor({
     showFixedKeys, setShowFixedKeys,
     fixedKeyValues, originalFixedKeyValues,
     documentContent,
-    handleFixedKeyChange, buildFrontmatter,
+    handleFixedKeyChange, handleContentChange, buildFrontmatter,
   } = useEditorState({ document, rawContent });
 
   // 固定键配置
@@ -108,7 +108,7 @@ export function SmartDocEditor({
       {/* 文档内容区 */}
       <div className="flex-1 overflow-auto">
         <div className="max-w-4xl mx-auto">
-          <ContentPreview content={documentContent} />
+          <ContentEditor content={documentContent} onChange={handleContentChange} />
         </div>
       </div>
 
@@ -215,17 +215,36 @@ function FixedKeysSection({ fixedKeys, showFixedKeys, onToggle, onChange, getLab
   );
 }
 
-// 文档内容区 - 简洁的源码显示
-function ContentPreview({ content }: { content: string }) {
+// 文档内容编辑区 - 可编辑的源码
+function ContentEditor({ content, onChange }: { content: string; onChange: (value: string) => void }) {
   return (
     <div className="px-6 py-4">
       <div className="mb-3 text-xs text-slate-500 flex items-center gap-2">
         <Code className="w-3.5 h-3.5" />
         文档内容（标题 + Machine Zone + Human Zone）
       </div>
-      <pre className="bg-slate-900 text-slate-100 rounded-lg p-4 overflow-x-auto text-sm font-mono leading-relaxed whitespace-pre-wrap">
-        {content || '（空文档）'}
-      </pre>
+      <textarea
+        value={content}
+        onChange={(e) => onChange(e.target.value)}
+        spellCheck={false}
+        className={cn(
+          'w-full min-h-[400px] resize-y',
+          'bg-slate-900 text-slate-100 rounded-lg p-4',
+          'text-sm font-mono leading-relaxed',
+          'focus:outline-none focus:ring-2 focus:ring-blue-500/50',
+          'placeholder:text-slate-600'
+        )}
+        placeholder="# 文档标题 {#anchor}
+
+```yaml
+type: principal
+id: example
+display_name: 示例
+status: active
+```
+
+这是文档的人类可读内容..."
+      />
     </div>
   );
 }
