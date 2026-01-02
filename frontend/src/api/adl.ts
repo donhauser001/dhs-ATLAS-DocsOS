@@ -2,33 +2,11 @@
  * ADL API 客户端
  */
 
+// 从统一类型定义导入
+export type { Block, MachineBlock, ADLDocument, Frontmatter } from '@/types/adl';
+import type { Block, MachineBlock, ADLDocument } from '@/types/adl';
+
 const API_BASE = '/api/adl';
-
-// ADL Types (与后端保持一致)
-export interface Block {
-  anchor: string;
-  heading: string;
-  level: number;
-  machine: MachineBlock;
-  body: string;
-  startLine: number;
-  endLine: number;
-}
-
-export interface MachineBlock {
-  type: string;
-  id: string;
-  status: 'active' | 'archived' | 'draft';
-  title: string;
-  [key: string]: unknown;
-}
-
-export interface ADLDocument {
-  path: string;
-  frontmatter: Record<string, unknown>;
-  blocks: Block[];
-  raw: string;
-}
 
 /**
  * Proposal - 变更提案

@@ -4,29 +4,15 @@
 
 import type { ComponentType } from 'react';
 
+// 从统一类型定义导入
+export type { ADLDocument, Block, MachineBlock, Frontmatter } from '@/types/adl';
+import type { ADLDocument } from '@/types/adl';
+
 // ============================================================
 // 视图模式
 // ============================================================
 
 export type ViewMode = 'read' | 'form' | 'md';
-
-// ============================================================
-// 文档数据类型
-// ============================================================
-
-export interface ADLDocument {
-  path: string;
-  frontmatter: Record<string, unknown>;
-  blocks: ADLBlock[];
-  raw?: string;
-}
-
-export interface ADLBlock {
-  title?: string;
-  anchor?: string;
-  machine?: Record<string, unknown>;
-  body?: string;
-}
 
 // ============================================================
 // 视图组件属性

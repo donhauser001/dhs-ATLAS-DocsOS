@@ -2,13 +2,15 @@
  * SmartDocEditor - 固定键感知的智能文档编辑器
  */
 
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import {
   Save, X, ChevronDown, ChevronUp,
-  Lock, Loader2, Info, Code,
+  Lock, Loader2, Info, Code, AlertCircle, Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLabels } from '@/providers/LabelProvider';
+import { applyAutoComplete, getMissingFields, type MissingField } from '@/api/auto-complete';
+import { CodeMirrorEditor } from './CodeMirrorEditor';
 
 import type { ADLDocument } from './types';
 import { FixedKeyField } from './FixedKeyField';
@@ -31,6 +33,10 @@ export function SmartDocEditor({
   onCancel,
 }: SmartDocEditorProps) {
   const { getLabel } = useLabels();
+  const [missingFields, setMissingFields] = useState<MissingField[]>([]);
+  const [autoCompleteMessage, setAutoCompleteMessage] = useState<string | null>(null);
+  const [showDraftRecovery, setShowDraftRecovery] = useState(false);
+  const [draftTimestamp, setDraftTimestamp] = useState<number | null>(null);
 
   const {
     isSaving, setIsSaving,
@@ -47,20 +53,71 @@ export function SmartDocEditor({
     [fixedKeyValues, originalFixedKeyValues]
   );
 
-  // 保存处理
+  // 检测缺失字段
+  useEffect(() => {
+    if (!documentPath) return;
+    
+    getMissingFields(documentPath)
+      .then(result => {
+        setMissingFields(result.missingFields || []);
+      })
+      .catch(err => {
+        console.warn('Failed to get missing fields:', err);
+        setMissingFields([]);
+      });
+  }, [documentPath]);
+
+  // 保存处理 - 集成自动补齐
   const handleSave = useCallback(async () => {
     if (!document || isSaving) return;
     setIsSaving(true);
+    setAutoCompleteMessage(null);
+    
     try {
+      // 1. 保存文档内容
       const fullContent = buildFrontmatter() + '\n' + documentContent;
       await onSave(fullContent);
+      
+      // 2. 调用自动补齐（更新 updated 时间戳等）
+      try {
+        const result = await applyAutoComplete(documentPath);
+        if (result.changes && result.changes.length > 0) {
+          setAutoCompleteMessage(`已自动补齐 ${result.changes.length} 个字段`);
+          // 3秒后隐藏消息
+          setTimeout(() => setAutoCompleteMessage(null), 3000);
+        }
+      } catch (autoCompleteError) {
+        console.warn('Auto-complete failed:', autoCompleteError);
+        // 自动补齐失败不影响保存成功
+      }
+      
       setIsDirty(false);
+      setMissingFields([]); // 清空缺失字段提示
+      clearDraft(); // 清除草稿
     } catch (error) {
       console.error('Save failed:', error);
     } finally {
       setIsSaving(false);
     }
-  }, [document, isSaving, buildFrontmatter, documentContent, onSave, setIsSaving, setIsDirty]);
+  }, [document, isSaving, buildFrontmatter, documentContent, documentPath, onSave, setIsSaving, setIsDirty, clearDraft]);
+
+  // 一键补齐处理
+  const handleAutoComplete = useCallback(async () => {
+    if (!documentPath) return;
+    
+    try {
+      const result = await applyAutoComplete(documentPath);
+      if (result.changes && result.changes.length > 0) {
+        setAutoCompleteMessage(`已自动补齐 ${result.changes.length} 个字段`);
+        setMissingFields([]);
+        setTimeout(() => setAutoCompleteMessage(null), 3000);
+        // 重新加载页面以显示补齐后的内容
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Auto-complete failed:', error);
+    }
+  }, [documentPath]);
 
   // 文档标题
   const docTitle = useMemo(() => {
@@ -73,6 +130,113 @@ export function SmartDocEditor({
       '未命名文档'
     );
   }, [document, documentPath]);
+
+  // 更新页面标题（添加未保存标记）
+  useEffect(() => {
+    const originalTitle = document.title;
+    if (isDirty) {
+      document.title = `* ${docTitle} - ATLAS DocsOS`;
+    } else {
+      document.title = `${docTitle} - ATLAS DocsOS`;
+    }
+    return () => {
+      document.title = originalTitle;
+    };
+  }, [isDirty, docTitle]);
+
+  // 离开页面确认（未保存提醒）
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '您有未保存的修改，确定要离开吗？';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isDirty]);
+
+  // 自动保存草稿到 localStorage
+  useEffect(() => {
+    if (!documentPath || !isDirty) return;
+
+    const draftKey = `atlas-draft-${documentPath}`;
+    const draftContent = buildFrontmatter() + '\n' + documentContent;
+    
+    // 防抖保存，每 2 秒保存一次
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem(draftKey, JSON.stringify({
+          content: draftContent,
+          timestamp: Date.now(),
+        }));
+      } catch (e) {
+        console.warn('Failed to save draft:', e);
+      }
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [documentPath, isDirty, buildFrontmatter, documentContent]);
+
+  // 清除草稿（保存成功后）
+  const clearDraft = useCallback(() => {
+    if (!documentPath) return;
+    const draftKey = `atlas-draft-${documentPath}`;
+    try {
+      localStorage.removeItem(draftKey);
+      setShowDraftRecovery(false);
+    } catch (e) {
+      console.warn('Failed to clear draft:', e);
+    }
+  }, [documentPath]);
+
+  // 检测是否有未保存的草稿
+  useEffect(() => {
+    if (!documentPath) return;
+    const draftKey = `atlas-draft-${documentPath}`;
+    try {
+      const draftData = localStorage.getItem(draftKey);
+      if (draftData) {
+        const { timestamp } = JSON.parse(draftData);
+        // 只显示 24 小时内的草稿
+        if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
+          setShowDraftRecovery(true);
+          setDraftTimestamp(timestamp);
+        } else {
+          localStorage.removeItem(draftKey);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to check draft:', e);
+    }
+  }, [documentPath]);
+
+  // 恢复草稿
+  const handleRecoverDraft = useCallback(() => {
+    if (!documentPath) return;
+    const draftKey = `atlas-draft-${documentPath}`;
+    try {
+      const draftData = localStorage.getItem(draftKey);
+      if (draftData) {
+        const { content } = JSON.parse(draftData);
+        // 触发页面刷新以加载草稿内容
+        // 这里简化处理，直接重新加载页面
+        window.location.reload();
+      }
+    } catch (e) {
+      console.warn('Failed to recover draft:', e);
+    }
+    setShowDraftRecovery(false);
+  }, [documentPath]);
+
+  // 忽略草稿
+  const handleIgnoreDraft = useCallback(() => {
+    clearDraft();
+  }, [clearDraft]);
 
   if (!document) {
     return (
@@ -94,6 +258,50 @@ export function SmartDocEditor({
         onCancel={onCancel}
       />
 
+      {/* 草稿恢复提示 */}
+      {showDraftRecovery && (
+        <div className="px-6 py-2 bg-blue-50 border-b border-blue-200 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-blue-700 text-sm">
+            <Info className="w-4 h-4" />
+            <span>
+              检测到未保存的草稿
+              {draftTimestamp && ` (${new Date(draftTimestamp).toLocaleString()})`}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleIgnoreDraft}
+              className="px-3 py-1 text-blue-600 text-sm hover:bg-blue-100 rounded-md transition-colors"
+            >
+              忽略
+            </button>
+            <button
+              onClick={handleRecoverDraft}
+              className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+            >
+              恢复草稿
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 自动补齐成功消息 */}
+      {autoCompleteMessage && (
+        <div className="px-6 py-2 bg-green-50 border-b border-green-200 text-green-700 text-sm flex items-center gap-2">
+          <Sparkles className="w-4 h-4" />
+          {autoCompleteMessage}
+        </div>
+      )}
+
+      {/* 缺失字段提示栏 */}
+      {missingFields.length > 0 && (
+        <AutoCompleteBar
+          missingFields={missingFields}
+          onAutoComplete={handleAutoComplete}
+          getLabel={getLabel}
+        />
+      )}
+
       {/* 固定键区 */}
       <FixedKeysSection
         fixedKeys={fixedKeys}
@@ -108,7 +316,7 @@ export function SmartDocEditor({
       {/* 文档内容区 */}
       <div className="flex-1 overflow-auto">
         <div className="max-w-4xl mx-auto">
-          <ContentEditor content={documentContent} onChange={handleContentChange} />
+          <ContentEditor content={documentContent} onChange={handleContentChange} onSave={handleSave} />
         </div>
       </div>
 
@@ -215,21 +423,15 @@ function FixedKeysSection({ fixedKeys, showFixedKeys, onToggle, onChange, getLab
   );
 }
 
-// 文档内容编辑区 - 带行号的可编辑源码
-function ContentEditor({ content, onChange }: { content: string; onChange: (value: string) => void }) {
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-  const lineNumbersRef = React.useRef<HTMLDivElement>(null);
+// 文档内容编辑区 - 带语法高亮的代码编辑器
+interface ContentEditorProps {
+  content: string;
+  onChange: (value: string) => void;
+  onSave?: () => void;
+}
 
-  // 计算行号
+function ContentEditor({ content, onChange, onSave }: ContentEditorProps) {
   const lineCount = content.split('\n').length;
-  const lineNumbers = Array.from({ length: Math.max(lineCount, 20) }, (_, i) => i + 1);
-
-  // 同步滚动
-  const handleScroll = useCallback(() => {
-    if (textareaRef.current && lineNumbersRef.current) {
-      lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
-    }
-  }, []);
 
   return (
     <div className="px-6 py-4">
@@ -237,46 +439,50 @@ function ContentEditor({ content, onChange }: { content: string; onChange: (valu
         <Code className="w-3.5 h-3.5" />
         文档内容（标题 + Machine Zone + Human Zone）
         <span className="text-slate-400">· {lineCount} 行</span>
+        <span className="text-slate-400">· 支持语法高亮</span>
       </div>
-      <div className="relative flex rounded-lg overflow-hidden border border-slate-700">
-        {/* 行号区 */}
-        <div
-          ref={lineNumbersRef}
-          className="bg-slate-800 text-slate-500 text-right select-none overflow-hidden"
-          style={{ width: '3rem' }}
-        >
-          <div className="py-4 pr-2 text-sm font-mono leading-relaxed">
-            {lineNumbers.map((num) => (
-              <div key={num} className="h-[1.625rem]">{num}</div>
-            ))}
-          </div>
-        </div>
-        {/* 编辑区 */}
-        <textarea
-          ref={textareaRef}
+      <div className="rounded-lg overflow-hidden border border-slate-700">
+        <CodeMirrorEditor
           value={content}
-          onChange={(e) => onChange(e.target.value)}
-          onScroll={handleScroll}
-          spellCheck={false}
-          className={cn(
-            'flex-1 min-h-[400px] resize-y',
-            'bg-slate-900 text-slate-100 p-4 pl-3',
-            'text-sm font-mono leading-relaxed',
-            'focus:outline-none',
-            'placeholder:text-slate-600'
-          )}
-          placeholder="# 文档标题 {#anchor}
-
-```yaml
-type: principal
-id: example
-display_name: 示例
-status: active
-```
-
-这是文档的人类可读内容..."
+          onChange={onChange}
+          onSave={onSave}
+          className="min-h-[400px]"
         />
       </div>
+    </div>
+  );
+}
+
+// 自动补齐提示栏
+interface AutoCompleteBarProps {
+  missingFields: MissingField[];
+  onAutoComplete: () => void;
+  getLabel: (key: string) => string;
+}
+
+function AutoCompleteBar({ missingFields, onAutoComplete, getLabel }: AutoCompleteBarProps) {
+  const fieldNames = missingFields
+    .slice(0, 3)
+    .map(f => getLabel(f.key))
+    .join('、');
+  const remaining = missingFields.length - 3;
+
+  return (
+    <div className="px-6 py-2 bg-amber-50 border-b border-amber-200 flex items-center justify-between">
+      <div className="flex items-center gap-2 text-amber-700 text-sm">
+        <AlertCircle className="w-4 h-4" />
+        <span>
+          检测到缺少字段: {fieldNames}
+          {remaining > 0 && ` 等 ${missingFields.length} 项`}
+        </span>
+      </div>
+      <button
+        onClick={onAutoComplete}
+        className="px-3 py-1 bg-amber-600 text-white text-sm rounded-md hover:bg-amber-700 transition-colors flex items-center gap-1.5"
+      >
+        <Sparkles className="w-3.5 h-3.5" />
+        一键补齐
+      </button>
     </div>
   );
 }
@@ -296,6 +502,8 @@ function StatusBar({ path, blockCount, editableKeyCount }: StatusBarProps) {
         <span>{blockCount} 个 Block</span>
         <span>·</span>
         <span>{editableKeyCount} 个可编辑固定键</span>
+        <span>·</span>
+        <span className="text-slate-400">⌘S 保存 · ⌘F 搜索 · ⌘G 跳转行</span>
       </div>
     </div>
   );

@@ -60,13 +60,16 @@ export interface Block {
   /** 稳定定位标识 */
   anchor: string;
   /** 标题文本 */
-  heading: string;
+  heading?: string;
   /** 标题级别 */
-  level: number;
+  level?: number;
   /** 人类叙述区内容 */
-  body: string;
+  body?: string;
   /** 机器区数据 */
-  machine: MachineBlock;
+  machine?: MachineBlock;
+  /** 行号信息 */
+  startLine?: number;
+  endLine?: number;
 }
 
 /**

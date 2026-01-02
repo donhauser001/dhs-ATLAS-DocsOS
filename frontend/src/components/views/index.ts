@@ -10,4 +10,7 @@ export { DefaultReadView } from './DefaultReadView';
 
 // 专属视图
 export { PrincipalReadView, PrincipalFormView } from './principal';
+export { NoteReadView } from './note';
+export { ClientReadView } from './client';
+export { ProjectReadView } from './project';
 

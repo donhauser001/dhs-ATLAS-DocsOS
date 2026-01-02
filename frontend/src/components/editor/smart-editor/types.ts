@@ -4,6 +4,10 @@
 
 import type { ReactNode } from 'react';
 
+// 从统一类型定义导入
+export type { ADLDocument, Block, MachineBlock, Frontmatter } from '@/types/adl';
+import type { ADLDocument } from '@/types/adl';
+
 // 输入类型枚举
 export type InputType = 'text' | 'select' | 'tags' | 'version' | 'document_type' | 'function' | 'capabilities';
 
@@ -66,15 +70,5 @@ export interface SmartDocEditorProps {
   documentPath: string;
   onSave: (content: string) => Promise<void>;
   onCancel: () => void;
-}
-
-// ADL 文档接口（简化版）
-export interface ADLDocument {
-  frontmatter?: Record<string, unknown>;
-  blocks?: Array<{
-    machine?: Record<string, unknown>;
-    heading?: string;
-    body?: string;
-  }>;
 }
 

@@ -5,9 +5,10 @@
  */
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   MoreHorizontal, Edit, Trash2, Archive, Key, UserX, UserCheck,
-  Download, Mail, Plus, RefreshCw, Settings, Share2
+  Download, Mail, Plus, RefreshCw, Settings, Share2, Copy, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { ActionConfig, ADLDocument } from '@/registry/types';
+import { executeAction, type ActionContext } from '@/services/action-handlers';
 
 // 图标映射
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -33,6 +35,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   refresh: RefreshCw,
   settings: Settings,
   share: Share2,
+  copy: Copy,
 };
 
 interface ActionBarProps {
@@ -44,6 +47,8 @@ interface ActionBarProps {
   onAction?: (actionId: string, doc: ADLDocument) => void;
   /** 进入编辑模式 */
   onEdit?: () => void;
+  /** 切换视图模式 */
+  onSetViewMode?: (mode: 'read' | 'form' | 'md') => void;
   /** 最大显示按钮数（超出收入更多菜单） */
   maxVisible?: number;
 }
@@ -53,15 +58,30 @@ export function ActionBar({
   document, 
   onAction, 
   onEdit,
+  onSetViewMode,
   maxVisible = 2 
 }: ActionBarProps) {
+  const navigate = useNavigate();
   const [confirmAction, setConfirmAction] = useState<string | null>(null);
+  const [loading, setLoading] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   if (actions.length === 0) return null;
 
   // 分离主要操作和次要操作
   const visibleActions = actions.slice(0, maxVisible);
   const menuActions = actions.slice(maxVisible);
+
+  // 创建操作上下文
+  const actionContext: ActionContext = {
+    navigate: (path) => navigate(path),
+    reload: () => window.location.reload(),
+    setViewMode: onSetViewMode,
+    toast: (message, type = 'info') => {
+      setToast({ message, type });
+      setTimeout(() => setToast(null), 3000);
+    },
+  };
 
   const handleAction = (action: ActionConfig) => {
     // 如果需要确认
@@ -71,10 +91,10 @@ export function ActionBar({
     }
 
     // 执行操作
-    executeAction(action);
+    runAction(action);
   };
 
-  const executeAction = (action: ActionConfig) => {
+  const runAction = async (action: ActionConfig) => {
     // 特殊处理：编辑操作
     if (action.id === 'edit' && onEdit) {
       onEdit();
@@ -84,12 +104,31 @@ export function ActionBar({
     // 如果是函数，直接执行
     if (typeof action.handler === 'function') {
       action.handler(document);
+      setConfirmAction(null);
       return;
     }
 
-    // 否则调用 onAction 回调
+    // 使用处理器 ID 执行操作
+    const handlerId = typeof action.handler === 'string' ? action.handler : action.id;
+    setLoading(action.id);
+
+    try {
+      const result = await executeAction(handlerId, document, actionContext);
+      
+      if (result.success) {
+        actionContext.toast?.(result.message || '操作成功', 'success');
+      } else {
+        actionContext.toast?.(result.error || '操作失败', 'error');
+      }
+    } catch (error) {
+      actionContext.toast?.('操作失败', 'error');
+    } finally {
+      setLoading(null);
+      setConfirmAction(null);
+    }
+
+    // 调用外部回调（如果有）
     onAction?.(action.id, document);
-    setConfirmAction(null);
   };
 
   const getIcon = (iconName: string) => {
@@ -107,70 +146,90 @@ export function ActionBar({
   };
 
   return (
-    <div className="flex items-center gap-2">
-      {/* 可见操作按钮 */}
-      {visibleActions.map(action => (
-        <Button
-          key={action.id}
-          variant={getButtonVariant(action.variant)}
-          size="sm"
-          onClick={() => handleAction(action)}
-          className="gap-1.5"
-        >
-          {getIcon(action.icon)}
-          {action.label}
-        </Button>
-      ))}
+    <>
+      <div className="flex items-center gap-2">
+        {/* 可见操作按钮 */}
+        {visibleActions.map(action => (
+          <Button
+            key={action.id}
+            variant={getButtonVariant(action.variant)}
+            size="sm"
+            onClick={() => handleAction(action)}
+            disabled={loading === action.id}
+            className="gap-1.5"
+          >
+            {loading === action.id ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              getIcon(action.icon)
+            )}
+            {action.label}
+          </Button>
+        ))}
 
-      {/* 更多操作菜单 */}
-      {menuActions.length > 0 && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <MoreHorizontal className="w-4 h-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {menuActions.map((action, index) => (
-              <div key={action.id}>
-                {index > 0 && action.variant === 'danger' && (
-                  <DropdownMenuSeparator />
-                )}
-                <DropdownMenuItem
-                  onClick={() => handleAction(action)}
-                  className={action.variant === 'danger' ? 'text-destructive' : ''}
-                >
-                  {getIcon(action.icon)}
-                  <span className="ml-2">{action.label}</span>
-                </DropdownMenuItem>
-              </div>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+        {/* 更多操作菜单 */}
+        {menuActions.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <MoreHorizontal className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {menuActions.map((action, index) => (
+                <div key={action.id}>
+                  {index > 0 && action.variant === 'danger' && (
+                    <DropdownMenuSeparator />
+                  )}
+                  <DropdownMenuItem
+                    onClick={() => handleAction(action)}
+                    disabled={loading === action.id}
+                    className={action.variant === 'danger' ? 'text-destructive' : ''}
+                  >
+                    {loading === action.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      getIcon(action.icon)
+                    )}
+                    <span className="ml-2">{action.label}</span>
+                  </DropdownMenuItem>
+                </div>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
 
       {/* 确认对话框 */}
       {confirmAction && (
         <ConfirmDialog
           action={actions.find(a => a.id === confirmAction)!}
+          loading={loading === confirmAction}
           onConfirm={() => {
             const action = actions.find(a => a.id === confirmAction);
-            if (action) executeAction(action);
+            if (action) runAction(action);
           }}
           onCancel={() => setConfirmAction(null)}
         />
       )}
-    </div>
+
+      {/* Toast 提示 */}
+      {toast && (
+        <Toast message={toast.message} type={toast.type} />
+      )}
+    </>
   );
 }
 
 // 确认对话框组件
 function ConfirmDialog({ 
   action, 
+  loading,
   onConfirm, 
   onCancel 
 }: { 
   action: ActionConfig;
+  loading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -182,17 +241,40 @@ function ConfirmDialog({
           {action.confirmMessage || `确定要执行"${action.label}"操作吗？`}
         </p>
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onCancel}>
+          <Button variant="outline" onClick={onCancel} disabled={loading}>
             取消
           </Button>
           <Button 
             variant={action.variant === 'danger' ? 'destructive' : 'default'}
             onClick={onConfirm}
+            disabled={loading}
           >
+            {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
             确认
           </Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Toast 提示组件
+function Toast({ 
+  message, 
+  type 
+}: { 
+  message: string; 
+  type: 'success' | 'error' | 'info';
+}) {
+  const bgColor = {
+    success: 'bg-green-500',
+    error: 'bg-red-500',
+    info: 'bg-blue-500',
+  }[type];
+
+  return (
+    <div className={`fixed bottom-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg text-white ${bgColor}`}>
+      {message}
     </div>
   );
 }
