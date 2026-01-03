@@ -38,14 +38,20 @@ export const COLOR_CLASSES: Record<string, { bg: string; text: string; border: s
 export const DEFAULT_TAG_COLORS = ['violet', 'pink', 'blue', 'emerald', 'amber', 'cyan'];
 
 // 默认系统属性顺序
+// 必填字段在前，配置字段在后
 export const DEFAULT_SYSTEM_ORDER = [
-    'version',
-    'document_type',
+    // 必填基础字段
+    'title',
     'author',
     'created',
     'updated',
+    'version',
+    // 文档分类配置
+    'document_type',
     'atlas.function',
-    'atlas.capabilities'
+    'atlas.display',
+    // 能力配置
+    'atlas.capabilities',
 ];
 
 /**

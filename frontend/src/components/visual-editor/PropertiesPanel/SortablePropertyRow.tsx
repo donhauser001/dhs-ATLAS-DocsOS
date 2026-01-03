@@ -1,6 +1,7 @@
 /**
  * SortablePropertyRow - 可拖拽排序的系统属性行
  * 使用系统标签映射获取颜色
+ * 支持多种属性类型：文本、日期、标签、文档类型、功能类型、显现模式、能力
  */
 
 import { useSortable } from '@dnd-kit/sortable';
@@ -10,6 +11,10 @@ import { cn } from '@/lib/utils';
 import { useLabels } from '@/providers/LabelProvider';
 import type { SortablePropertyRowProps } from './types';
 import { formatDateDisplay, getColorClasses, getDefaultTagColor } from './utils';
+import { DocTypeSelector } from '@/components/ui/doc-type-selector';
+import { FunctionTypeSelector } from '@/components/ui/function-type-selector';
+import { DisplayModeMultiSelect } from '@/components/ui/display-mode-multi-select';
+import { CapabilityMultiSelect } from '@/components/ui/capability-multi-select';
 
 export function SortablePropertyRow({
     id,
@@ -70,6 +75,54 @@ export function SortablePropertyRow({
                     tags={tags}
                     readonly={readonly}
                     onChange={onChange}
+                />
+            );
+        }
+
+        // 文档类型选择器
+        if (type === 'doc-type') {
+            return (
+                <DocTypeSelector
+                    value={String(value || '')}
+                    onChange={(v) => onChange(v)}
+                    disabled={readonly || disabled}
+                    compact
+                />
+            );
+        }
+
+        // 功能类型选择器
+        if (type === 'function-type') {
+            return (
+                <FunctionTypeSelector
+                    value={String(value || '')}
+                    onChange={(v) => onChange(v)}
+                    disabled={readonly || disabled}
+                    compact
+                />
+            );
+        }
+
+        // 显现模式多选
+        if (type === 'display-modes') {
+            const modes = Array.isArray(value) ? value : [];
+            return (
+                <DisplayModeMultiSelect
+                    value={modes.map(String)}
+                    onChange={(v) => onChange(v)}
+                    disabled={readonly || disabled}
+                />
+            );
+        }
+
+        // 能力类型多选
+        if (type === 'capabilities') {
+            const caps = Array.isArray(value) ? value : [];
+            return (
+                <CapabilityMultiSelect
+                    value={caps.map(String)}
+                    onChange={(v) => onChange(v)}
+                    disabled={readonly || disabled}
                 />
             );
         }

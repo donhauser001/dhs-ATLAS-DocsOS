@@ -9,7 +9,7 @@
  * - 组件（Components）：用于文档内容中的结构化字段
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
@@ -19,6 +19,7 @@ import { SystemPropertiesSection, type SystemPropertyValues } from './SystemProp
 import { CustomPropertiesSection } from './CustomPropertiesSection';
 import type { PropertiesPanelProps } from './types';
 import { DEFAULT_SYSTEM_ORDER } from './utils';
+import { fetchDocTypeConfig, type DocTypeConfig, type DocTypeItem } from '@/api/doc-types';
 
 export function PropertiesPanel({
     frontmatter,
@@ -29,21 +30,80 @@ export function PropertiesPanel({
     const [expanded, setExpanded] = useState(defaultExpanded);
     const [showAddDialog, setShowAddDialog] = useState(false);
     const [editingConfig, setEditingConfig] = useState<string | null>(null);
+    
+    // 文档类型配置缓存
+    const docTypeConfigRef = useRef<DocTypeConfig | null>(null);
+    
+    // 加载文档类型配置
+    useEffect(() => {
+        fetchDocTypeConfig()
+            .then(config => { docTypeConfigRef.current = config; })
+            .catch(console.error);
+    }, []);
 
     // 解析系统属性值
-    const systemValues = useMemo<SystemPropertyValues>(() => ({
-        version: frontmatter.version as string || '1.0',
-        document_type: frontmatter.document_type as string || 'facts',
-        created: frontmatter.created as string,
-        updated: frontmatter.updated as string,
-        author: frontmatter.author as string,
-        'atlas.function': (frontmatter.atlas as Record<string, unknown>)?.function as string,
-        'atlas.capabilities': (frontmatter.atlas as Record<string, unknown>)?.capabilities as string[],
-    }), [frontmatter]);
+    const systemValues = useMemo<SystemPropertyValues>(() => {
+        const atlas = (frontmatter.atlas as Record<string, unknown>) || {};
+        
+        // 处理 atlas.display 的向后兼容性：旧文档可能是字符串，需要转换为数组
+        const rawDisplay = atlas.display;
+        let displayModes: string[] = [];
+        if (Array.isArray(rawDisplay)) {
+            displayModes = rawDisplay as string[];
+        } else if (typeof rawDisplay === 'string' && rawDisplay) {
+            displayModes = [rawDisplay];
+        }
+        
+        return {
+            title: frontmatter.title as string || '',
+            author: frontmatter.author as string || '',
+            created: frontmatter.created as string || new Date().toISOString(),
+            updated: frontmatter.updated as string || new Date().toISOString(),
+            version: frontmatter.version as string || '1.0',
+            document_type: frontmatter.document_type as string || '',
+            'atlas.function': atlas.function as string || '',
+            'atlas.display': displayModes,
+            'atlas.capabilities': (atlas.capabilities as string[]) || [],
+        };
+    }, [frontmatter]);
 
     // 系统属性顺序
+    // 确保新添加的系统属性按照默认顺序插入到正确位置
     const systemOrder = useMemo(() => {
-        return (frontmatter._systemOrder as string[]) || DEFAULT_SYSTEM_ORDER;
+        const savedOrder = frontmatter._systemOrder as string[] | undefined;
+        
+        if (!savedOrder) {
+            return DEFAULT_SYSTEM_ORDER;
+        }
+        
+        // 检查是否有新的系统属性需要添加
+        const missingKeys = DEFAULT_SYSTEM_ORDER.filter(key => !savedOrder.includes(key));
+        
+        if (missingKeys.length === 0) {
+            return savedOrder;
+        }
+        
+        // 将缺失的属性按默认顺序插入到正确位置
+        const result = [...savedOrder];
+        for (const missingKey of missingKeys) {
+            // 找到该属性在默认顺序中的位置
+            const defaultIndex = DEFAULT_SYSTEM_ORDER.indexOf(missingKey);
+            
+            // 找到在默认顺序中它之前的属性，看看在 result 中的位置
+            let insertIndex = 0;
+            for (let i = defaultIndex - 1; i >= 0; i--) {
+                const prevKey = DEFAULT_SYSTEM_ORDER[i];
+                const prevIndex = result.indexOf(prevKey);
+                if (prevIndex !== -1) {
+                    insertIndex = prevIndex + 1;
+                    break;
+                }
+            }
+            
+            result.splice(insertIndex, 0, missingKey);
+        }
+        
+        return result;
     }, [frontmatter]);
 
     // 自定义属性定义
@@ -60,9 +120,20 @@ export function PropertiesPanel({
         return (frontmatter as DocumentPropertyFields)._values || {};
     }, [frontmatter]);
 
+    // 根据文档类型 ID 查找类型信息
+    const findDocType = useCallback((typeId: string): DocTypeItem | null => {
+        if (!docTypeConfigRef.current) return null;
+        for (const group of docTypeConfigRef.current.groups) {
+            const item = group.items.find(i => i.id === typeId);
+            if (item) return item;
+        }
+        return null;
+    }, []);
+
     // 更新系统属性
     const handleSystemChange = useCallback((key: string, value: unknown) => {
         const newFrontmatter = { ...frontmatter };
+        
         if (key.startsWith('atlas.')) {
             const atlasKey = key.replace('atlas.', '');
             newFrontmatter.atlas = {
@@ -72,8 +143,37 @@ export function PropertiesPanel({
         } else {
             newFrontmatter[key] = value;
         }
+        
+        // 当文档类型变化时，自动填充默认的功能类型和显现模式
+        if (key === 'document_type' && value) {
+            const docType = findDocType(String(value));
+            if (docType) {
+                const currentAtlas = (newFrontmatter.atlas as Record<string, unknown>) || {};
+                
+                // 如果默认功能存在且当前功能为空，则自动填充
+                if (docType.defaultFunction && !currentAtlas.function) {
+                    newFrontmatter.atlas = {
+                        ...currentAtlas,
+                        function: docType.defaultFunction,
+                    };
+                }
+                
+                // 如果默认显现模式存在且当前显现模式为空，则自动填充（转换为数组）
+                const currentDisplay = currentAtlas.display;
+                const isDisplayEmpty = !currentDisplay || 
+                    (Array.isArray(currentDisplay) && currentDisplay.length === 0);
+                
+                if (docType.defaultDisplay && isDisplayEmpty) {
+                    newFrontmatter.atlas = {
+                        ...(newFrontmatter.atlas as Record<string, unknown>),
+                        display: [docType.defaultDisplay], // 转换为数组
+                    };
+                }
+            }
+        }
+        
         onFrontmatterChange(newFrontmatter);
-    }, [frontmatter, onFrontmatterChange]);
+    }, [frontmatter, onFrontmatterChange, findDocType]);
 
     // 更新自定义属性值
     const handleValueChange = useCallback((key: string, value: unknown) => {

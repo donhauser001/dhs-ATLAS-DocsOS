@@ -1,0 +1,246 @@
+{
+  "version": "1.0",
+  "updatedAt": "2026-01-03T19:54:24.030Z",
+  "groups": [
+    {
+      "id": "list",
+      "label": "列表模式",
+      "description": "列表形式展示数据",
+      "items": [
+        {
+          "id": "list.card",
+          "label": "卡片列表",
+          "description": "卡片式展示",
+          "icon": "layout-grid",
+          "category": "list",
+          "isSystem": true
+        },
+        {
+          "id": "list.table",
+          "label": "表格列表",
+          "description": "表格式展示",
+          "icon": "table",
+          "category": "list",
+          "isSystem": true
+        },
+        {
+          "id": "list.compact",
+          "label": "紧凑列表",
+          "description": "简洁行式",
+          "icon": "list",
+          "category": "list",
+          "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "kanban",
+      "label": "看板模式",
+      "description": "状态分列展示",
+      "items": [
+        {
+          "id": "kanban.column",
+          "label": "列看板",
+          "description": "按状态分列",
+          "icon": "columns",
+          "category": "kanban",
+          "isSystem": true
+        },
+        {
+          "id": "kanban.swimlane",
+          "label": "泳道看板",
+          "description": "双维度看板",
+          "icon": "layout",
+          "category": "kanban",
+          "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "calendar",
+      "label": "日历模式",
+      "description": "时间维度展示",
+      "items": [
+        {
+          "id": "calendar.month",
+          "label": "月视图",
+          "description": "月历展示",
+          "icon": "calendar",
+          "category": "calendar",
+          "isSystem": true
+        },
+        {
+          "id": "calendar.week",
+          "label": "周视图",
+          "description": "周历展示",
+          "icon": "calendar-days",
+          "category": "calendar",
+          "isSystem": true
+        },
+        {
+          "id": "calendar.heatmap",
+          "label": "热力图",
+          "description": "数值热力图",
+          "icon": "flame",
+          "category": "calendar",
+          "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "timeline",
+      "label": "时间线模式",
+      "description": "按时间排列",
+      "items": [
+        {
+          "id": "timeline.vertical",
+          "label": "垂直时间线",
+          "description": "上下排列",
+          "icon": "git-commit",
+          "category": "timeline",
+          "isSystem": true
+        },
+        {
+          "id": "timeline.horizontal",
+          "label": "水平时间线",
+          "description": "左右排列",
+          "icon": "arrow-right",
+          "category": "timeline",
+          "isSystem": true
+        },
+        {
+          "id": "timeline.gantt",
+          "label": "甘特图",
+          "description": "项目甘特",
+          "icon": "gantt-chart",
+          "category": "timeline",
+          "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "gallery",
+      "label": "画廊模式",
+      "description": "视觉化展示",
+      "items": [
+        {
+          "id": "gallery.grid",
+          "label": "网格画廊",
+          "description": "等宽网格",
+          "icon": "grid",
+          "category": "gallery",
+          "isSystem": true
+        },
+        {
+          "id": "gallery.masonry",
+          "label": "瀑布流",
+          "description": "不等高瀑布",
+          "icon": "layout-grid",
+          "category": "gallery",
+          "isSystem": true
+        },
+        {
+          "id": "gallery.shelf",
+          "label": "书架",
+          "description": "书架式展示",
+          "icon": "library",
+          "category": "gallery",
+          "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "article",
+      "label": "文章模式",
+      "description": "长文本阅读",
+      "items": [
+        {
+          "id": "article.single",
+          "label": "单栏文章",
+          "description": "居中单栏",
+          "icon": "file-text",
+          "category": "article",
+          "isSystem": true
+        },
+        {
+          "id": "article.double",
+          "label": "双栏文章",
+          "description": "内容+侧边",
+          "icon": "layout",
+          "category": "article",
+          "isSystem": true
+        },
+        {
+          "id": "article.zen",
+          "label": "禅模式",
+          "description": "极简专注",
+          "icon": "moon",
+          "category": "article",
+          "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "detail",
+      "label": "详情模式",
+      "description": "单条数据展示",
+      "items": [
+        {
+          "id": "detail.card",
+          "label": "卡片详情",
+          "description": "分区卡片",
+          "icon": "square",
+          "category": "detail",
+          "isSystem": true
+        },
+        {
+          "id": "detail.form",
+          "label": "表单详情",
+          "description": "表单布局",
+          "icon": "file-input",
+          "category": "detail",
+          "isSystem": true
+        },
+        {
+          "id": "detail.split",
+          "label": "分栏详情",
+          "description": "左右分栏",
+          "icon": "columns",
+          "category": "detail",
+          "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "structure",
+      "label": "结构模式",
+      "description": "层级和关系展示",
+      "items": [
+        {
+          "id": "tree.outline",
+          "label": "大纲树",
+          "description": "可折叠大纲",
+          "icon": "list-tree",
+          "category": "structure",
+          "isSystem": true
+        },
+        {
+          "id": "tree.mindmap",
+          "label": "思维导图",
+          "description": "放射状结构",
+          "icon": "share-2",
+          "category": "structure",
+          "isSystem": true
+        },
+        {
+          "id": "graph.network",
+          "label": "关系图谱",
+          "description": "网络图",
+          "icon": "share-2",
+          "category": "structure",
+          "isSystem": true
+        }
+      ]
+    }
+  ]
+}

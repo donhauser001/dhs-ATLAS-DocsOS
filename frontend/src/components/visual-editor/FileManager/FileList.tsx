@@ -237,12 +237,12 @@ export function FileList({
     // 过滤允许的文件类型
     const filteredFiles = useMemo(() => {
         let result = sortedFiles;
-        
+
         // 如果不能进入文件夹，则隐藏文件夹
         if (!onEnterFolder) {
             result = result.filter(f => f.type !== 'folder');
         }
-        
+
         // 过滤文件类型
         if (allowedTypes && allowedTypes.length > 0) {
             result = result.filter(f =>
@@ -250,7 +250,7 @@ export function FileList({
                 (f.extension && allowedTypes.includes(f.extension.toLowerCase()))
             );
         }
-        
+
         return result;
     }, [sortedFiles, allowedTypes, onEnterFolder]);
 
@@ -274,7 +274,7 @@ export function FileList({
             if (isFileDisabled(file.path)) {
                 return; // 不允许选择已禁用的文件
             }
-            
+
             const ref: FileReference = {
                 path: file.path,
                 name: file.name,
@@ -282,9 +282,9 @@ export function FileList({
                 mimeType: file.mimeType,
                 extension: file.extension,
             };
-            
+
             const isSelected = isFileSelected(file.path);
-            
+
             if (isSelected) {
                 // 已选中，取消选择
                 onSelectFile(ref, false);
@@ -380,10 +380,10 @@ export function FileList({
     // 渲染选择指示器
     const renderSelectionIndicator = (file: FileInfo) => {
         if (file.type === 'folder') return null;
-        
+
         const isSelected = isFileSelected(file.path);
         const isDisabled = isFileDisabled(file.path);
-        
+
         if (multiple) {
             // 多选模式显示复选框
             return (
@@ -393,8 +393,8 @@ export function FileList({
                         isDisabled
                             ? 'bg-slate-400 border-slate-400 opacity-100' // 已禁用状态
                             : isSelected
-                            ? 'bg-indigo-500 border-indigo-500'
-                            : 'bg-white/80 border-slate-300 opacity-0 group-hover:opacity-100',
+                                ? 'bg-indigo-500 border-indigo-500'
+                                : 'bg-white/80 border-slate-300 opacity-0 group-hover:opacity-100',
                         !canSelectMore && !isSelected && !isDisabled && 'opacity-50'
                     )}
                     onClick={(e) => {
@@ -418,7 +418,7 @@ export function FileList({
                 </div>
             );
         }
-        
+
         return null;
     };
 
@@ -456,7 +456,7 @@ export function FileList({
                             {selectedFiles.length}/{maxSelect}
                         </span>
                     )}
-                    
+
                     <div className="flex items-center bg-white rounded-md border border-slate-200">
                         <button
                             onClick={() => setViewMode('grid')}
@@ -510,8 +510,8 @@ export function FileList({
                                     onContextMenu={(e) => handleContextMenu(e, file)}
                                     className={cn(
                                         'group relative flex flex-col items-center p-3 rounded-lg transition-all',
-                                        isDisabled 
-                                            ? 'opacity-50 cursor-not-allowed bg-slate-100' 
+                                        isDisabled
+                                            ? 'opacity-50 cursor-not-allowed bg-slate-100'
                                             : 'cursor-pointer hover:bg-slate-100',
                                         isSelected && !isDisabled && 'bg-indigo-50 ring-2 ring-indigo-300'
                                     )}
@@ -619,8 +619,8 @@ export function FileList({
                                     onContextMenu={(e) => handleContextMenu(e, file)}
                                     className={cn(
                                         'group flex items-center px-3 py-2 rounded-md transition-all',
-                                        isDisabled 
-                                            ? 'opacity-50 cursor-not-allowed bg-slate-50' 
+                                        isDisabled
+                                            ? 'opacity-50 cursor-not-allowed bg-slate-50'
                                             : 'cursor-pointer hover:bg-slate-100',
                                         isSelected && !isDisabled && 'bg-indigo-50'
                                     )}

@@ -20,7 +20,7 @@ export interface SortablePropertyRowProps {
     id: string;
     icon: React.ReactNode;
     label: string;
-    type: 'text' | 'date' | 'tags';
+    type: 'text' | 'date' | 'tags' | 'doc-type' | 'function-type' | 'display-modes' | 'capabilities';
     value: unknown;
     onChange: (value: unknown) => void;
     readonly?: boolean;

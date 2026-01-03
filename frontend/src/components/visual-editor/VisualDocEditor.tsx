@@ -253,8 +253,51 @@ export function VisualDocEditor({
 
     // 构建完整内容
     const buildFullContent = useCallback(() => {
-        // 构建 frontmatter
-        const frontmatterYaml = yaml.dump(frontmatter, {
+        // 定义 frontmatter 键的顺序：系统字段优先，然后按字母排序
+        const FRONTMATTER_KEY_ORDER = [
+            // 基础元数据（必填）
+            'title',
+            'version',
+            'document_type',
+            'created',
+            'updated',
+            'author',
+            // atlas 配置
+            'atlas',
+            // 组件定义
+            '_components',
+            '_status_options',
+            // 系统内部字段
+            '_properties',
+            '_values',
+            '_systemOrder',
+            '_customOrder',
+        ];
+
+        // 对 frontmatter 键进行排序
+        const sortFrontmatterKeys = (fm: Record<string, unknown>): Record<string, unknown> => {
+            const sorted: Record<string, unknown> = {};
+            const keys = Object.keys(fm);
+            
+            // 先按预定义顺序添加
+            for (const key of FRONTMATTER_KEY_ORDER) {
+                if (key in fm) {
+                    sorted[key] = fm[key];
+                }
+            }
+            
+            // 再添加其他键（按字母顺序）
+            const remainingKeys = keys.filter(k => !FRONTMATTER_KEY_ORDER.includes(k)).sort();
+            for (const key of remainingKeys) {
+                sorted[key] = fm[key];
+            }
+            
+            return sorted;
+        };
+
+        // 构建排序后的 frontmatter
+        const sortedFrontmatter = sortFrontmatterKeys(frontmatter);
+        const frontmatterYaml = yaml.dump(sortedFrontmatter, {
             lineWidth: -1,
             quotingType: '"',
             forceQuotes: false,

@@ -3,15 +3,15 @@
  */
 
 import { useState } from 'react';
-import { 
-    File, 
-    FileText, 
-    FileSpreadsheet, 
-    Image as ImageIcon, 
-    Music, 
-    Video, 
+import {
+    File,
+    FileText,
+    FileSpreadsheet,
+    Image as ImageIcon,
+    Music,
+    Video,
     Archive,
-    X, 
+    X,
     Plus,
     Download
 } from 'lucide-react';
@@ -68,13 +68,13 @@ function FileTypeIcon({ extension, size = 32 }: { extension: string; size?: numb
 }
 
 // 文件卡片组件
-function FileCard({ 
-    filePath, 
-    onRemove, 
-    disabled 
-}: { 
-    filePath: string; 
-    onRemove: (e: React.MouseEvent) => void; 
+function FileCard({
+    filePath,
+    onRemove,
+    disabled
+}: {
+    filePath: string;
+    onRemove: (e: React.MouseEvent) => void;
     disabled?: boolean;
 }) {
     const [imgError, setImgError] = useState(false);
@@ -91,7 +91,7 @@ function FileCard({
                 'transition-all duration-200',
                 'hover:border-slate-300 hover:shadow-md',
                 // 图片使用棋盘格背景，便于看到透明图片
-                isImage && !imgError 
+                isImage && !imgError
                     ? 'bg-[length:16px_16px] bg-[linear-gradient(45deg,#f1f5f9_25%,transparent_25%,transparent_75%,#f1f5f9_75%),linear-gradient(45deg,#f1f5f9_25%,transparent_25%,transparent_75%,#f1f5f9_75%)] bg-[position:0_0,8px_8px] bg-white'
                     : 'bg-slate-50'
             )}>
@@ -133,7 +133,7 @@ function FileCard({
                     >
                         <Download size={12} />
                     </a>
-                    
+
                     {/* 删除按钮 */}
                     {!disabled && (
                         <button

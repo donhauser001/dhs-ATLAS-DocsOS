@@ -362,13 +362,15 @@ export function IconPicker({
                         <>
                             <CurrentIcon size={sizeConfig[size].icon} />
                             {value && (
-                                <button
-                                    type="button"
-                                    className="absolute -top-1 -right-1 w-4 h-4 bg-slate-500 rounded-full flex items-center justify-center hover:bg-slate-600 transition-colors"
+                                <span
+                                    role="button"
+                                    tabIndex={0}
+                                    className="absolute -top-1 -right-1 w-4 h-4 bg-slate-500 rounded-full flex items-center justify-center hover:bg-slate-600 transition-colors cursor-pointer"
                                     onClick={handleClear}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleClear(e as unknown as React.MouseEvent)}
                                 >
                                     <X size={10} className="text-white" />
-                                </button>
+                                </span>
                             )}
                         </>
                     ) : (

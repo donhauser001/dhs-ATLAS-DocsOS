@@ -40,7 +40,7 @@ export function FileManagerDialog({
     const [searchQuery, setSearchQuery] = useState('');
     const [refreshKey, setRefreshKey] = useState(0);
     const dialogRef = useRef<HTMLDivElement>(null);
-    
+
     // 新建文件夹状态（限定模式下使用）
     const [isCreatingFolder, setIsCreatingFolder] = useState(false);
     const [newFolderName, setNewFolderName] = useState('');
@@ -98,26 +98,26 @@ export function FileManagerDialog({
         const basePath = restrictToPath ? initialPath : '/';
         const normalizedBase = basePath.replace(/\/$/, '') || '/';
         const normalizedCurrent = currentPath.replace(/\/$/, '') || '/';
-        
+
         if (normalizedCurrent === normalizedBase || normalizedCurrent === '/') {
             return [];
         }
-        
+
         // 获取相对于基础路径的部分
         let relativePath = normalizedCurrent;
         if (restrictToPath && normalizedCurrent.startsWith(normalizedBase)) {
             relativePath = normalizedCurrent.slice(normalizedBase.length);
         }
-        
+
         const parts = relativePath.split('/').filter(Boolean);
         const result: { name: string; path: string }[] = [];
-        
+
         let accPath = normalizedBase;
         for (const part of parts) {
             accPath = accPath === '/' ? `/${part}` : `${accPath}/${part}`;
             result.push({ name: part, path: accPath });
         }
-        
+
         return result;
     }, [currentPath, initialPath, restrictToPath]);
 
@@ -158,7 +158,7 @@ export function FileManagerDialog({
     // 确认按钮
     const handleConfirm = useCallback(() => {
         if (selectedFiles.length === 0) return;
-        
+
         if (multiple) {
             onSelect(selectedFiles);
         } else {
@@ -179,11 +179,11 @@ export function FileManagerDialog({
             setIsCreatingFolder(false);
             return;
         }
-        
-        const folderPath = currentPath === '/' 
+
+        const folderPath = currentPath === '/'
             ? `/${newFolderName.trim()}`
             : `${currentPath}/${newFolderName.trim()}`;
-        
+
         try {
             await createFolder(folderPath);
             handleRefresh();
@@ -280,7 +280,7 @@ export function FileManagerDialog({
                                 <div className="flex items-center gap-1 flex-1 min-w-0 overflow-x-auto">
                                     <FolderOpen size={14} className="text-amber-600 flex-shrink-0" />
                                     <span className="text-sm text-amber-600 flex-shrink-0">限定:</span>
-                                    
+
                                     {/* 根目录（限定目录） */}
                                     <button
                                         onClick={() => handleEnterFolder(initialPath)}
@@ -294,7 +294,7 @@ export function FileManagerDialog({
                                         <Home size={14} className="inline-block mr-1" />
                                         {initialPath === '/' ? '根目录' : initialPath.split('/').pop() || initialPath}
                                     </button>
-                                    
+
                                     {/* 子目录面包屑 */}
                                     {breadcrumbs.map((crumb, index) => (
                                         <div key={crumb.path} className="flex items-center gap-1 flex-shrink-0">
@@ -313,7 +313,7 @@ export function FileManagerDialog({
                                         </div>
                                     ))}
                                 </div>
-                                
+
                                 {/* 新建文件夹按钮/输入框 */}
                                 <div className="flex-shrink-0 ml-2">
                                     {isCreatingFolder ? (

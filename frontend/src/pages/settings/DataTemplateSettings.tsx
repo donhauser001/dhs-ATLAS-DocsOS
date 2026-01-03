@@ -3,7 +3,7 @@
  * 
  * 提供数据模板的管理功能：
  * - 分类管理（添加/编辑/删除）
- * - 模板管理（查看/编辑/删除）
+ * - 模板管理（查看/删除）
  * - 模板预览
  */
 
@@ -12,13 +12,11 @@ import {
     Plus,
     Trash2,
     Edit2,
+    ChevronDown,
     ChevronRight,
     Database,
-    Layers,
     Save,
-    X,
     Lock,
-    RefreshCw,
     Eye,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -44,44 +42,149 @@ import {
 import { useLabels } from '@/providers/LabelProvider';
 
 // ============================================================
-// 子组件：分类列表项
+// 模板卡片（紧凑样式，与 LabelSettings 一致）
 // ============================================================
 
-interface CategoryItemProps {
-    category: TemplateCategory;
-    isSelected: boolean;
-    onSelect: () => void;
-    onEdit: () => void;
-    onDelete: () => void;
+function TemplateCard({
+    template,
+    onPreview,
+    onDelete,
+}: {
+    template: DataTemplate;
+    onPreview: () => void;
+    onDelete?: () => void;
+}) {
+    return (
+        <div className="flex items-center gap-2 py-1.5 px-2 hover:bg-slate-50 rounded group border border-transparent hover:border-slate-200 transition-colors">
+            {/* 图标 */}
+            <div className="w-6 h-6 flex items-center justify-center bg-slate-100 rounded">
+                <Database className="h-3.5 w-3.5 text-slate-500" />
+            </div>
+
+            {/* 内容 */}
+            <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium truncate">{template.name}</div>
+                <code className="text-[10px] text-slate-400 truncate block">
+                    {template.fields.length} 个字段
+                </code>
+            </div>
+
+            {/* 操作 */}
+            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                {template.isSystem && (
+                    <Lock className="h-3 w-3 text-slate-300 mr-1" title="系统模板" />
+                )}
+                <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 w-6 p-0"
+                    onClick={onPreview}
+                    title="预览模板"
+                >
+                    <Eye className="h-3 w-3" />
+                </Button>
+                {!template.isSystem && onDelete && (
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 w-6 p-0 text-red-500 hover:text-red-600"
+                        onClick={onDelete}
+                        title="删除模板"
+                    >
+                        <Trash2 className="h-3 w-3" />
+                    </Button>
+                )}
+            </div>
+        </div>
+    );
 }
 
-function CategoryItem({ category, isSelected, onSelect, onEdit, onDelete }: CategoryItemProps) {
+// ============================================================
+// 分类折叠面板
+// ============================================================
+
+function CategoryPanel({
+    category,
+    onCategoryEdit,
+    onCategoryDelete,
+    onTemplatePreview,
+    onTemplateDelete,
+}: {
+    category: TemplateCategory;
+    onCategoryEdit: () => void;
+    onCategoryDelete: () => void;
+    onTemplatePreview: (template: DataTemplate) => void;
+    onTemplateDelete: (id: string) => void;
+}) {
+    const [expanded, setExpanded] = useState(true);
+
     return (
-        <div
-            className={`group flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors ${isSelected ? 'bg-purple-100 text-purple-700' : 'hover:bg-slate-100'
-                }`}
-            onClick={onSelect}
-        >
-            <div className="flex items-center gap-2 min-w-0">
-                <Layers size={16} className={isSelected ? 'text-purple-500' : 'text-slate-400'} />
-                <span className="text-sm font-medium truncate">{category.name}</span>
-                <span className="text-xs text-slate-400">({category.templates.length})</span>
-                {category.isSystem && <Lock size={12} className="text-slate-300" />}
+        <div className="border rounded-lg mb-3 overflow-hidden">
+            {/* Header */}
+            <div
+                className="flex items-center justify-between px-3 py-2 bg-slate-50 cursor-pointer"
+                onClick={() => setExpanded(!expanded)}
+            >
+                <div className="flex items-center gap-2">
+                    {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    <Database className="h-4 w-4 text-slate-500" />
+                    <span className="font-medium text-sm">{category.name}</span>
+                    <span className="text-xs text-slate-500">({category.templates.length})</span>
+                    {category.isSystem && (
+                        <span className="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">系统</span>
+                    )}
+                </div>
+                <div className="flex items-center gap-1">
+                    {!category.isSystem && (
+                        <>
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onCategoryEdit();
+                                }}
+                                title="编辑分类"
+                            >
+                                <Edit2 className="h-3 w-3" />
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0 text-red-500"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onCategoryDelete();
+                                }}
+                                title="删除分类"
+                            >
+                                <Trash2 className="h-3 w-3" />
+                            </Button>
+                        </>
+                    )}
+                </div>
             </div>
-            {!category.isSystem && (
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                    <button
-                        onClick={(e) => { e.stopPropagation(); onEdit(); }}
-                        className="p-1 rounded hover:bg-slate-200"
-                    >
-                        <Edit2 size={12} className="text-slate-500" />
-                    </button>
-                    <button
-                        onClick={(e) => { e.stopPropagation(); onDelete(); }}
-                        className="p-1 rounded hover:bg-red-100"
-                    >
-                        <Trash2 size={12} className="text-red-500" />
-                    </button>
+
+            {/* Templates - 多列网格 */}
+            {expanded && (
+                <div className="p-2">
+                    {category.templates.length > 0 ? (
+                        <div className="grid grid-cols-3 gap-1">
+                            {category.templates.map((template) => (
+                                <TemplateCard
+                                    key={template.id}
+                                    template={template}
+                                    onPreview={() => onTemplatePreview(template)}
+                                    onDelete={template.isSystem ? undefined : () => onTemplateDelete(template.id)}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-4 text-sm text-slate-400">
+                            该分类下暂无模板
+                        </div>
+                    )}
                 </div>
             )}
         </div>
@@ -89,85 +192,7 @@ function CategoryItem({ category, isSelected, onSelect, onEdit, onDelete }: Cate
 }
 
 // ============================================================
-// 子组件：模板列表项
-// ============================================================
-
-interface TemplateItemProps {
-    template: DataTemplate;
-    onPreview: () => void;
-    onDelete: () => void;
-}
-
-function TemplateItem({ template, onPreview, onDelete }: TemplateItemProps) {
-    const { getLabel } = useLabels();
-
-    return (
-        <div className="group border border-slate-200 rounded-xl p-4 hover:border-purple-300 hover:shadow-sm transition-all">
-            <div className="flex items-start justify-between mb-2">
-                <div>
-                    <div className="flex items-center gap-2">
-                        <Database size={16} className="text-purple-500" />
-                        <span className="font-medium text-slate-800">{template.name}</span>
-                        {template.isSystem && <Lock size={12} className="text-slate-300" />}
-                    </div>
-                    {template.description && (
-                        <p className="text-xs text-slate-500 mt-1">{template.description}</p>
-                    )}
-                </div>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                    <button
-                        onClick={onPreview}
-                        className="p-1.5 rounded-lg hover:bg-purple-50"
-                        title="预览模板"
-                    >
-                        <Eye size={14} className="text-purple-500" />
-                    </button>
-                    {!template.isSystem && (
-                        <button
-                            onClick={onDelete}
-                            className="p-1.5 rounded-lg hover:bg-red-50"
-                            title="删除模板"
-                        >
-                            <Trash2 size={14} className="text-red-500" />
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            {/* 字段预览 */}
-            <div className="mt-3 pt-3 border-t border-slate-100">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">
-                    包含 {template.fields.length} 个字段
-                </div>
-                <div className="flex flex-wrap gap-1">
-                    {template.fields.slice(0, 8).map((field) => (
-                        <span
-                            key={field.key}
-                            className={`text-xs px-2 py-0.5 rounded-full ${field.required
-                                    ? 'bg-purple-100 text-purple-600'
-                                    : 'bg-slate-100 text-slate-600'
-                                }`}
-                        >
-                            {getLabel(field.key)}
-                        </span>
-                    ))}
-                    {template.fields.length > 8 && (
-                        <span className="text-xs text-slate-400">+{template.fields.length - 8}</span>
-                    )}
-                </div>
-            </div>
-
-            {/* 元信息 */}
-            <div className="mt-3 flex items-center gap-4 text-[10px] text-slate-400">
-                <span>类型: {template.dataType}</span>
-                <span>更新: {new Date(template.updatedAt).toLocaleDateString()}</span>
-            </div>
-        </div>
-    );
-}
-
-// ============================================================
-// 子组件：模板预览对话框
+// 模板预览对话框
 // ============================================================
 
 interface TemplatePreviewDialogProps {
@@ -177,7 +202,7 @@ interface TemplatePreviewDialogProps {
 }
 
 function TemplatePreviewDialog({ template, open, onClose }: TemplatePreviewDialogProps) {
-    const { getLabel, getIcon } = useLabels();
+    const { getLabel } = useLabels();
 
     if (!template) return null;
 
@@ -186,7 +211,7 @@ function TemplatePreviewDialog({ template, open, onClose }: TemplatePreviewDialo
             <DialogContent className="max-w-lg">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <Database size={18} className="text-purple-500" />
+                        <Database size={18} className="text-slate-500" />
                         {template.name}
                     </DialogTitle>
                 </DialogHeader>
@@ -227,7 +252,7 @@ function TemplatePreviewDialog({ template, open, onClose }: TemplatePreviewDialo
 }
 
 // ============================================================
-// 子组件：添加/编辑分类对话框
+// 添加/编辑分类对话框
 // ============================================================
 
 interface CategoryDialogProps {
@@ -277,12 +302,12 @@ function CategoryDialog({ category, open, onClose, onSave }: CategoryDialogProps
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent>
+            <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>{category ? '编辑分类' : '添加分类'}</DialogTitle>
                 </DialogHeader>
 
-                <div className="space-y-4">
+                <div className="space-y-4 py-4">
                     <div>
                         <label className="text-sm font-medium text-slate-700">分类 ID</label>
                         <Input
@@ -316,7 +341,7 @@ function CategoryDialog({ category, open, onClose, onSave }: CategoryDialogProps
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={onClose}>取消</Button>
+                    <Button variant="outline" onClick={onClose} disabled={saving}>取消</Button>
                     <Button onClick={handleSave} disabled={saving}>
                         {saving ? '保存中...' : '保存'}
                     </Button>
@@ -334,7 +359,6 @@ export function DataTemplateSettings() {
     const [config, setConfig] = useState<DataTemplateConfig | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
     // 对话框状态
     const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
@@ -348,22 +372,16 @@ export function DataTemplateSettings() {
         try {
             const data = await fetchTemplateConfig();
             setConfig(data);
-            if (!selectedCategoryId && data.categories.length > 0) {
-                setSelectedCategoryId(data.categories[0].id);
-            }
         } catch (err) {
             setError(err instanceof Error ? err.message : '加载失败');
         } finally {
             setLoading(false);
         }
-    }, [selectedCategoryId]);
+    }, []);
 
     useEffect(() => {
         loadConfig();
     }, []);
-
-    // 获取当前选中的分类
-    const selectedCategory = config?.categories.find(c => c.id === selectedCategoryId);
 
     // 添加分类
     const handleAddCategory = async (id: string, name: string, description: string) => {
@@ -381,9 +399,6 @@ export function DataTemplateSettings() {
     const handleDeleteCategory = async (id: string) => {
         if (!confirm('确定要删除这个分类吗？分类下的所有模板也会被删除。')) return;
         await deleteCategory(id);
-        if (selectedCategoryId === id) {
-            setSelectedCategoryId(config?.categories[0]?.id || null);
-        }
         await loadConfig();
     };
 
@@ -396,8 +411,8 @@ export function DataTemplateSettings() {
 
     if (loading) {
         return (
-            <div className="h-full flex items-center justify-center">
-                <RefreshCw className="h-6 w-6 animate-spin text-slate-400" />
+            <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
             </div>
         );
     }
@@ -411,89 +426,45 @@ export function DataTemplateSettings() {
         );
     }
 
+    if (!config) {
+        return <div className="text-red-500 p-4">加载配置失败</div>;
+    }
+
     return (
-        <div className="h-full flex">
-            {/* 左侧：分类列表 */}
-            <div className="w-64 border-r bg-slate-50/50 flex flex-col">
-                <div className="p-4 border-b flex items-center justify-between">
-                    <h3 className="font-medium text-slate-700">模板分类</h3>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                            setEditingCategory(undefined);
+        <div className="p-4">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+                <div>
+                    <h2 className="text-lg font-semibold">数据模板</h2>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                        管理数据块的预设模板，在编辑器中选择"存为模板"来创建新模板。
+                    </p>
+                </div>
+                <Button size="sm" onClick={() => {
+                    setEditingCategory(undefined);
+                    setCategoryDialogOpen(true);
+                }}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    添加分类
+                </Button>
+            </div>
+
+            {/* Categories */}
+            <ScrollArea className="h-[calc(100vh-180px)]">
+                {config.categories.map((category) => (
+                    <CategoryPanel
+                        key={category.id}
+                        category={category}
+                        onCategoryEdit={() => {
+                            setEditingCategory(category);
                             setCategoryDialogOpen(true);
                         }}
-                    >
-                        <Plus size={16} />
-                    </Button>
-                </div>
-
-                <ScrollArea className="flex-1">
-                    <div className="p-2 space-y-1">
-                        {config?.categories.map((category) => (
-                            <CategoryItem
-                                key={category.id}
-                                category={category}
-                                isSelected={selectedCategoryId === category.id}
-                                onSelect={() => setSelectedCategoryId(category.id)}
-                                onEdit={() => {
-                                    setEditingCategory(category);
-                                    setCategoryDialogOpen(true);
-                                }}
-                                onDelete={() => handleDeleteCategory(category.id)}
-                            />
-                        ))}
-                    </div>
-                </ScrollArea>
-            </div>
-
-            {/* 右侧：模板列表 */}
-            <div className="flex-1 flex flex-col">
-                <div className="p-4 border-b flex items-center justify-between">
-                    <div>
-                        <h2 className="font-semibold text-lg text-slate-800">
-                            {selectedCategory?.name || '选择一个分类'}
-                        </h2>
-                        {selectedCategory?.description && (
-                            <p className="text-sm text-slate-500">{selectedCategory.description}</p>
-                        )}
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={loadConfig}>
-                        <RefreshCw size={16} />
-                    </Button>
-                </div>
-
-                <ScrollArea className="flex-1 p-4">
-                    {selectedCategory ? (
-                        selectedCategory.templates.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {selectedCategory.templates.map((template) => (
-                                    <TemplateItem
-                                        key={template.id}
-                                        template={template}
-                                        onPreview={() => setPreviewTemplate(template)}
-                                        onDelete={() => handleDeleteTemplate(template.id)}
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-12">
-                                <Database className="h-12 w-12 mx-auto text-slate-300 mb-4" />
-                                <p className="text-slate-500">该分类下暂无模板</p>
-                                <p className="text-sm text-slate-400 mt-1">
-                                    在编辑器中选择"存为模板"来创建新模板
-                                </p>
-                            </div>
-                        )
-                    ) : (
-                        <div className="text-center py-12">
-                            <Layers className="h-12 w-12 mx-auto text-slate-300 mb-4" />
-                            <p className="text-slate-500">请选择一个分类</p>
-                        </div>
-                    )}
-                </ScrollArea>
-            </div>
+                        onCategoryDelete={() => handleDeleteCategory(category.id)}
+                        onTemplatePreview={setPreviewTemplate}
+                        onTemplateDelete={handleDeleteTemplate}
+                    />
+                ))}
+            </ScrollArea>
 
             {/* 分类编辑对话框 */}
             <CategoryDialog
@@ -514,4 +485,3 @@ export function DataTemplateSettings() {
 }
 
 export default DataTemplateSettings;
-

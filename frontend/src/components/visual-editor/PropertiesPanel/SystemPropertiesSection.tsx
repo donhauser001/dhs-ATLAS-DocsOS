@@ -26,12 +26,14 @@ import { SortablePropertyRow } from './SortablePropertyRow';
 import { systemPropertyStaticConfig } from './system-config';
 
 export interface SystemPropertyValues {
-    version: string;
-    document_type: string;
+    title: string;
+    author: string;
     created: string;
     updated: string;
-    author: string;
+    version: string;
+    document_type: string;
     'atlas.function': string;
+    'atlas.display': string[];   // 支持多选，用于视图切换
     'atlas.capabilities': string[];
 }
 
@@ -114,13 +116,15 @@ export function SystemPropertiesSection({
      */
     function getDefaultLabel(key: string): string {
         const defaultLabels: Record<string, string> = {
-            'version': '版本',
-            'document_type': '文档类型',
+            'title': '标题',
             'author': '作者',
             'created': '创建时间',
             'updated': '更新时间',
-            'atlas.function': '功能',
+            'document_type': '文档类型',
+            'atlas.function': '功能类型',
+            'atlas.display': '显现模式',
             'atlas.capabilities': '能力',
+            'version': '版本',
         };
         return defaultLabels[key] || key;
     }

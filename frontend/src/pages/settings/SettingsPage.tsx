@@ -12,9 +12,13 @@ import { useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowLeft, Tag, Database } from 'lucide-react';
+import { ArrowLeft, Tag, Database, FileType, Workflow, Layout, Zap } from 'lucide-react';
 import { LabelSettings } from './LabelSettings';
 import { DataTemplateSettings } from './DataTemplateSettings';
+import { DocTypeSettings } from './DocTypeSettings';
+import { FunctionTypeSettings } from './FunctionTypeSettings';
+import { DisplayModeSettings } from './DisplayModeSettings';
+import { CapabilitySettings } from './CapabilitySettings';
 
 // ============================================================
 // 设置菜单项
@@ -42,6 +46,34 @@ const MENU_ITEMS: MenuItem[] = [
     icon: <Database className="h-4 w-4" />,
     description: '管理数据块的预设模板',
     component: <DataTemplateSettings />,
+  },
+  {
+    id: 'doc-types',
+    label: '文档类型',
+    icon: <FileType className="h-4 w-4" />,
+    description: '定义文档的本质分类',
+    component: <DocTypeSettings />,
+  },
+  {
+    id: 'function-types',
+    label: '功能类型',
+    icon: <Workflow className="h-4 w-4" />,
+    description: '定义文档的交互行为',
+    component: <FunctionTypeSettings />,
+  },
+  {
+    id: 'display-modes',
+    label: '显现模式',
+    icon: <Layout className="h-4 w-4" />,
+    description: '定义文档的呈现方式',
+    component: <DisplayModeSettings />,
+  },
+  {
+    id: 'capabilities',
+    label: '能力类型',
+    icon: <Zap className="h-4 w-4" />,
+    description: '定义文档的行为能力',
+    component: <CapabilitySettings />,
   },
 ];
 
