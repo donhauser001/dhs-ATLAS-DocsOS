@@ -609,7 +609,7 @@ _values:
 frontend/src/
 ├── components/
 │   └── visual-editor/                    # 可视化编辑器
-│       ├── VisualDocEditor.tsx           # 主编辑器组件（模式切换、保存）
+│       ├── VisualDocEditor.tsx           # 主编辑器组件（模式切换、保存、组件注入）
 │       │
 │       ├── PropertiesPanel/              # 属性面板（模块化）
 │       │   ├── PropertiesPanel.tsx       # 属性面板主组件
@@ -625,13 +625,23 @@ frontend/src/
 │       │
 │       ├── BlockEditor/                  # 块式编辑器（Notion 风格）
 │       │   ├── BlockEditor.tsx           # 块编辑器主组件
-│       │   ├── BlockItem.tsx             # 单个块渲染（拖拽、类型菜单）
+│       │   ├── BlockItem.tsx             # 单个块渲染（拖拽、类型菜单、模板选择）
 │       │   ├── DataBlockEditor.tsx       # 数据块编辑器（YAML 可视化）
 │       │   ├── FieldSelector.tsx         # 字段选择器（分类、搜索）
-│       │   ├── SaveTemplateDialog.tsx    # 存为模板对话框
-│       │   ├── TemplateSelector.tsx      # 模板选择器
+│       │   ├── FieldSettingsDialog.tsx   # 字段设置对话框（组件绑定）
+│       │   ├── ComponentControls.tsx     # 组件控件渲染器
+│       │   ├── StatusOptionsDialog.tsx   # 状态选项配置对话框
+│       │   ├── IdConfigDialog.tsx        # 编号格式配置对话框
+│       │   ├── SaveTemplateDialog.tsx    # 存为模板对话框（含组件）
+│       │   ├── TemplateSelector.tsx      # 模板选择器（返回组件）
 │       │   ├── parser.ts                 # Markdown → Block 解析器
 │       │   ├── types.ts                  # Block 类型定义
+│       │   └── index.ts                  # 导出
+│       │
+│       ├── ComponentPanel/               # 文档组件面板
+│       │   ├── ComponentPanel.tsx        # 组件面板主组件
+│       │   ├── ComponentConfigurator.tsx # 组件配置器
+│       │   ├── types.ts                  # 组件类型定义
 │       │   └── index.ts                  # 导出
 │       │
 │       ├── RichTextEditor/               # 富文本编辑器（阅读模式）
@@ -650,7 +660,7 @@ frontend/src/
 │       └── DataTemplateSettings.tsx      # 数据模板管理页面
 │
 ├── api/
-│   └── data-templates.ts                 # 数据模板 API 客户端
+│   └── data-templates.ts                 # 数据模板 API 客户端（含组件类型）
 │
 ├── registry/
 │   └── property-components.ts            # 属性组件全局注册
@@ -663,10 +673,10 @@ frontend/src/
 
 backend/src/
 ├── api/
-│   └── data-templates.ts                 # 数据模板 API 路由
+│   └── data-templates.ts                 # 数据模板 API 路由（含 /generate）
 │
 └── services/
-    ├── data-template.ts                  # 数据模板服务
+    ├── data-template.ts                  # 数据模板服务（含组件存储）
     └── label-config.ts                   # 标签配置服务
 ```
 
@@ -754,7 +764,7 @@ backend/src/
 - [ ] 性能优化（待优化）
 - [ ] 文档迁移工具（待开发）
 
-### Phase 3.8.7 - 文档组件系统 🚧
+### Phase 3.8.7 - 文档组件系统 ✅
 
 > **目标**：让用户在文档内定义可复用的输入组件，用于数据块字段的结构化编辑
 
@@ -763,8 +773,8 @@ backend/src/
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │  组件定义 → 存储在文档 frontmatter 的 _components 字段              │
-│  组件调用 → 在数据块字段中通过 @component_id 引用                   │
-│  组件渲染 → DataBlockEditor 检测引用并渲染对应控件                  │
+│  组件绑定 → 在数据块内通过 _bindings 字段绑定字段与组件             │
+│  组件渲染 → DataBlockEditor 检测绑定并渲染对应控件                  │
 │  值存储   → 选择后存储实际值（如 "增值税普通发票"），非引用         │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -774,36 +784,46 @@ backend/src/
 ```yaml
 ---
 version: "1.0"
-# 组件定义区
+# 组件定义区（文档级）
 _components:
   invoice_selector:
+    id: invoice_selector
     type: select              # 组件类型
     label: 发票类型           # 显示名称
-    options:                  # 选项列表
-      - key: regular
-        label: 增值税普通发票
-      - key: special
-        label: 增值税专用发票
-    default: regular          # 默认值
+    options:                  # 选项列表（简化：value 即 label）
+      - value: 增值税普通发票
+      - value: 增值税专用发票
     
   rating_5star:
+    id: rating_5star
     type: rating
     label: 评分
     max: 5
-    default: 3
-
-# 字段-组件绑定（可选，用于自动应用）
-_field_components:
-  invoiceType: invoice_selector
-  rating: rating_5star
 ---
 
 ### 客户数据 {#client-1}
 
 ```yaml
 type: client
-invoiceType: 增值税普通发票   # ← 实际值，编辑时使用 invoice_selector 组件
-rating: 4                     # ← 实际值，编辑时使用 rating_5star 组件
+invoiceType: 增值税普通发票   # ← 实际值
+rating: 4                     # ← 实际值
+# 绑定信息（数据块级）
+_bindings:
+  invoiceType: invoice_selector
+  rating: rating_5star
+# 状态选项（数据块级，用于 status 字段）
+_status_options:
+  - value: 活跃
+    color: green
+  - value: 非活跃
+    color: gray
+# 编号配置（数据块级，用于 id 字段）
+_id_config:
+  prefix: CLI
+  separator: "-"
+  digits: 4
+  startFrom: 1
+  frozen: false
 ```
 ```
 
@@ -811,39 +831,90 @@ rating: 4                     # ← 实际值，编辑时使用 rating_5star 组
 
 | 类型 | 说明 | 配置项 |
 |-----|------|--------|
-| `select` | 下拉选择 | options, default, placeholder |
-| `multi-select` | 多选下拉 | options, default, max |
-| `radio` | 单选框组 | options, default |
-| `checkbox` | 多选框组 | options, default |
-| `rating` | 星级评分 | max, allowHalf, default |
-| `number` | 数字输入 | min, max, step, default |
-| `date` | 日期选择 | format, default |
-| `text` | 单行文本 | placeholder, maxLength |
-| `textarea` | 多行文本 | placeholder, rows, maxLength |
+| `select` | 下拉选择 | options, placeholder |
+| `multi-select` | 多选下拉 | options |
+| `rating` | 星级评分 | max |
+| `number` | 数字输入 | min, max, step |
+| `date` | 日期选择 | includeTime |
+| `text` | 单行文本 | placeholder |
+| `textarea` | 多行文本 | placeholder, rows |
 
-#### 任务清单
+#### 特殊字段配置
 
-- [ ] ComponentPanel - 左侧组件面板改造
-  - [ ] 已定义组件列表
-  - [ ] 添加组件按钮
-  - [ ] 编辑/删除组件
-- [ ] ComponentConfigurator - 组件配置器
-  - [ ] 组件类型选择
-  - [ ] 通用配置（名称、标签、默认值）
-  - [ ] 类型特定配置（选项、范围等）
-- [ ] 组件存储与解析
-  - [ ] frontmatter `_components` 读写
-  - [ ] `_field_components` 绑定读写
-- [ ] DataBlockEditor 集成
-  - [ ] 检测字段是否绑定组件
-  - [ ] 渲染对应组件控件
-  - [ ] 值变化同步
-- [ ] 组件控件实现
-  - [ ] SelectComponent
-  - [ ] RadioComponent
-  - [ ] RatingComponent
-  - [ ] NumberComponent
-  - [ ] DateComponent
+| 字段 | 配置方式 | 说明 |
+|-----|---------|------|
+| `status` | 点击标签名 → StatusOptionsDialog | 配置该数据类型允许的状态值和颜色 |
+| `id` | 点击标签名 → IdConfigDialog | 配置编号格式（前缀、分隔符、位数、起始、冻结） |
+
+#### 已完成任务
+
+- [x] ComponentPanel - 组件面板
+  - [x] 已定义组件列表
+  - [x] 添加组件按钮
+  - [x] 编辑/删除组件
+  - [x] 组件图标显示
+- [x] ComponentConfigurator - 组件配置器
+  - [x] 组件类型选择
+  - [x] 通用配置（名称、标签）
+  - [x] 类型特定配置（选项、范围等）
+  - [x] 选项颜色和图标配置
+- [x] 组件存储与解析
+  - [x] frontmatter `_components` 读写
+  - [x] 数据块 `_bindings` 绑定读写
+- [x] DataBlockEditor 集成
+  - [x] 字段设置对话框（FieldSettingsDialog）
+  - [x] 检测字段是否绑定组件
+  - [x] 渲染对应组件控件
+  - [x] 值变化同步
+  - [x] 同步结构时同步组件绑定
+- [x] 组件控件实现
+  - [x] SelectControl
+  - [x] MultiSelectControl
+  - [x] RatingControl
+  - [x] NumberControl
+  - [x] DateControl
+  - [x] TextControl
+  - [x] TextareaControl
+- [x] 固定字段特殊处理
+  - [x] StatusOptionsDialog - 状态选项配置
+  - [x] IdConfigDialog - 编号格式配置
+  - [x] 编号自动生成
+  - [x] 编号冻结功能
+
+### Phase 3.8.8 - 模板组件同步 ✅
+
+> **目标**：保存和插入模板时同步关联的组件定义
+
+#### 核心功能
+
+1. **保存模板时**：将关联的组件定义、字段绑定、状态选项、编号配置一并保存
+2. **插入模板时**：自动将模板中的组件注入到当前文档
+
+#### 数据结构扩展
+
+```typescript
+interface DataTemplate {
+  // ... 基础字段
+  bindings?: Record<string, string>;        // 字段-组件绑定
+  components?: Record<string, Component>;   // 关联的组件定义
+  statusOptions?: StatusOption[];           // 状态选项配置
+  idConfig?: IdConfig;                      // 编号配置
+}
+```
+
+#### API 扩展
+
+- `POST /api/data-templates/from-data` - 创建模板（包含组件）
+- `GET /api/data-templates/template/:id/generate` - 生成数据块（返回 YAML + 组件）
+
+#### 已完成任务
+
+- [x] 扩展 DataTemplate 类型
+- [x] SaveTemplateDialog 传递完整数据
+- [x] 后端 API 支持存储组件
+- [x] TemplateSelector 返回组件
+- [x] BlockItem 注入组件回调
+- [x] VisualDocEditor 合并组件
 
 ## 预期成果
 
@@ -912,6 +983,30 @@ Phase 3.8 是 ATLAS 第一次真正走向非技术用户。
 ---
 
 ## 更新记录
+
+### 2026-01-03 v3.0 - 组件系统完成
+
+**文档组件系统**
+- ComponentPanel - 组件面板（定义、编辑、删除）
+- ComponentConfigurator - 组件配置器（类型选择、选项配置）
+- FieldSettingsDialog - 字段设置对话框（组件绑定）
+- ComponentControls - 组件控件渲染器（7种控件类型）
+
+**固定字段特殊处理**
+- StatusOptionsDialog - 状态选项配置（值、颜色）
+- IdConfigDialog - 编号格式配置（前缀、分隔符、位数、起始、冻结）
+- 编号自动生成与冻结功能
+- 同步结构时同步状态选项和编号配置
+
+**模板组件同步**
+- 保存模板时保存关联组件、绑定、状态选项、编号配置
+- 插入模板时自动注入组件到文档
+- `/api/data-templates/template/:id/generate` 端点
+
+**数据模型优化**
+- 简化组件选项结构（value 即 label）
+- 数据块级 `_bindings` 替代文档级 `_field_components`
+- 数据块级 `_status_options` 和 `_id_config`
 
 ### 2026-01-03 v2.0 - 功能完成
 
