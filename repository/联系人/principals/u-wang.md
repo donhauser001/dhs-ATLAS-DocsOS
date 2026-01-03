@@ -20,7 +20,6 @@ status: active
 identity:
   emails:
     - wang@zhongxin.com
-    - wang.personal@gmail.com
   phones:
     - 138-0000-0001
 auth:
