@@ -21,6 +21,245 @@
 
 ---
 
+## 🏛️ ATLAS 系统宪法（Constitution）
+
+> **以下6条是不可违背的系统契约，所有 Phase 的实现都必须遵守。**
+
+### 宪法第一条：所有写入必须可审计
+
+```
+任何对文档的修改，无论是：
+- 人类用户的手动编辑
+- AI 代理的 Proposal 执行
+- 系统自动化触发
+- 外部 Webhook 写入
+
+都必须产生可追溯的证据链：
+- Git Commit SHA
+- 操作者身份（principal_id）
+- 操作时间戳
+- 变更内容 Diff
+```
+
+**实现约束**：禁止任何绕过 Git 的直接文件写入。
+
+### 宪法第二条：状态机必须有 Guard
+
+```yaml
+# 所有涉及状态流转的文档类型，必须在 _schema.md 中声明状态机契约
+
+state_machine:
+  states: [pending, paid, shipped, completed, cancelled, refunded]
+  
+  transitions:
+    - from: pending
+      to: paid
+      guard:
+        - "payment_fact_exists"      # 必须存在支付凭证
+        - "payment_fact.verified"    # 凭证已验证
+      
+    - from: paid
+      to: shipped
+      guard:
+        - "logistics_fact_exists"    # 必须存在物流单号
+      side_effects:
+        - "inventory.decrement"      # 扣减库存
+        
+    - from: paid
+      to: refunded
+      guard:
+        - "refund_approved"          # 需人工审批
+      cooldown: "24h"                # 冷静期
+```
+
+**实现约束**：ADL Executor 在执行状态变更 Proposal 前，必须校验 guard 条件。
+
+### 宪法第三条：外部事实必须事实化
+
+```
+支付、物流、发票等来自外部世界的事件，不能直接写入业务文档。
+必须先固化为"外部事实凭证"（External Evidence），再被引用。
+
+/facts/evidence/
+├── payments/
+│   └── PAY-2026-001.md     # 支付凭证
+├── logistics/
+│   └── TRK-SF-12345.md     # 物流凭证
+└── invoices/
+    └── INV-2026-001.md     # 发票凭证
+```
+
+**凭证文档格式**：
+
+```yaml
+---
+title: "支付凭证 PAY-2026-001"
+document_type: system.evidence.payment
+evidence_type: payment
+
+# 原始数据（不可修改）
+raw:
+  provider: "alipay"
+  trade_no: "2026010422001234567890"
+  amount: 14999
+  timestamp: "2026-01-04T10:23:45Z"
+  
+# 校验结果
+verification:
+  signature_valid: true
+  amount_match: true
+  verified_at: "2026-01-04T10:23:46Z"
+  verified_by: "system.payment_gateway"
+  
+# 关联
+refs:
+  order: "/orders/2026/01/ORD-1024.md"
+  
+# 元数据（系统写入，不可手动修改）
+_immutable: true
+_hash: "sha256:abc123..."
+---
+```
+
+**实现约束**：订单状态变更的 guard 必须检查对应凭证的 `verification.verified = true`。
+
+### 宪法第四条：字段可变性必须声明
+
+```yaml
+# 在 _schema.md 中声明字段的可变性规则
+
+field_mutability:
+  # 创建后永不可变
+  immutable:
+    - id
+    - created_at
+    - customer_ref
+    - product_refs[].price      # 下单时锁定价格
+    - total_amount              # 下单时锁定总价
+    
+  # 仅在特定状态区间可变
+  conditional:
+    - field: address
+      mutable_in: [pending]     # 仅待支付时可改
+      requires_approval_in: [paid]  # 已支付需审批
+      
+    - field: memo
+      mutable_in: [pending, paid, shipped]  # 可追加备注
+      append_only: true         # 只能追加，不能删除历史
+      
+  # 系统字段（仅系统可写）
+  system_only:
+    - status
+    - updated_at
+    - _evidence_refs
+```
+
+**实现约束**：ADL Validator 在执行前必须校验字段可变性。
+
+### 宪法第五条：AI 永远不能越权执行
+
+```
+AI 代理（无论传记官、纠错官、还是任何市场雇佣的 AI）：
+
+1. 永远只能"提案"，不能"直接执行"
+2. 高风险操作必须经过人类审批
+3. 涉及钱/权限/客户数据的提案，必须有冷静期
+```
+
+**高风险操作定义**：
+
+```yaml
+high_risk_operations:
+  - type: "financial"
+    patterns:
+      - "*.amount"
+      - "*.price"
+      - "*.payment_*"
+    requires:
+      - human_approval: true
+      - cooldown: "24h"
+      
+  - type: "permission"
+    patterns:
+      - "*.sandbox.*"
+      - "*.capabilities"
+      - "/principals/**"
+    requires:
+      - human_approval: true
+      - two_factor: true
+      
+  - type: "deletion"
+    patterns:
+      - "DELETE *"
+    requires:
+      - human_approval: true
+      - backup_created: true
+```
+
+**实现约束**：AI 的 Proposal 默认 `status: pending_review`，高风险操作自动加入冷静期队列。
+
+### 宪法第六条：叙事永远不得伪造事实
+
+```
+传记官等叙事类 AI：
+
+1. 可以"渲染情绪"，但必须标注为推断
+2. 每个关键段落必须绑定证据链
+3. 读者必须能一键回溯到原始事实
+```
+
+**叙事输出规范**：
+
+```markdown
+## 2026年1月5日 · 深夜的战略调整
+
+> ⏰ 时间戳: 02:17 AM
+> 📌 证据: [Git Commit abc123](/git/abc123) | [Proposal P-1024](/proposals/P-1024.md)
+> 🎭 叙事类型: **情景渲染**（基于时间戳推断，非事实断言）
+
+凌晨两点，一个紧急的定价调整提案被发起。
+*这通常意味着高优先级处理或紧急迭代*。
+
+---
+原始事实：
+- 提交时间：02:17:34
+- 变更内容：price 字段从 12999 调整为 14999
+- 操作者：user-001
+```
+
+**实现约束**：传记官输出必须包含 `evidence_refs` 数组和 `narrative_type` 标签。
+
+---
+
+### 宪法执行机制
+
+```typescript
+// backend/src/core/constitution.ts
+
+interface ConstitutionCheck {
+  rule: 'audit' | 'guard' | 'evidence' | 'mutability' | 'ai_limit' | 'narrative';
+  passed: boolean;
+  reason?: string;
+  evidence?: string[];
+}
+
+// 所有 Proposal 执行前必须通过宪法检查
+async function checkConstitution(proposal: Proposal): Promise<ConstitutionCheck[]> {
+  return [
+    await checkAuditability(proposal),      // 第一条
+    await checkStateGuard(proposal),         // 第二条
+    await checkExternalEvidence(proposal),   // 第三条
+    await checkFieldMutability(proposal),    // 第四条
+    await checkAIPermission(proposal),       // 第五条
+    // 第六条在叙事生成时检查
+  ];
+}
+
+// 任何一条不通过，Proposal 被拒绝
+```
+
+---
+
 ## 文档属性四维模型
 
 ```
@@ -1570,16 +1809,192 @@ created_at: 2026-01-04T10:00:00Z
 ┌─────────┐   Proposal    ┌─────────┐   Proposal    ┌─────────┐
 │ pending │ ────────────▶ │  paid   │ ────────────▶ │ shipped │
 └─────────┘   支付确认     └─────────┘   发货确认     └─────────┘
-                                                         │
-                                                         ▼ Proposal
-                                                    ┌─────────┐
-                                                    │completed│
-                                                    └─────────┘
+     │                          │                         │
+     │                          │                         ▼ Proposal
+     │                          │                    ┌─────────┐
+     │                          │                    │completed│
+     │                          │                    └─────────┘
+     │                          │
+     │        ┌─────────────────┘
+     │        │ Proposal + 24h冷静期
+     │        ▼
+     │   ┌─────────┐
+     └──▶│cancelled│
+         └─────────┘
+              │
+              ▼ Proposal + 审批
+         ┌─────────┐
+         │refunded │
+         └─────────┘
+```
+
+#### 状态机契约（_schema.md）
+
+```yaml
+# /commerce/orders/_schema.md
+---
+title: "订单状态机契约"
+document_type: system.schema
+
+state_machine:
+  name: "order_status"
+  states:
+    - pending      # 待支付
+    - paid         # 已支付
+    - shipped      # 已发货
+    - completed    # 已完成
+    - cancelled    # 已取消
+    - refunded     # 已退款
+    
+  initial: pending
+  final: [completed, cancelled, refunded]
+  
+  transitions:
+    # pending → paid：需要支付凭证
+    - from: pending
+      to: paid
+      trigger: payment_confirmed
+      guard:
+        - condition: "evidence.payment.exists"
+          error: "缺少支付凭证"
+        - condition: "evidence.payment.verified == true"
+          error: "支付凭证未验证"
+        - condition: "evidence.payment.amount == order.total_amount"
+          error: "支付金额不匹配"
+      side_effects: []
+      
+    # paid → shipped：需要物流凭证
+    - from: paid
+      to: shipped
+      trigger: shipment_created
+      guard:
+        - condition: "evidence.logistics.exists"
+          error: "缺少物流单号"
+      side_effects:
+        - action: "inventory.decrement"
+          target: "order.product_refs"
+          
+    # shipped → completed：可由客户或系统触发
+    - from: shipped
+      to: completed
+      trigger: delivery_confirmed
+      guard:
+        - condition: "days_since_shipped >= 7 OR customer_confirmed"
+          error: "未满足确认条件"
+      side_effects: []
+      
+    # pending → cancelled：可直接取消
+    - from: pending
+      to: cancelled
+      trigger: order_cancelled
+      guard: []
+      side_effects: []
+      
+    # paid → cancelled：需要冷静期
+    - from: paid
+      to: cancelled
+      trigger: order_cancelled
+      guard:
+        - condition: "cooldown_passed(24h)"
+          error: "需等待24小时冷静期"
+      cooldown: "24h"
+      requires_approval: true
+      side_effects:
+        - action: "refund.initiate"
+          
+    # cancelled/paid → refunded：需要退款凭证
+    - from: [cancelled, paid]
+      to: refunded
+      trigger: refund_completed
+      guard:
+        - condition: "evidence.refund.exists"
+          error: "缺少退款凭证"
+        - condition: "evidence.refund.verified == true"
+          error: "退款凭证未验证"
+      requires_approval: true
+      side_effects: []
+
+# 字段可变性声明（遵守宪法第四条）
+field_mutability:
+  immutable:
+    - id
+    - created_at
+    - customer_ref
+    - product_refs            # 整个商品列表不可变
+    - product_refs[].price    # 下单时锁定价格
+    - product_refs[].item     # 商品引用不可变
+    - total_amount            # 下单时锁定总价
+    
+  conditional:
+    - field: address
+      mutable_in: [pending]
+      requires_approval_in: [paid]
+      immutable_in: [shipped, completed]
+      
+    - field: quantity
+      mutable_in: [pending]
+      immutable_in: [paid, shipped, completed]
+      
+  append_only:
+    - memo                    # 备注只能追加
+    - _evidence_refs          # 凭证引用只能追加
+    
+  system_only:
+    - status
+    - updated_at
+    - _state_history
+---
+```
+
+#### 外部事实凭证（遵守宪法第三条）
+
+```yaml
+# /facts/evidence/payments/PAY-2026-001.md
+---
+title: "支付凭证 PAY-2026-001"
+document_type: system.evidence.payment
+_immutable: true
+
+# 原始数据（webhook 写入，不可修改）
+raw:
+  provider: "alipay"
+  trade_no: "2026010422001234567890"
+  buyer_id: "2088xxx"
+  amount: 14999
+  currency: "CNY"
+  timestamp: "2026-01-04T10:23:45Z"
+  notify_id: "notify_2026xxx"
+  sign: "RSA2_SIGNATURE_HERE"
+  
+# 校验结果
+verification:
+  signature_valid: true
+  amount_match: true
+  timestamp_valid: true
+  verified_at: "2026-01-04T10:23:46Z"
+  verified_by: "system.payment_gateway"
+  verification_method: "RSA2"
+  
+# 关联订单
+refs:
+  order: "/commerce/orders/2026/01/ORD-1024.md"
+  
+# 完整性哈希（用于检测篡改）
+_integrity:
+  hash: "sha256:abc123def456..."
+  signed_by: "system"
+  signed_at: "2026-01-04T10:23:46Z"
+---
+
+## 原始通知内容
+
+此文档由支付网关 Webhook 自动创建，内容不可修改。
 ```
 
 - **状态变更** = 发起 ADL-Write Proposal
 - **Git Commit** = 天然审计链
-- **历史追溯**：谁在什么时间改了价格、确认了收货，一目了然
+- **外部凭证** = 支付/物流/发票必须先落入 `/facts/evidence/`
+- **Guard 校验** = 状态变更前必须验证凭证存在且有效
 
 ### 9.3 电商能力矩阵
 
@@ -1726,6 +2141,87 @@ const inferNarrativeWeight = (diff: DocumentDiff): NarrativeWeight => {
   }
   return 'medium';
 };
+```
+
+#### 可覆盖 + 可解释机制（遵守宪法第六条）
+
+系统推断的权重必须可被人工覆盖，且必须提供解释：
+
+```yaml
+---
+title: "合同条款修订 v2.3"
+
+# 系统推断结果
+_narrative:
+  weight: low                     # 系统推断为 low
+  weight_reason: "仅正文变更，变更比例 8%"
+  confidence: 0.7                 # 置信度 70%
+  inferred_at: "2026-01-04T10:00:00Z"
+  
+# 人工覆盖（优先级高于系统推断）
+narrative_weight_override:
+  weight: high                    # 覆盖为 high
+  reason: "虽然只改了几个字，但涉及关键赔偿条款"
+  overridden_by: "user-001"
+  overridden_at: "2026-01-04T11:00:00Z"
+  
+# 最终生效权重 = override > inferred
+---
+```
+
+**推断输出规范**：
+
+```typescript
+interface NarrativeWeightResult {
+  weight: 'high' | 'medium' | 'low' | 'noise';
+  weight_reason: string;          // 必须解释原因
+  confidence: number;             // 0-1 置信度
+  overridable: boolean;           // 是否允许覆盖（默认 true）
+  factors: {                      // 影响因素明细
+    field_changes: string[];
+    time_factors?: {
+      is_late_night: boolean;     // 深夜操作
+      is_weekend: boolean;        // 周末操作
+    };
+    pattern_matches: string[];    // 匹配到的模式
+  };
+}
+```
+
+#### 叙事类型标注（遵守宪法第六条）
+
+传记官输出必须区分"事实"和"推断"：
+
+| 叙事类型 | 标签 | 说明 | 示例 |
+|----------|------|------|------|
+| `fact` | 事实陈述 | 直接来自数据，可100%验证 | "订单金额为 14999 元" |
+| `inference` | 逻辑推断 | 基于数据的合理推断 | "这是本月最大订单" |
+| `rendering` | 情景渲染 | 基于时间/模式的情绪描写 | "凌晨的紧急提交" |
+| `opinion` | 观点评价 | AI 的主观判断 | "这个决策很明智" |
+
+**输出模板**：
+
+```markdown
+## 2026年1月5日 · 深夜的战略调整
+
+> 📌 证据链
+> - Git Commit: [abc123](/git/abc123)
+> - Proposal: [P-1024](/proposals/P-1024.md)
+> - 原始文档: [ORD-1024 v3](/orders/ORD-1024.md?v=3)
+
+> 🎭 叙事类型: **rendering**（情景渲染）
+> ⚠️ 不确定性声明: 以下描述基于时间戳推断，非事实断言
+
+凌晨两点十七分，一个紧急的定价调整提案被发起。
+*深夜时段的操作通常意味着高优先级处理或紧急迭代。*
+
+---
+
+**原始事实**（type: fact）：
+- 提交时间：02:17:34 UTC+8
+- 变更字段：price (12999 → 14999)
+- 操作者：user-001
+- 变更幅度：+15.4%
 ```
 
 ### 10.2 传记官 AI（Biographer AI）
@@ -2168,16 +2664,19 @@ author: 首席纠错官
 document_type: system.proposal.strategic
 status: pending_review
 
+# 触发条件
 trigger:
   source: "/facts/inventory/"
   condition: "stock_level < threshold"
   
+# 分析过程（必须可追溯）
 analysis: |
   检测到以下风险信号：
   1. A 供应商库存已低于警戒线 3 天
   2. 本周订单增长 30%，但补货提案为 0
   3. 历史数据显示，断货将导致 15% 客户流失
 
+# 建议动作
 recommendation:
   action: "update_supplier_priority"
   target: "/facts/suppliers/supplier-a.md"
@@ -2186,11 +2685,157 @@ recommendation:
     backup_supplier: "/facts/suppliers/supplier-b.md"
     
 risk_if_ignored: "预计 72 小时内断货，影响约 12 笔待处理订单"
+
+# 安全约束（遵守宪法第五条）
+_security:
+  risk_level: medium              # low | medium | high | critical
+  requires_approval: true         # 必须人工审批
+  cooldown: null                  # 本提案无需冷静期
+  auto_execute: false             # 禁止自动执行
 ---
 
 ## 是否确认执行此提案？
 
 [ 确认执行 ]  [ 暂时搁置 ]  [ 与纠错官讨论 ]
+```
+
+#### 冷静期机制（Cooldown System）
+
+**高风险操作必须经过冷静期**（遵守宪法第五条）：
+
+```yaml
+# 系统级冷静期配置
+# /.atlas/config/cooldown-rules.json
+
+cooldown_rules:
+  # 财务类操作
+  - pattern: "*.amount > 10000"
+    cooldown: "24h"
+    requires_approval: true
+    notify: ["owner", "cfo_ai"]
+    
+  # 退款操作
+  - pattern: "status: * → refunded"
+    cooldown: "24h"
+    requires_approval: true
+    
+  # 权限变更
+  - pattern: "sandbox.* OR capabilities.*"
+    cooldown: "48h"
+    requires_approval: true
+    two_factor: true
+    
+  # 批量删除
+  - pattern: "DELETE count > 10"
+    cooldown: "72h"
+    requires_approval: true
+    backup_required: true
+    
+  # AI 发起的战略提案
+  - pattern: "author: *_ai AND risk_level: high"
+    cooldown: "24h"
+    requires_approval: true
+```
+
+**冷静期提案状态流转**：
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  AI 发起    │────▶│  冷静期中   │────▶│  待审批    │
+│  Proposal   │     │  (倒计时)   │     │            │
+└─────────────┘     └──────┬──────┘     └──────┬──────┘
+                           │                    │
+              可随时取消   │       人工审批     │
+                           ▼                    ▼
+                    ┌─────────────┐     ┌─────────────┐
+                    │  已取消     │     │  已执行     │
+                    └─────────────┘     └─────────────┘
+```
+
+**冷静期 UI 展示**：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  ⏳ 冷静期提案                                              │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  【纠错官提案】建议调整产品定价策略                         │
+│                                                             │
+│  📊 风险等级: 高                                            │
+│  ⏱️ 冷静期: 剩余 18 小时 32 分                              │
+│  👤 发起者: 首席纠错官                                      │
+│                                                             │
+│  变更内容:                                                  │
+│  • 产品 A 价格: ¥12,999 → ¥14,999 (+15.4%)                 │
+│  • 产品 B 价格: ¥8,999 → ¥9,999 (+11.1%)                   │
+│                                                             │
+│  ⚠️ 此提案将在冷静期结束后进入审批流程                      │
+│                                                             │
+│  [ 立即取消 ]  [ 查看详情 ]  [ 与纠错官讨论 ]               │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### AI 权限硬约束（遵守宪法第五条）
+
+```typescript
+// backend/src/core/ai-permission.ts
+
+interface AIPermissionPolicy {
+  // AI 永远不能直接执行的操作
+  forbidden_actions: [
+    'DELETE /principals/**',        // 删除用户
+    'UPDATE /principals/*/sandbox', // 修改权限
+    'UPDATE *.payment_*',           // 修改支付信息
+    'BYPASS_APPROVAL',              // 绕过审批
+  ];
+  
+  // AI 发起的提案默认状态
+  default_proposal_status: 'pending_review';  // 永远不是 approved
+  
+  // 高风险操作定义
+  high_risk_patterns: [
+    { pattern: '*.amount', threshold: 10000 },
+    { pattern: '*.status → refunded', always: true },
+    { pattern: '/principals/**', always: true },
+  ];
+  
+  // 强制冷静期
+  mandatory_cooldown: {
+    high_risk: '24h',
+    critical: '48h',
+  };
+}
+
+// 检查 AI 提案是否合规
+function validateAIProposal(proposal: Proposal, author: Principal): ValidationResult {
+  // 1. 检查是否是 AI
+  if (!author.type.includes('agent')) {
+    return { valid: true };
+  }
+  
+  // 2. 检查是否触发禁止操作
+  for (const forbidden of POLICY.forbidden_actions) {
+    if (matchesPattern(proposal, forbidden)) {
+      return {
+        valid: false,
+        reason: `AI 禁止执行此操作: ${forbidden}`,
+        code: 'AI_FORBIDDEN_ACTION',
+      };
+    }
+  }
+  
+  // 3. 强制设置状态为 pending_review
+  proposal.status = 'pending_review';
+  
+  // 4. 检查是否需要冷静期
+  if (isHighRisk(proposal)) {
+    proposal.cooldown = POLICY.mandatory_cooldown.high_risk;
+    proposal.cooldown_expires_at = addHours(now(), 24);
+  }
+  
+  return { valid: true, modified: proposal };
+}
 ```
 
 #### 虚拟董事会：多性格纠错官
