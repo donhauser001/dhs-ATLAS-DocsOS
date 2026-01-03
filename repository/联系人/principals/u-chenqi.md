@@ -13,7 +13,7 @@ atlas:
 updated: "2026-01-02T20:52:52.780Z"
 ---
 
-陈七
+# 陈七 {#u-chenqi}
 
 ```yaml
 type: principal
