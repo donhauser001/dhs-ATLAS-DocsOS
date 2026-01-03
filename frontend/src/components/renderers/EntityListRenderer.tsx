@@ -8,6 +8,7 @@
  * - 从 FunctionRegistry 自动发现数据
  * - 卡片/表格视图切换
  * - 搜索、分页
+ * - Block 详情抽屉（支持单文档多实体和多文档单实体两种模式）
  */
 
 import { useState, useEffect } from 'react';
@@ -21,9 +22,12 @@ import {
     Building,
     FileText,
     ExternalLink,
+    Plus,
+    Pencil,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { ADLDocument, Block } from '@/types/adl';
+import { BlockDetailDrawer } from '@/components/block-detail/BlockDetailDrawer';
 
 // ============================================================
 // 类型定义
@@ -33,6 +37,8 @@ interface EntityListRendererProps {
     document: ADLDocument;
     selectedAnchor?: string;
     onBlockClick?: (block: Block) => void;
+    /** 是否为编辑模式 */
+    isEditing?: boolean;
 }
 
 interface FunctionEntry {
@@ -58,6 +64,7 @@ type ViewMode = 'card' | 'table';
 
 export function EntityListRenderer({
     document,
+    isEditing,
 }: EntityListRendererProps) {
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<ViewMode>('card');
@@ -67,6 +74,11 @@ export function EntityListRenderer({
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState(1);
     const pageSize = 12;
+
+    // Block 详情抽屉状态
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [selectedEntityRef, setSelectedEntityRef] = useState<string | null>(null);
+    const [selectedEntityTitle, setSelectedEntityTitle] = useState<string | undefined>();
 
     // 从文档获取配置
     const atlasConfig = document.frontmatter?.atlas;
@@ -175,9 +187,39 @@ export function EntityListRenderer({
         page * pageSize
     );
 
-    // 点击实体
+    // 点击实体 - 打开详情抽屉
     const handleEntityClick = (entity: FunctionEntry) => {
-        navigate(`/workspace/${entity.path}`);
+        // 构建 blockRef，支持两种模式：
+        // 1. 单文档多实体：path 包含 # (如 "客户管理.md#client-1")
+        // 2. 多文档单实体：path 不包含 # (如 "联系人/principals/王强.md")
+        let blockRef: string;
+        if (entity.path.includes('#')) {
+            blockRef = entity.path;
+        } else if (entity.id) {
+            blockRef = `${entity.path}#${entity.id}`;
+        } else {
+            blockRef = entity.path;
+        }
+        
+        setSelectedEntityRef(blockRef);
+        setSelectedEntityTitle(entity.title);
+        setDrawerOpen(true);
+    };
+
+    // 关闭抽屉
+    const handleDrawerClose = () => {
+        setDrawerOpen(false);
+        setSelectedEntityRef(null);
+        setSelectedEntityTitle(undefined);
+    };
+
+    // 数据更新后刷新列表
+    const handleDataUpdate = () => {
+        // 重新从 blocks 提取数据（如果是单文档多实体模式）
+        const blockEntities = extractEntitiesFromBlocks();
+        if (blockEntities.length > 0) {
+            setEntities(blockEntities);
+        }
     };
 
     return (
@@ -197,6 +239,16 @@ export function EntityListRenderer({
                     共 {filteredEntities.length} 个{getEntityLabel(targetFunction)}
                 </p>
             </div>
+
+            {/* 编辑模式提示 */}
+            {isEditing && (
+                <div className="mb-4 px-4 py-3 bg-purple-50 border border-purple-200 rounded-lg flex items-center gap-2">
+                    <Pencil size={16} className="text-purple-600" />
+                    <span className="text-sm text-purple-700">
+                        编辑模式：点击卡片可编辑实体详情
+                    </span>
+                </div>
+            )}
 
             {/* 工具栏 */}
             <div className="toolbar flex items-center justify-between mb-6">
@@ -225,26 +277,48 @@ export function EntityListRenderer({
                     />
                 </div>
 
-                {/* 视图切换 */}
-                <div className="view-toggle flex items-center gap-1">
-                    <button
-                        onClick={() => setViewMode('card')}
-                        className={`p-2 rounded ${viewMode === 'card' ? 'bg-purple-100' : ''}`}
-                        style={{
-                            color: viewMode === 'card' ? 'var(--color-brand-primary)' : 'var(--ui-field-label-color)',
-                        }}
-                    >
-                        <LayoutGrid size={18} />
-                    </button>
-                    <button
-                        onClick={() => setViewMode('table')}
-                        className={`p-2 rounded ${viewMode === 'table' ? 'bg-purple-100' : ''}`}
-                        style={{
-                            color: viewMode === 'table' ? 'var(--color-brand-primary)' : 'var(--ui-field-label-color)',
-                        }}
-                    >
-                        <TableIcon size={18} />
-                    </button>
+                <div className="flex items-center gap-3">
+                    {/* 添加实体按钮（编辑模式） */}
+                    {isEditing && (
+                        <button
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                            style={{
+                                backgroundColor: 'var(--color-brand-primary)',
+                                color: 'white',
+                            }}
+                            onClick={() => {
+                                // 打开空白的详情抽屉用于创建新实体
+                                setSelectedEntityRef(`${document.path}#new-entity`);
+                                setSelectedEntityTitle('新建实体');
+                                setDrawerOpen(true);
+                            }}
+                        >
+                            <Plus size={16} />
+                            添加
+                        </button>
+                    )}
+
+                    {/* 视图切换 */}
+                    <div className="view-toggle flex items-center gap-1">
+                        <button
+                            onClick={() => setViewMode('card')}
+                            className={`p-2 rounded ${viewMode === 'card' ? 'bg-purple-100' : ''}`}
+                            style={{
+                                color: viewMode === 'card' ? 'var(--color-brand-primary)' : 'var(--ui-field-label-color)',
+                            }}
+                        >
+                            <LayoutGrid size={18} />
+                        </button>
+                        <button
+                            onClick={() => setViewMode('table')}
+                            className={`p-2 rounded ${viewMode === 'table' ? 'bg-purple-100' : ''}`}
+                            style={{
+                                color: viewMode === 'table' ? 'var(--color-brand-primary)' : 'var(--ui-field-label-color)',
+                            }}
+                        >
+                            <TableIcon size={18} />
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -323,6 +397,15 @@ export function EntityListRenderer({
                     </button>
                 </div>
             )}
+
+            {/* Block 详情抽屉 */}
+            <BlockDetailDrawer
+                open={drawerOpen}
+                onClose={handleDrawerClose}
+                blockRef={selectedEntityRef || ''}
+                title={selectedEntityTitle}
+                onUpdate={handleDataUpdate}
+            />
         </div>
     );
 }

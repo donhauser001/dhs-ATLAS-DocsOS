@@ -60,7 +60,21 @@ export function RendererSelector({
 }: RendererSelectorProps) {
     const atlasFunction = document.frontmatter?.atlas?.function;
 
-    // 编辑模式直接返回编辑器（不使用特殊渲染器）
+    // 根据功能类型选择渲染器
+    // 特殊渲染器同时支持阅读和编辑模式（通过 isEditing prop 传递）
+    if (atlasFunction && FUNCTION_RENDERERS[atlasFunction]) {
+        const Renderer = FUNCTION_RENDERERS[atlasFunction]!;
+        return (
+            <Renderer
+                document={document}
+                selectedAnchor={selectedAnchor}
+                onBlockClick={onBlockClick}
+                isEditing={isEditing}
+            />
+        );
+    }
+
+    // 默认渲染器：编辑模式使用文本编辑器
     if (isEditing) {
         return (
             <DefaultDocumentRenderer
@@ -74,19 +88,7 @@ export function RendererSelector({
         );
     }
 
-    // 根据功能类型选择渲染器
-    if (atlasFunction && FUNCTION_RENDERERS[atlasFunction]) {
-        const Renderer = FUNCTION_RENDERERS[atlasFunction]!;
-        return (
-            <Renderer
-                document={document}
-                selectedAnchor={selectedAnchor}
-                onBlockClick={onBlockClick}
-            />
-        );
-    }
-
-    // 默认渲染器
+    // 默认渲染器：阅读模式
     return (
         <DefaultDocumentRenderer
             document={document}

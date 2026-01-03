@@ -1,86 +1,50 @@
 /**
  * DocumentPage - 文档详情页
  * 
- * Phase 3.3: 使用 RendererSelector 根据功能声明选择渲染器
- * Phase 3.5: 添加智能 MD 编辑器模式
- * Phase 3.6: 场景化视图系统
+ * Phase 3.8: 使用 VisualDocEditor 作为统一的文档编辑器
+ * 支持属性面板、富文本编辑、源码模式三合一
+ * 
+ * 特殊功能文档（entity_list 等）：
+ * - 阅读模式：使用特殊渲染器（如卡片视图）
+ * - 编辑/源码模式：使用 VisualDocEditor
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { WorkspaceLayout } from '@/components/layout/WorkspaceLayout';
 import { WorkspaceTree } from '@/components/workspace/WorkspaceTree';
 import { AnchorList } from '@/components/workspace/AnchorList';
-import { BlockRenderer } from '@/pages/genesis/BlockRenderer';
-import { ProposalPreview } from '@/pages/genesis/ProposalPreview';
+import { VisualDocEditor, type ViewMode } from '@/components/visual-editor';
 import { RendererSelector } from '@/components/RendererSelector';
-import { SmartDocEditor } from '@/components/editor/SmartDocEditor';
-import { ActionBar } from '@/components/action-bar';
-import { useViewModeConfig, useActionConfig, DefaultReadView } from '@/components/views';
-import { FunctionViewRegistry } from '@/registry';
-import { fetchDocument, type ADLDocument, type UpdateYamlOp } from '@/api/adl';
+import { fetchDocument, type ADLDocument } from '@/api/adl';
 import { fetchWorkspaceTree, type TreeNode } from '@/api/workspace';
 import { Button } from '@/components/ui/button';
-import { useLabels } from '@/providers/LabelProvider';
-import { FileText, FormInput, Code, List, Eye, Edit, Settings } from 'lucide-react';
-import type { ViewMode } from '@/registry/types';
-
-// 视图模式图标映射
-const MODE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  read: FileText,
-  form: FormInput,
-  md: Code,
-  '阅读': FileText,
-  '列表': List,
-  '看板': Eye,
-  '表单': FormInput,
-  '编辑': Edit,
-  '配置': Settings,
-  '预览': Eye,
-  'MD编辑': Code,
-  'JSON': Code,
-  '批量编辑': FormInput,
-};
+import { Eye, Pencil, Code } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 /**
- * 判断是否使用特殊渲染器
+ * 判断是否使用特殊渲染器（如 entity_list）
  */
 function shouldUseSpecialRenderer(doc: ADLDocument): boolean {
   const atlas = doc.frontmatter?.atlas as Record<string, unknown> | undefined;
   const atlasFunction = atlas?.function as string | undefined;
-  const specialFunctions = ['entity_list', 'dashboard'];
+  const specialFunctions = ['entity_list', 'dashboard', 'directory_index'];
   return atlasFunction !== undefined && specialFunctions.includes(atlasFunction);
-}
-
-/**
- * 获取功能标识
- */
-function getDocumentFunction(doc: ADLDocument | null): string | undefined {
-  if (!doc) return undefined;
-  const atlas = doc.frontmatter?.atlas as Record<string, unknown> | undefined;
-  return atlas?.function as string | undefined;
 }
 
 export function DocumentPage() {
   const params = useParams();
+  const location = useLocation();
   const docPath = params['*'] || '';
-  
-  const { resolveLabel, isHidden } = useLabels();
 
   const [tree, setTree] = useState<TreeNode[]>([]);
   const [doc, setDoc] = useState<ADLDocument | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('read');
   const [activeAnchor, setActiveAnchor] = useState<string | undefined>();
-
-  // Phase 3.6: 场景化视图配置
-  const viewModeConfig = useViewModeConfig(doc);
-  const actions = useActionConfig(doc);
-
-  // Pending changes for proposal
-  const [pendingChanges, setPendingChanges] = useState<UpdateYamlOp[]>([]);
-  const [showProposalPreview, setShowProposalPreview] = useState(false);
+  
+  // 视图模式状态（用于特殊功能文档）
+  const [viewMode, setViewMode] = useState<ViewMode>('read');
 
   // Block refs for scrolling
   const blockRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -92,18 +56,26 @@ export function DocumentPage() {
   useEffect(() => {
     if (docPath) {
       loadDocument();
+      // 重置视图模式
+      setViewMode('read');
     }
   }, [docPath]);
 
-  // 文档加载后，设置默认视图模式
+  // 处理 URL 中的 hash，滚动到对应的 block
   useEffect(() => {
-    if (doc && viewModeConfig.availableModes.length > 0) {
-      // 如果当前模式不可用，切换到默认模式
-      if (!viewModeConfig.availableModes.includes(viewMode)) {
-        setViewMode(viewModeConfig.defaultMode);
+    if (doc && location.hash) {
+      const anchor = location.hash.slice(1);
+      if (anchor) {
+        setActiveAnchor(anchor);
+        setTimeout(() => {
+          const ref = blockRefs.current[anchor];
+          if (ref) {
+            ref.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 100);
       }
     }
-  }, [doc, viewModeConfig.availableModes, viewModeConfig.defaultMode]);
+  }, [doc, location.hash]);
 
   async function loadTree() {
     try {
@@ -117,7 +89,6 @@ export function DocumentPage() {
   async function loadDocument() {
     setLoading(true);
     setError(null);
-    setPendingChanges([]);
 
     try {
       const document = await fetchDocument(docPath);
@@ -129,32 +100,6 @@ export function DocumentPage() {
     }
   }
 
-  function handleFieldChange(anchor: string, path: string, value: unknown, oldValue: unknown) {
-    const existingIndex = pendingChanges.findIndex(
-      c => c.anchor === anchor && c.path === path
-    );
-
-    if (existingIndex >= 0) {
-      const newChanges = [...pendingChanges];
-      newChanges[existingIndex] = { op: 'update_yaml', anchor, path, value, old_value: oldValue };
-      setPendingChanges(newChanges);
-    } else {
-      setPendingChanges([...pendingChanges, { op: 'update_yaml', anchor, path, value, old_value: oldValue }]);
-    }
-  }
-
-  function handleCancelChanges() {
-    setPendingChanges([]);
-    setShowProposalPreview(false);
-  }
-
-  function handleProposalExecuted() {
-    setPendingChanges([]);
-    setShowProposalPreview(false);
-    loadDocument();
-    loadTree();
-  }
-
   function handleAnchorClick(anchor: string) {
     setActiveAnchor(anchor);
     const ref = blockRefs.current[anchor];
@@ -163,9 +108,21 @@ export function DocumentPage() {
     }
   }
 
-  function handleAction(actionId: string) {
-    console.log('Action triggered:', actionId, doc);
-    // TODO: 实现具体操作逻辑
+  /**
+   * 保存文档
+   */
+  async function handleSave(content: string) {
+    const response = await fetch(`/api/adl/document?path=${encodeURIComponent(docPath)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'text/plain' },
+      body: content,
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      throw new Error('保存失败');
+    }
+    await loadDocument();
+    await loadTree();
   }
 
   const sidebar = <WorkspaceTree tree={tree} />;
@@ -178,192 +135,153 @@ export function DocumentPage() {
     />
   ) : null;
 
-  // 获取模式图标
-  const getModeIcon = (mode: ViewMode, label: string) => {
-    const Icon = MODE_ICONS[label] || MODE_ICONS[mode] || FileText;
-    return <Icon className="w-4 h-4" />;
-  };
+  // 视图切换按钮组（用于特殊功能文档）
+  function ViewModeToggle() {
+    return (
+      <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
+        <button
+          type="button"
+          onClick={() => setViewMode('read')}
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+            viewMode === 'read'
+              ? "bg-white text-slate-900 shadow-sm"
+              : "text-slate-600 hover:text-slate-900"
+          )}
+        >
+          <Eye className="w-4 h-4" />
+          阅读
+        </button>
+        <button
+          type="button"
+          onClick={() => setViewMode('edit')}
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+            viewMode === 'edit'
+              ? "bg-white text-slate-900 shadow-sm"
+              : "text-slate-600 hover:text-slate-900"
+          )}
+        >
+          <Pencil className="w-4 h-4" />
+          编辑
+        </button>
+        <button
+          type="button"
+          onClick={() => setViewMode('source')}
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+            viewMode === 'source'
+              ? "bg-white text-slate-900 shadow-sm"
+              : "text-slate-600 hover:text-slate-900"
+          )}
+        >
+          <Code className="w-4 h-4" />
+          源码
+        </button>
+      </div>
+    );
+  }
 
-  const content = (
-    <div className="min-h-full">
-      {/* Document Header */}
-      {doc && (
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b px-6 py-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="font-medium">{doc.frontmatter?.title as string || docPath}</h1>
-              <p className="text-sm text-muted-foreground">{docPath}</p>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {/* Phase 3.6: 场景化视图模式切换 */}
-              <div className="flex bg-muted rounded-lg p-1">
-                {viewModeConfig.availableModes.map(mode => {
-                  const label = viewModeConfig.getModeLabel(mode);
-                  return (
-                    <button
-                      key={mode}
-                      onClick={() => setViewMode(mode)}
-                      className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ${
-                        viewMode === mode
-                          ? 'bg-background shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      {getModeIcon(mode, label)}
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Phase 3.6: 操作按钮 */}
-              {actions.length > 0 && viewMode === 'read' && (
-                <ActionBar
-                  actions={actions}
-                  document={doc}
-                  onAction={handleAction}
-                  onEdit={() => setViewMode('form')}
-                />
-              )}
-
-              {/* Pending Changes */}
-              {pendingChanges.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-amber-600">
-                    {pendingChanges.length} 个变更
-                  </span>
-                  <Button
-                    size="sm"
-                    onClick={() => setShowProposalPreview(true)}
-                  >
-                    提交变更
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleCancelChanges}
-                  >
-                    取消
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Loading / Error / Content */}
-      {loading ? (
+  // 渲染内容
+  function renderContent() {
+    if (loading) {
+      return (
         <div className="flex items-center justify-center h-64 text-muted-foreground">
           加载中...
         </div>
-      ) : error ? (
+      );
+    }
+
+    if (error) {
+      return (
         <div className="p-6">
           <div className="p-4 bg-destructive/10 text-destructive rounded-lg mb-4">
             {error}
           </div>
           <Button onClick={loadDocument}>重试</Button>
         </div>
-      ) : doc ? (
-        // Phase 3.6: 场景化视图渲染
-        renderView()
-      ) : null}
-
-      {/* Proposal Preview Modal */}
-      {showProposalPreview && doc && (
-        <ProposalPreview
-          docPath={doc.path}
-          changes={pendingChanges}
-          onClose={() => setShowProposalPreview(false)}
-          onExecuted={handleProposalExecuted}
-        />
-      )}
-    </div>
-  );
-
-  // 渲染视图内容
-  function renderView() {
-    if (!doc) return null;
-
-    const fn = getDocumentFunction(doc);
-
-    // MD 编辑模式 - 统一使用 SmartDocEditor
-    if (viewMode === 'md') {
-      return (
-        <SmartDocEditor
-          document={doc}
-          rawContent={doc.raw || ''}
-          documentPath={docPath}
-          onSave={async () => {
-            await loadDocument();
-          }}
-          onCancel={() => setViewMode('read')}
-        />
       );
     }
+
+    if (!doc) {
+      return null;
+    }
+
+    const rawContent = doc.raw || '';
+    const frontmatterMatch = rawContent.match(/^---\n([\s\S]*?)\n---\n?/);
+    const bodyContent = frontmatterMatch
+      ? rawContent.slice(frontmatterMatch[0].length)
+      : rawContent;
 
     // 特殊渲染器（entity_list 等）
     if (shouldUseSpecialRenderer(doc)) {
-      return (
-        <RendererSelector
-          document={doc}
-          selectedAnchor={activeAnchor}
-          onBlockClick={(block) => handleAnchorClick(block.anchor)}
-        />
-      );
-    }
+      // 阅读模式：使用特殊渲染器
+      if (viewMode === 'read') {
+        return (
+          <div className="min-h-full">
+            {/* 头部：标题 + 视图切换 */}
+            <div className="sticky top-0 z-10 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+              <h1 className="text-xl font-semibold text-slate-800">
+                {doc.frontmatter?.title || docPath.split('/').pop()?.replace('.md', '')}
+              </h1>
+              <ViewModeToggle />
+            </div>
+            {/* 特殊渲染器内容 */}
+            <div className="p-6">
+              <RendererSelector
+                document={doc}
+                selectedAnchor={activeAnchor}
+                onBlockClick={(block) => handleAnchorClick(block.anchor)}
+              />
+            </div>
+          </div>
+        );
+      }
 
-    // Phase 3.6: 场景化视图选择
-    // 尝试从注册表获取专属视图
-    const RegisteredView = fn ? FunctionViewRegistry.getViewComponent(fn, viewMode) : undefined;
-
-    if (RegisteredView) {
+      // 编辑/源码模式：使用 VisualDocEditor
       return (
-        <RegisteredView
-          document={doc}
-          onSave={async (data) => {
-            console.log('Save data:', data);
-            await loadDocument();
-          }}
-          onCancel={() => setViewMode('read')}
-          onViewModeChange={setViewMode}
-        />
-      );
-    }
-
-    // 表单模式 - 回退到默认 BlockRenderer
-    if (viewMode === 'form') {
-      return (
-        <div className="p-6 max-w-4xl">
-          {/* Blocks - 表单编辑模式 */}
-          <div className="space-y-6">
-            {doc.blocks.map((block) => (
-              <div
-                key={block.anchor}
-                ref={(el) => { blockRefs.current[block.anchor] = el; }}
-              >
-                <BlockRenderer
-                  block={block}
-                  viewMode="edit"
-                  onFieldChange={handleFieldChange}
-                  pendingChanges={pendingChanges.filter(c => c.anchor === block.anchor)}
-                />
-              </div>
-            ))}
+        <div className="h-full flex flex-col">
+          {/* 头部：标题 + 视图切换 */}
+          <div className="flex-shrink-0 sticky top-0 z-10 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+            <h1 className="text-xl font-semibold text-slate-800">
+              {doc.frontmatter?.title || docPath.split('/').pop()?.replace('.md', '')}
+            </h1>
+            <ViewModeToggle />
+          </div>
+          {/* VisualDocEditor 内容 */}
+          <div className="flex-1 min-h-0">
+            <VisualDocEditor
+              documentPath={docPath}
+              rawContent={rawContent}
+              frontmatter={doc.frontmatter || {}}
+              bodyContent={bodyContent}
+              onSave={handleSave}
+              initialMode={viewMode}
+              hideHeader={true}
+            />
           </div>
         </div>
       );
     }
 
-    // 阅读模式 - 使用默认阅读视图
+    // 普通文档：使用 VisualDocEditor（包含自己的视图切换）
     return (
-      <DefaultReadView
-        document={doc}
-        onViewModeChange={setViewMode}
+      <VisualDocEditor
+        documentPath={docPath}
+        rawContent={rawContent}
+        frontmatter={doc.frontmatter || {}}
+        bodyContent={bodyContent}
+        onSave={handleSave}
+        initialMode="read"
       />
     );
   }
+
+  const content = (
+    <div className="h-full">
+      {renderContent()}
+    </div>
+  );
 
   return (
     <WorkspaceLayout

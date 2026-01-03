@@ -1,0 +1,437 @@
+/**
+ * Obsidian 风格编辑器样式
+ * 灵感来源于 Obsidian 的简洁优雅设计
+ */
+
+/* ==================== 编辑器变量 ==================== */
+:root {
+  /* Obsidian 风格颜色 */
+  --obsidian-bg: #ffffff;
+  --obsidian-bg-secondary: #fafafa;
+  --obsidian-border: #e5e5e5;
+  --obsidian-border-light: #f0f0f0;
+  --obsidian-text: #2e2e2e;
+  --obsidian-text-muted: #888888;
+  --obsidian-text-faint: #b3b3b3;
+  --obsidian-accent: #7c3aed;
+  --obsidian-accent-light: #ede9fe;
+  
+  /* 属性标签颜色 */
+  --tag-violet-bg: #ede9fe;
+  --tag-violet-text: #6d28d9;
+  --tag-violet-border: #ddd6fe;
+  
+  --tag-pink-bg: #fce7f3;
+  --tag-pink-text: #be185d;
+  --tag-pink-border: #fbcfe8;
+  
+  --tag-blue-bg: #dbeafe;
+  --tag-blue-text: #1d4ed8;
+  --tag-blue-border: #bfdbfe;
+  
+  --tag-emerald-bg: #d1fae5;
+  --tag-emerald-text: #047857;
+  --tag-emerald-border: #a7f3d0;
+  
+  --tag-amber-bg: #fef3c7;
+  --tag-amber-text: #b45309;
+  --tag-amber-border: #fde68a;
+}
+
+/* ==================== 属性面板样式 ==================== */
+.obsidian-properties-panel {
+  background: var(--obsidian-bg);
+  border: 1px solid var(--obsidian-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.obsidian-properties-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--obsidian-text);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.obsidian-properties-header:hover {
+  background: var(--obsidian-bg-secondary);
+}
+
+.obsidian-property-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--obsidian-border-light);
+  transition: background-color 0.15s ease;
+  margin: 0 -8px;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: 4px;
+}
+
+.obsidian-property-row:last-child {
+  border-bottom: none;
+}
+
+.obsidian-property-row:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.obsidian-property-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  padding-top: 2px;
+  color: var(--obsidian-text-muted);
+}
+
+.obsidian-property-label {
+  width: 96px;
+  flex-shrink: 0;
+  padding-top: 2px;
+  font-size: 14px;
+  color: var(--obsidian-text-muted);
+}
+
+.obsidian-property-value {
+  flex: 1;
+  min-width: 0;
+}
+
+.obsidian-property-input {
+  width: 100%;
+  font-size: 14px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--obsidian-text);
+}
+
+.obsidian-property-input::placeholder {
+  color: var(--obsidian-text-faint);
+}
+
+/* ==================== 标签样式 ==================== */
+.obsidian-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.obsidian-tag-violet {
+  background: var(--tag-violet-bg);
+  color: var(--tag-violet-text);
+  border-color: var(--tag-violet-border);
+}
+
+.obsidian-tag-pink {
+  background: var(--tag-pink-bg);
+  color: var(--tag-pink-text);
+  border-color: var(--tag-pink-border);
+}
+
+.obsidian-tag-blue {
+  background: var(--tag-blue-bg);
+  color: var(--tag-blue-text);
+  border-color: var(--tag-blue-border);
+}
+
+.obsidian-tag-emerald {
+  background: var(--tag-emerald-bg);
+  color: var(--tag-emerald-text);
+  border-color: var(--tag-emerald-border);
+}
+
+.obsidian-tag-amber {
+  background: var(--tag-amber-bg);
+  color: var(--tag-amber-text);
+  border-color: var(--tag-amber-border);
+}
+
+.obsidian-tag-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  margin-left: 2px;
+  border-radius: 2px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.obsidian-tag-remove:hover {
+  opacity: 1;
+}
+
+/* ==================== 复选框样式 ==================== */
+.obsidian-checkbox {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--obsidian-border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--obsidian-bg);
+}
+
+.obsidian-checkbox:checked {
+  background: var(--obsidian-accent);
+  border-color: var(--obsidian-accent);
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.obsidian-checkbox:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--obsidian-accent-light);
+}
+
+/* ==================== 添加属性按钮 ==================== */
+.obsidian-add-property {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 8px;
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--obsidian-text-muted);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.obsidian-add-property:hover {
+  background: var(--obsidian-bg-secondary);
+  color: var(--obsidian-text);
+}
+
+/* ==================== 正文编辑区样式 ==================== */
+.obsidian-content-editor {
+  margin-top: 24px;
+}
+
+.obsidian-content-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.obsidian-content-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--obsidian-text-faint);
+}
+
+.obsidian-content-tools {
+  display: flex;
+  gap: 4px;
+}
+
+.obsidian-content-tool {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--obsidian-text-muted);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.obsidian-content-tool:hover {
+  background: var(--obsidian-bg-secondary);
+  color: var(--obsidian-text);
+}
+
+/* ==================== 编辑器容器样式 ==================== */
+.obsidian-editor-container {
+  border: 1px solid var(--obsidian-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ==================== 状态栏样式 ==================== */
+.obsidian-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 24px;
+  border-top: 1px solid var(--obsidian-border-light);
+  background: var(--obsidian-bg-secondary);
+  font-size: 12px;
+  color: var(--obsidian-text-faint);
+}
+
+/* ==================== 工具栏样式 ==================== */
+.obsidian-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--obsidian-border-light);
+}
+
+.obsidian-toolbar-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.obsidian-toolbar-title h1 {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--obsidian-text);
+}
+
+.obsidian-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ==================== 提示条样式 ==================== */
+.obsidian-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 24px;
+  font-size: 14px;
+}
+
+.obsidian-alert-info {
+  background: #eff6ff;
+  border-bottom: 1px solid #dbeafe;
+  color: #1d4ed8;
+}
+
+.obsidian-alert-success {
+  background: #f0fdf4;
+  border-bottom: 1px solid #dcfce7;
+  color: #15803d;
+}
+
+.obsidian-alert-warning {
+  background: #fffbeb;
+  border-bottom: 1px solid #fef3c7;
+  color: #b45309;
+}
+
+/* ==================== 按钮样式 ==================== */
+.obsidian-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.obsidian-btn-primary {
+  background: var(--obsidian-accent);
+  color: white;
+}
+
+.obsidian-btn-primary:hover {
+  background: #6d28d9;
+}
+
+.obsidian-btn-primary:disabled {
+  background: var(--obsidian-border);
+  color: var(--obsidian-text-muted);
+  cursor: not-allowed;
+}
+
+.obsidian-btn-ghost {
+  background: transparent;
+  color: var(--obsidian-text-muted);
+}
+
+.obsidian-btn-ghost:hover {
+  background: var(--obsidian-bg-secondary);
+  color: var(--obsidian-text);
+}
+
+/* ==================== 未保存标记 ==================== */
+.obsidian-unsaved-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 12px;
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+}
+
+/* ==================== 动画 ==================== */
+@keyframes obsidian-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.obsidian-animate-in {
+  animation: obsidian-fade-in 0.2s ease-out;
+}
+
+/* ==================== 日期显示样式 ==================== */
+.obsidian-date-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--obsidian-text);
+}
+
+.obsidian-date-display .icon {
+  color: var(--obsidian-text-muted);
+}
+
+.obsidian-date-display .link-icon {
+  color: var(--obsidian-text-faint);
+}
+
+/* ==================== 选择器样式 ==================== */
+.obsidian-select {
+  font-size: 14px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--obsidian-text);
+  cursor: pointer;
+}
+
+.obsidian-select:focus {
+  outline: none;
+}
+

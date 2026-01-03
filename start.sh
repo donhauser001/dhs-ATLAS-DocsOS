@@ -30,20 +30,58 @@ check_deps() {
     fi
 }
 
+# 清理端口占用
+cleanup_port() {
+    local port=$1
+    local pids=$(lsof -ti:$port 2>/dev/null || true)
+    if [ -n "$pids" ]; then
+        echo -e "${YELLOW}⚠️  端口 $port 被占用，正在清理...${NC}"
+        echo "$pids" | xargs kill -9 2>/dev/null || true
+        sleep 1
+    fi
+}
+
+# 等待后端健康检查
+wait_for_backend() {
+    local max_attempts=30
+    local attempt=1
+    echo -e "${YELLOW}⏳ 等待后端启动...${NC}"
+    while [ $attempt -le $max_attempts ]; do
+        if curl -s http://localhost:3000/health > /dev/null 2>&1; then
+            echo -e "${GREEN}✅ 后端已就绪${NC}"
+            return 0
+        fi
+        sleep 0.5
+        attempt=$((attempt + 1))
+    done
+    echo -e "${RED}❌ 后端启动超时${NC}"
+    return 1
+}
+
 echo -e "${GREEN}📦 检查依赖...${NC}"
 check_deps "backend"
 check_deps "frontend"
 
+# 清理可能残留的端口占用
+echo -e "${GREEN}🧹 清理端口...${NC}"
+cleanup_port 3000
+cleanup_port 5173
+
 # 清理函数
 cleanup() {
     echo -e "\n${YELLOW}🛑 正在关闭服务...${NC}"
-    kill $BACKEND_PID 2>/dev/null || true
-    kill $FRONTEND_PID 2>/dev/null || true
+    # 杀掉后端进程组
+    kill -TERM -$BACKEND_PID 2>/dev/null || kill $BACKEND_PID 2>/dev/null || true
+    # 杀掉前端进程组
+    kill -TERM -$FRONTEND_PID 2>/dev/null || kill $FRONTEND_PID 2>/dev/null || true
+    # 确保端口释放
+    cleanup_port 3000
+    cleanup_port 5173
     echo -e "${GREEN}✅ 已关闭所有服务${NC}"
     exit 0
 }
 
-trap cleanup SIGINT SIGTERM
+trap cleanup SIGINT SIGTERM EXIT
 
 # 启动后端
 echo -e "${GREEN}🚀 启动后端服务 (端口 3000)...${NC}"
@@ -52,8 +90,11 @@ npm run dev &
 BACKEND_PID=$!
 cd ..
 
-# 等待后端启动
-sleep 2
+# 等待后端健康检查通过
+wait_for_backend || {
+    echo -e "${RED}后端启动失败，退出${NC}"
+    exit 1
+}
 
 # 启动前端
 echo -e "${GREEN}🚀 启动前端服务 (端口 5173)...${NC}"

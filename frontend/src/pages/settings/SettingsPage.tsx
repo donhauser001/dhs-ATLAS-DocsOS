@@ -10,8 +10,9 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowLeft, Tag } from 'lucide-react';
+import { ArrowLeft, Tag, Database } from 'lucide-react';
 import { LabelSettings } from './LabelSettings';
+import { DataTemplateSettings } from './DataTemplateSettings';
 
 // ============================================================
 // 设置菜单项
@@ -33,14 +34,13 @@ const MENU_ITEMS: MenuItem[] = [
     description: '配置字段的显示名称和图标',
     component: <LabelSettings />,
   },
-  // 未来可以添加更多设置项
-  // {
-  //   id: 'general',
-  //   label: '常规设置',
-  //   icon: <Settings className="h-4 w-4" />,
-  //   description: '系统基本配置',
-  //   component: <div>Coming soon...</div>,
-  // },
+  {
+    id: 'data-templates',
+    label: '数据模板',
+    icon: <Database className="h-4 w-4" />,
+    description: '管理数据块的预设模板',
+    component: <DataTemplateSettings />,
+  },
 ];
 
 // ============================================================

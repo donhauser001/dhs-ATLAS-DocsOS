@@ -103,6 +103,56 @@ export async function fetchBlock(anchor: string, docPath: string): Promise<Block
 }
 
 /**
+ * 更新 Block 数据
+ * 
+ * 通过 Proposal 机制更新 block 中的字段
+ */
+export async function updateBlock(
+  docPath: string, 
+  anchor: string, 
+  updates: Record<string, unknown>
+): Promise<{ success: boolean }> {
+  // 构建 Proposal 操作
+  const operations = Object.entries(updates).map(([field, value]) => ({
+    type: 'update_yaml' as const,
+    anchor,
+    field,
+    value,
+  }));
+
+  // 创建并执行 Proposal
+  const createRes = await fetch(`${API_BASE}/proposal`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      document_path: docPath,
+      operations,
+      author: 'user',
+      description: `Update ${anchor} fields`,
+    }),
+    credentials: 'include',
+  });
+
+  if (!createRes.ok) {
+    throw new Error(`Failed to create update proposal: ${createRes.statusText}`);
+  }
+
+  const { proposal_id } = await createRes.json();
+
+  // 执行 Proposal
+  const execRes = await fetch(`${API_BASE}/proposal/${proposal_id}/execute`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+
+  if (!execRes.ok) {
+    throw new Error(`Failed to execute update proposal: ${execRes.statusText}`);
+  }
+
+  return { success: true };
+}
+
+/**
  * 创建 Proposal
  */
 export async function createProposal(proposal: Omit<Proposal, 'id' | 'status'>): Promise<{ success: boolean; proposal_id: string; proposal: Proposal }> {

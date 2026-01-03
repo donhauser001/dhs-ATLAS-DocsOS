@@ -75,9 +75,18 @@ export function CapabilitiesField({ value, functionKey, documentType, onChange }
   }, [capabilitiesFromConfig]);
 
   // 解析当前能力列表
-  const capabilities = value
-    ? value.split(',').map(s => s.trim()).filter(Boolean)
-    : [];
+  const capabilities = useMemo(() => {
+    if (!value) return [];
+    // 处理数组格式
+    if (Array.isArray(value)) {
+      return value.map(s => String(s).trim()).filter(Boolean);
+    }
+    // 处理字符串格式
+    if (typeof value === 'string') {
+      return value.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    return [];
+  }, [value]);
 
   // 获取默认能力
   const defaultCapabilities = getDefaultCapabilities(functionKey);

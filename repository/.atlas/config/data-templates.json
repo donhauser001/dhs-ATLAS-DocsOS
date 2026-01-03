@@ -1,0 +1,262 @@
+{
+  "version": "1.0",
+  "updatedAt": "2026-01-03T10:14:08.331Z",
+  "categories": [
+    {
+      "id": "business",
+      "name": "业务数据",
+      "description": "常用业务数据模板",
+      "isSystem": true,
+      "templates": [
+        {
+          "id": "client",
+          "name": "客户",
+          "description": "客户信息数据模板",
+          "dataType": "client",
+          "fields": [
+            {
+              "key": "type",
+              "defaultValue": "client",
+              "required": true
+            },
+            {
+              "key": "id",
+              "defaultValue": "",
+              "required": true
+            },
+            {
+              "key": "status",
+              "defaultValue": "active",
+              "required": true
+            },
+            {
+              "key": "title",
+              "defaultValue": "",
+              "required": true
+            },
+            {
+              "key": "category",
+              "defaultValue": ""
+            },
+            {
+              "key": "rating",
+              "defaultValue": 0
+            },
+            {
+              "key": "address",
+              "defaultValue": ""
+            },
+            {
+              "key": "contact",
+              "defaultValue": ""
+            },
+            {
+              "key": "contact_phone",
+              "defaultValue": ""
+            },
+            {
+              "key": "contact_email",
+              "defaultValue": ""
+            },
+            {
+              "key": "invoiceType",
+              "defaultValue": ""
+            },
+            {
+              "key": "createdAt",
+              "defaultValue": "",
+              "required": true
+            },
+            {
+              "key": "updatedAt",
+              "defaultValue": "",
+              "required": true
+            }
+          ],
+          "createdAt": "2026-01-03T10:01:28.290Z",
+          "updatedAt": "2026-01-03T10:01:28.290Z",
+          "isSystem": true
+        },
+        {
+          "id": "contact",
+          "name": "联系人",
+          "description": "联系人信息数据模板",
+          "dataType": "contact",
+          "fields": [
+            {
+              "key": "type",
+              "defaultValue": "contact",
+              "required": true
+            },
+            {
+              "key": "id",
+              "defaultValue": "",
+              "required": true
+            },
+            {
+              "key": "status",
+              "defaultValue": "active",
+              "required": true
+            },
+            {
+              "key": "title",
+              "defaultValue": "",
+              "required": true
+            },
+            {
+              "key": "company",
+              "defaultValue": ""
+            },
+            {
+              "key": "position",
+              "defaultValue": ""
+            },
+            {
+              "key": "phones",
+              "defaultValue": ""
+            },
+            {
+              "key": "emails",
+              "defaultValue": ""
+            },
+            {
+              "key": "address",
+              "defaultValue": ""
+            },
+            {
+              "key": "notes",
+              "defaultValue": ""
+            },
+            {
+              "key": "createdAt",
+              "defaultValue": "",
+              "required": true
+            },
+            {
+              "key": "updatedAt",
+              "defaultValue": "",
+              "required": true
+            }
+          ],
+          "createdAt": "2026-01-03T10:01:28.290Z",
+          "updatedAt": "2026-01-03T10:01:28.290Z",
+          "isSystem": true
+        },
+        {
+          "id": "project",
+          "name": "项目",
+          "description": "项目信息数据模板",
+          "dataType": "project",
+          "fields": [
+            {
+              "key": "type",
+              "defaultValue": "project",
+              "required": true
+            },
+            {
+              "key": "id",
+              "defaultValue": "",
+              "required": true
+            },
+            {
+              "key": "status",
+              "defaultValue": "draft",
+              "required": true
+            },
+            {
+              "key": "title",
+              "defaultValue": "",
+              "required": true
+            },
+            {
+              "key": "client",
+              "defaultValue": ""
+            },
+            {
+              "key": "contract_value",
+              "defaultValue": 0
+            },
+            {
+              "key": "start_date",
+              "defaultValue": ""
+            },
+            {
+              "key": "end_date",
+              "defaultValue": ""
+            },
+            {
+              "key": "progress",
+              "defaultValue": 0
+            },
+            {
+              "key": "notes",
+              "defaultValue": ""
+            },
+            {
+              "key": "createdAt",
+              "defaultValue": "",
+              "required": true
+            },
+            {
+              "key": "updatedAt",
+              "defaultValue": "",
+              "required": true
+            }
+          ],
+          "createdAt": "2026-01-03T10:01:28.290Z",
+          "updatedAt": "2026-01-03T10:01:28.290Z",
+          "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "general",
+      "name": "通用模板",
+      "description": "通用数据模板",
+      "isSystem": true,
+      "templates": [
+        {
+          "id": "basic",
+          "name": "基础数据",
+          "description": "最基础的数据模板，只包含必填字段",
+          "dataType": "data",
+          "fields": [
+            {
+              "key": "type",
+              "defaultValue": "data",
+              "required": true
+            },
+            {
+              "key": "id",
+              "defaultValue": "",
+              "required": true
+            },
+            {
+              "key": "status",
+              "defaultValue": "draft",
+              "required": true
+            },
+            {
+              "key": "title",
+              "defaultValue": "",
+              "required": true
+            },
+            {
+              "key": "createdAt",
+              "defaultValue": "",
+              "required": true
+            },
+            {
+              "key": "updatedAt",
+              "defaultValue": "",
+              "required": true
+            }
+          ],
+          "createdAt": "2026-01-03T10:01:28.290Z",
+          "updatedAt": "2026-01-03T10:01:28.290Z",
+          "isSystem": true
+        }
+      ]
+    }
+  ]
+}

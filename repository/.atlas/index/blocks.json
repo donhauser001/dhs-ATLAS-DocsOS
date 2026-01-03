@@ -1454,19 +1454,6 @@
       }
     },
     {
-      "anchor": "u-wang",
-      "document": "联系人/principals/u-wang.md",
-      "heading": "王编辑",
-      "title": "王编辑",
-      "type": "principal",
-      "status": "active",
-      "searchable": {
-        "id": "u-wang",
-        "title": "",
-        "status": "active"
-      }
-    },
-    {
       "anchor": "u-wangwu",
       "document": "联系人/principals/u-wangwu.md",
       "heading": "王五",
@@ -1764,7 +1751,20 @@
         "title": "",
         "status": "active"
       }
+    },
+    {
+      "anchor": "u-wang",
+      "document": "联系人/principals/u-wang.md",
+      "heading": "王编辑",
+      "title": "王编辑",
+      "type": "principal",
+      "status": "active",
+      "searchable": {
+        "id": "wangbianji",
+        "title": "",
+        "status": "active"
+      }
     }
   ],
-  "updated_at": "2026-01-01T17:12:14.453Z"
+  "updated_at": "2026-01-03T04:38:16.602Z"
 }

@@ -82,7 +82,7 @@ const SYSTEM_LABELS: LabelConfig = {
       description: '所有文档通用的基础字段',
       isSystem: true,
       items: [
-        { key: 'id', label: '标识符', icon: 'fingerprint', isSystem: true },
+        { key: 'id', label: '编号', icon: 'hash', isSystem: true },
         { key: 'type', label: '类型', icon: 'layers', isSystem: true },
         { key: 'status', label: '状态', icon: 'activity', isSystem: true },
         { key: 'title', label: '标题', icon: 'heading', isSystem: true },
@@ -100,6 +100,8 @@ const SYSTEM_LABELS: LabelConfig = {
         { key: 'document_type', label: '文档类型', icon: 'file-type', isSystem: true },
         { key: 'created', label: '创建时间', icon: 'calendar', isSystem: true },
         { key: 'updated', label: '更新时间', icon: 'calendar-check', isSystem: true },
+        { key: 'createdAt', label: '创建时间', icon: 'calendar-plus', isSystem: true },
+        { key: 'updatedAt', label: '更新时间', icon: 'calendar-check', isSystem: true },
         { key: 'author', label: '作者', icon: 'user', isSystem: true },
       ],
     },
@@ -161,6 +163,11 @@ const SYSTEM_LABELS: LabelConfig = {
         { key: 'category', label: '分类', icon: 'folder-tree', isSystem: true },
         { key: 'priority', label: '优先级', icon: 'flag', isSystem: true },
         { key: 'progress', label: '进度', icon: 'percent', isSystem: true },
+        { key: 'rating', label: '评级', icon: 'star', isSystem: true },
+        { key: 'invoiceType', label: '发票类型', icon: 'receipt', isSystem: true },
+        { key: 'invoice_type', label: '发票类型', icon: 'receipt', isSystem: true },
+        { key: 'relationship_strength', label: '关系强度', icon: 'heart', isSystem: true },
+        { key: 'role_title', label: '职位', icon: 'briefcase', isSystem: true },
       ],
     },
     {
@@ -194,6 +201,7 @@ const SYSTEM_LABELS: LabelConfig = {
       isSystem: true,
       items: [
         { key: 'active', label: '活跃', icon: 'check-circle', color: 'green', isSystem: true },
+        { key: 'inactive', label: '停用', icon: 'x-circle', color: 'gray', isSystem: true },
         { key: 'draft', label: '草稿', icon: 'edit', color: 'yellow', isSystem: true },
         { key: 'archived', label: '已归档', icon: 'archive', color: 'gray', isSystem: true },
         { key: 'suspended', label: '已暂停', icon: 'pause-circle', color: 'red', isSystem: true },
@@ -292,14 +300,14 @@ function mergeWithSystemLabels(userConfig: LabelConfig): LabelConfig {
           description: userItem.description || sysItem.description,
         } : sysItem;
       });
-      
+
       // 🔑 添加用户在系统分类中新增的项目
       for (const userItem of userCategory.items) {
         if (!sysCategory.items.find(i => i.key === userItem.key)) {
           mergedItems.push(userItem);
         }
       }
-      
+
       merged.categories.push({
         ...sysCategory,
         items: mergedItems,
