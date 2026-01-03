@@ -54,7 +54,7 @@ const CATEGORY_ICONS: Record<DisplayCategory, React.ReactNode> = {
 function ModeCard({ item, onEdit }: { item: DisplayModeItem; onEdit: () => void }) {
     const Icon = item.icon
         ? (LucideIcons as Record<string, React.ComponentType<{ className?: string }>>)[
-            item.icon.split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('')
+        item.icon.split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('')
         ]
         : null;
 

@@ -8,7 +8,7 @@
 /**
  * 系统属性类型
  */
-export type SystemPropertyType = 
+export type SystemPropertyType =
     | 'text'           // 普通文本
     | 'date'           // 日期
     | 'tags'           // 标签列表
@@ -64,7 +64,7 @@ export const systemPropertyStaticConfig: Record<string, SystemPropertyStaticConf
         defaultIcon: 'calendar-check',
         required: true,
     },
-    
+
     // ========== 文档分类配置 ==========
     'document_type': {
         type: 'doc-type',
@@ -78,13 +78,13 @@ export const systemPropertyStaticConfig: Record<string, SystemPropertyStaticConf
         type: 'display-modes',
         defaultIcon: 'layout',
     },
-    
+
     // ========== 能力配置 ==========
     'atlas.capabilities': {
         type: 'capabilities',
         defaultIcon: 'zap',
     },
-    
+
     // ========== 版本信息（可选显示） ==========
     'version': {
         type: 'text',

@@ -97,7 +97,7 @@ export function DocTypeSelector({
                 <SelectItem value="__none__">
                     <span className="text-slate-400">未设置</span>
                 </SelectItem>
-                
+
                 {filteredGroups.map((group) => (
                     <SelectGroup key={group.id}>
                         <SelectLabel className="text-xs text-slate-400">{group.label}</SelectLabel>

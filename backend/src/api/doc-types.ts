@@ -32,9 +32,9 @@ router.get('/', (_req: Request, res: Response) => {
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('[DocTypes API] Failed to get config:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: error instanceof Error ? error.message : 'Failed to get config' 
+        res.status(500).json({
+            success: false,
+            error: error instanceof Error ? error.message : 'Failed to get config'
         });
     }
 });
@@ -49,9 +49,9 @@ router.get('/all', (_req: Request, res: Response) => {
         res.json({ success: true, data: types });
     } catch (error) {
         console.error('[DocTypes API] Failed to get all types:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: error instanceof Error ? error.message : 'Failed to get types' 
+        res.status(500).json({
+            success: false,
+            error: error instanceof Error ? error.message : 'Failed to get types'
         });
     }
 });
@@ -64,18 +64,18 @@ router.get('/category/:category', (req: Request, res: Response) => {
     try {
         const category = req.params.category as DocTypeCategory;
         if (!['system', 'business', 'content'].includes(category)) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Invalid category. Must be system, business, or content.' 
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid category. Must be system, business, or content.'
             });
         }
         const types = getDocTypesByCategory(category);
         res.json({ success: true, data: types });
     } catch (error) {
         console.error('[DocTypes API] Failed to get types by category:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: error instanceof Error ? error.message : 'Failed to get types' 
+        res.status(500).json({
+            success: false,
+            error: error instanceof Error ? error.message : 'Failed to get types'
         });
     }
 });
@@ -88,17 +88,17 @@ router.get('/type/:id', (req: Request, res: Response) => {
     try {
         const type = getDocType(req.params.id);
         if (!type) {
-            return res.status(404).json({ 
-                success: false, 
-                error: `Document type ${req.params.id} not found` 
+            return res.status(404).json({
+                success: false,
+                error: `Document type ${req.params.id} not found`
             });
         }
         res.json({ success: true, data: type });
     } catch (error) {
         console.error('[DocTypes API] Failed to get type:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: error instanceof Error ? error.message : 'Failed to get type' 
+        res.status(500).json({
+            success: false,
+            error: error instanceof Error ? error.message : 'Failed to get type'
         });
     }
 });
@@ -116,9 +116,9 @@ router.post('/types', (req: Request, res: Response) => {
         const { id, label, description, icon, category, defaultFunction, defaultDisplay } = req.body;
 
         if (!id || !label || !category) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Missing required fields: id, label, category' 
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields: id, label, category'
             });
         }
 
@@ -135,9 +135,9 @@ router.post('/types', (req: Request, res: Response) => {
         res.json({ success: true, data: newType });
     } catch (error) {
         console.error('[DocTypes API] Failed to add type:', error);
-        res.status(400).json({ 
-            success: false, 
-            error: error instanceof Error ? error.message : 'Failed to add type' 
+        res.status(400).json({
+            success: false,
+            error: error instanceof Error ? error.message : 'Failed to add type'
         });
     }
 });
@@ -161,9 +161,9 @@ router.put('/types/:id', (req: Request, res: Response) => {
         res.json({ success: true, data: updated });
     } catch (error) {
         console.error('[DocTypes API] Failed to update type:', error);
-        res.status(400).json({ 
-            success: false, 
-            error: error instanceof Error ? error.message : 'Failed to update type' 
+        res.status(400).json({
+            success: false,
+            error: error instanceof Error ? error.message : 'Failed to update type'
         });
     }
 });
@@ -178,9 +178,9 @@ router.delete('/types/:id', (req: Request, res: Response) => {
         res.json({ success: true });
     } catch (error) {
         console.error('[DocTypes API] Failed to delete type:', error);
-        res.status(400).json({ 
-            success: false, 
-            error: error instanceof Error ? error.message : 'Failed to delete type' 
+        res.status(400).json({
+            success: false,
+            error: error instanceof Error ? error.message : 'Failed to delete type'
         });
     }
 });

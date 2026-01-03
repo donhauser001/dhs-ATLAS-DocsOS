@@ -108,7 +108,7 @@ export function FunctionTypeSelector({
                 <SelectItem value="__none__">
                     <span className="text-slate-400">无</span>
                 </SelectItem>
-                
+
                 {config?.groups.map((group) => (
                     <SelectGroup key={group.id}>
                         <SelectLabel className="text-xs text-slate-500 font-medium">

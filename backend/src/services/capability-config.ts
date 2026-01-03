@@ -26,9 +26,9 @@ import { config } from '../config.js';
 // 类型定义
 // ============================================================
 
-export type CapabilityCategory = 
-    | 'data' | 'workflow' | 'time' | 'tracking' 
-    | 'version' | 'collaboration' | 'relation' 
+export type CapabilityCategory =
+    | 'data' | 'workflow' | 'time' | 'tracking'
+    | 'version' | 'collaboration' | 'relation'
     | 'input' | 'output' | 'compute' | 'learning' | 'lifestyle';
 
 export interface CapabilityItem {

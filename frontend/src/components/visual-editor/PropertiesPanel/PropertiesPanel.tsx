@@ -30,10 +30,10 @@ export function PropertiesPanel({
     const [expanded, setExpanded] = useState(defaultExpanded);
     const [showAddDialog, setShowAddDialog] = useState(false);
     const [editingConfig, setEditingConfig] = useState<string | null>(null);
-    
+
     // 文档类型配置缓存
     const docTypeConfigRef = useRef<DocTypeConfig | null>(null);
-    
+
     // 加载文档类型配置
     useEffect(() => {
         fetchDocTypeConfig()
@@ -44,7 +44,7 @@ export function PropertiesPanel({
     // 解析系统属性值
     const systemValues = useMemo<SystemPropertyValues>(() => {
         const atlas = (frontmatter.atlas as Record<string, unknown>) || {};
-        
+
         // 处理 atlas.display 的向后兼容性：旧文档可能是字符串，需要转换为数组
         const rawDisplay = atlas.display;
         let displayModes: string[] = [];
@@ -53,7 +53,7 @@ export function PropertiesPanel({
         } else if (typeof rawDisplay === 'string' && rawDisplay) {
             displayModes = [rawDisplay];
         }
-        
+
         return {
             title: frontmatter.title as string || '',
             author: frontmatter.author as string || '',
@@ -71,24 +71,24 @@ export function PropertiesPanel({
     // 确保新添加的系统属性按照默认顺序插入到正确位置
     const systemOrder = useMemo(() => {
         const savedOrder = frontmatter._systemOrder as string[] | undefined;
-        
+
         if (!savedOrder) {
             return DEFAULT_SYSTEM_ORDER;
         }
-        
+
         // 检查是否有新的系统属性需要添加
         const missingKeys = DEFAULT_SYSTEM_ORDER.filter(key => !savedOrder.includes(key));
-        
+
         if (missingKeys.length === 0) {
             return savedOrder;
         }
-        
+
         // 将缺失的属性按默认顺序插入到正确位置
         const result = [...savedOrder];
         for (const missingKey of missingKeys) {
             // 找到该属性在默认顺序中的位置
             const defaultIndex = DEFAULT_SYSTEM_ORDER.indexOf(missingKey);
-            
+
             // 找到在默认顺序中它之前的属性，看看在 result 中的位置
             let insertIndex = 0;
             for (let i = defaultIndex - 1; i >= 0; i--) {
@@ -99,10 +99,10 @@ export function PropertiesPanel({
                     break;
                 }
             }
-            
+
             result.splice(insertIndex, 0, missingKey);
         }
-        
+
         return result;
     }, [frontmatter]);
 
@@ -133,7 +133,7 @@ export function PropertiesPanel({
     // 更新系统属性
     const handleSystemChange = useCallback((key: string, value: unknown) => {
         const newFrontmatter = { ...frontmatter };
-        
+
         if (key.startsWith('atlas.')) {
             const atlasKey = key.replace('atlas.', '');
             newFrontmatter.atlas = {
@@ -143,13 +143,13 @@ export function PropertiesPanel({
         } else {
             newFrontmatter[key] = value;
         }
-        
+
         // 当文档类型变化时，自动填充默认的功能类型和显现模式
         if (key === 'document_type' && value) {
             const docType = findDocType(String(value));
             if (docType) {
                 const currentAtlas = (newFrontmatter.atlas as Record<string, unknown>) || {};
-                
+
                 // 如果默认功能存在且当前功能为空，则自动填充
                 if (docType.defaultFunction && !currentAtlas.function) {
                     newFrontmatter.atlas = {
@@ -157,12 +157,12 @@ export function PropertiesPanel({
                         function: docType.defaultFunction,
                     };
                 }
-                
+
                 // 如果默认显现模式存在且当前显现模式为空，则自动填充（转换为数组）
                 const currentDisplay = currentAtlas.display;
-                const isDisplayEmpty = !currentDisplay || 
+                const isDisplayEmpty = !currentDisplay ||
                     (Array.isArray(currentDisplay) && currentDisplay.length === 0);
-                
+
                 if (docType.defaultDisplay && isDisplayEmpty) {
                     newFrontmatter.atlas = {
                         ...(newFrontmatter.atlas as Record<string, unknown>),
@@ -171,7 +171,7 @@ export function PropertiesPanel({
                 }
             }
         }
-        
+
         onFrontmatterChange(newFrontmatter);
     }, [frontmatter, onFrontmatterChange, findDocType]);
 
