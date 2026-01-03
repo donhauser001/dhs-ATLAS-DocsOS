@@ -278,7 +278,7 @@ export function DocumentPage() {
   }
 
   const content = (
-    <div className="h-full">
+    <div className="h-full flex flex-col">
       {renderContent()}
     </div>
   );

@@ -18,11 +18,13 @@ import {
     List,
     Minus,
     Database,
+    Paperclip,
 } from 'lucide-react';
 import type { Block, BlockType } from './types';
 import { BLOCK_TYPE_OPTIONS, generateDefaultDataBlockContent } from './types';
 import { DataBlockEditor } from './DataBlockEditor';
 import { TemplateSelector } from './TemplateSelector';
+import { FileManagerDialog, FileCard, type FileReference } from '../FileManager';
 import type { DocumentComponentDefinition } from '../ComponentPanel/types';
 import type { StatusOption } from './StatusOptionsDialog';
 import type { IdConfig } from './IdConfigDialog';
@@ -38,6 +40,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
     List,
     Minus,
     Database,
+    Paperclip,
 };
 
 interface BlockItemProps {
@@ -73,6 +76,7 @@ export function BlockItem({
 }: BlockItemProps) {
     const [showTypeMenu, setShowTypeMenu] = useState(false);
     const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+    const [showFileManager, setShowFileManager] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -254,6 +258,44 @@ export function BlockItem({
             );
         }
 
+        // 文件块
+        if (block.type === 'file') {
+            // 如果已有文件引用，渲染 FileCard
+            if (block.fileRef) {
+                return (
+                    <div className="px-2 py-2">
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-[10px] font-medium text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded">文件</span>
+                        </div>
+                        <FileCard
+                            file={block.fileRef}
+                            onReplace={() => setShowFileManager(true)}
+                            onDelete={() => onChange({ ...block, fileRef: undefined, content: '' })}
+                        />
+                    </div>
+                );
+            }
+
+            // 未选择文件，显示选择按钮
+            return (
+                <div className="px-2 py-2">
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[10px] font-medium text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded">文件</span>
+                    </div>
+                    <button
+                        onClick={() => setShowFileManager(true)}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-8 
+                                 border-2 border-dashed border-slate-200 rounded-xl
+                                 text-slate-400 hover:text-indigo-600 hover:border-indigo-300 
+                                 hover:bg-indigo-50/50 transition-all"
+                    >
+                        <Paperclip size={20} />
+                        <span>点击选择文件</span>
+                    </button>
+                </div>
+            );
+        }
+
         // 标题
         const headingStyles: Record<string, string> = {
             heading1: 'text-2xl font-bold text-slate-900',
@@ -352,6 +394,10 @@ export function BlockItem({
                                                 if (option.type === 'yaml' && block.type !== 'yaml') {
                                                     setShowTypeMenu(false);
                                                     setShowTemplateSelector(true);
+                                                } else if (option.type === 'file') {
+                                                    // 文件类型直接打开文件管理器
+                                                    setShowTypeMenu(false);
+                                                    setShowFileManager(true);
                                                 } else {
                                                     onTypeChange(option.type);
                                                     setShowTypeMenu(false);
@@ -426,6 +472,22 @@ export function BlockItem({
                     </div>
                 </>
             )}
+
+            {/* 文件管理器对话框 */}
+            <FileManagerDialog
+                open={showFileManager}
+                onClose={() => setShowFileManager(false)}
+                onSelect={(file: FileReference) => {
+                    onChange({
+                        ...block,
+                        type: 'file',
+                        content: `file:${file.path}`,
+                        fileRef: file,
+                    });
+                    setShowFileManager(false);
+                }}
+                title="选择文件"
+            />
         </div>
     );
 }

@@ -277,8 +277,8 @@ export function SaveTemplateDialog({
                                         <span
                                             key={key}
                                             className={`text-xs px-2 py-0.5 rounded ${boundComponent
-                                                    ? 'bg-purple-50 border border-purple-200 text-purple-700'
-                                                    : 'bg-white border border-slate-200'
+                                                ? 'bg-purple-50 border border-purple-200 text-purple-700'
+                                                : 'bg-white border border-slate-200'
                                                 }`}
                                             title={boundComponent ? `绑定组件: ${boundComponent.label}` : undefined}
                                         >

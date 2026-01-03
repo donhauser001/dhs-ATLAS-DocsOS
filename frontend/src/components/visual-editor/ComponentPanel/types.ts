@@ -18,7 +18,11 @@ export type DocumentComponentType =
     | 'number'       // 数字输入
     | 'date'         // 日期选择
     | 'text'         // 单行文本
-    | 'textarea';    // 多行文本
+    | 'textarea'     // 多行文本
+    | 'file'         // 单文件选择
+    | 'files'        // 多文件选择
+    | 'image'        // 单图片选择
+    | 'images';      // 多图片选择
 
 // ============================================================
 // 选项定义
@@ -121,6 +125,46 @@ export interface TextareaComponentDefinition extends BaseComponentDefinition {
     maxLength?: number;
 }
 
+/** 文件组件 */
+export interface FileComponentDefinition extends BaseComponentDefinition {
+    type: 'file';
+    /** 允许的文件扩展名（如 ['.pdf', '.doc']），空表示全部 */
+    accept?: string[];
+    /** 最大文件大小（MB） */
+    maxSize?: number;
+}
+
+/** 多文件组件 */
+export interface FilesComponentDefinition extends BaseComponentDefinition {
+    type: 'files';
+    /** 允许的文件扩展名 */
+    accept?: string[];
+    /** 最大文件数量 */
+    maxCount?: number;
+    /** 最大单文件大小（MB） */
+    maxSize?: number;
+}
+
+/** 图片组件 */
+export interface ImageComponentDefinition extends BaseComponentDefinition {
+    type: 'image';
+    /** 允许的图片格式（默认常见图片格式） */
+    accept?: string[];
+    /** 最大文件大小（MB） */
+    maxSize?: number;
+}
+
+/** 多图片组件 */
+export interface ImagesComponentDefinition extends BaseComponentDefinition {
+    type: 'images';
+    /** 允许的图片格式 */
+    accept?: string[];
+    /** 最大图片数量 */
+    maxCount?: number;
+    /** 最大单文件大小（MB） */
+    maxSize?: number;
+}
+
 /** 组件定义联合类型 */
 export type DocumentComponentDefinition =
     | SelectComponentDefinition
@@ -128,7 +172,11 @@ export type DocumentComponentDefinition =
     | NumberComponentDefinition
     | DateComponentDefinition
     | TextComponentDefinition
-    | TextareaComponentDefinition;
+    | TextareaComponentDefinition
+    | FileComponentDefinition
+    | FilesComponentDefinition
+    | ImageComponentDefinition
+    | ImagesComponentDefinition;
 
 // ============================================================
 // 组件存储结构（在 frontmatter 中）
@@ -224,6 +272,34 @@ export const COMPONENT_TYPE_META: ComponentTypeMeta[] = [
         icon: 'align-left',
         hasOptions: false,
     },
+    {
+        type: 'file',
+        name: '文件选择',
+        description: '选择单个文件',
+        icon: 'file',
+        hasOptions: false,
+    },
+    {
+        type: 'files',
+        name: '多文件选择',
+        description: '选择多个文件',
+        icon: 'files',
+        hasOptions: false,
+    },
+    {
+        type: 'image',
+        name: '图片选择',
+        description: '选择单张图片',
+        icon: 'image',
+        hasOptions: false,
+    },
+    {
+        type: 'images',
+        name: '多图片选择',
+        description: '选择多张图片',
+        icon: 'gallery-horizontal',
+        hasOptions: false,
+    },
 ];
 
 /** 根据类型获取元数据 */
@@ -292,6 +368,38 @@ export function createDefaultComponentDefinition(
                 rows: 3,
                 placeholder: '请输入...',
             } as TextareaComponentDefinition;
+
+        case 'file':
+            return {
+                ...base,
+                type: 'file',
+                maxSize: 10,
+            } as FileComponentDefinition;
+
+        case 'files':
+            return {
+                ...base,
+                type: 'files',
+                maxCount: 10,
+                maxSize: 10,
+            } as FilesComponentDefinition;
+
+        case 'image':
+            return {
+                ...base,
+                type: 'image',
+                accept: ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'],
+                maxSize: 5,
+            } as ImageComponentDefinition;
+
+        case 'images':
+            return {
+                ...base,
+                type: 'images',
+                accept: ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'],
+                maxCount: 10,
+                maxSize: 5,
+            } as ImagesComponentDefinition;
 
         default:
             return base as DocumentComponentDefinition;

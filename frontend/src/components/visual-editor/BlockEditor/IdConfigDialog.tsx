@@ -58,7 +58,7 @@ export function generateId(config: IdConfig, sequence: number): string {
 /** 从编号中提取序号 */
 export function extractSequence(id: string, config: IdConfig): number | null {
     if (!id) return null;
-    
+
     // 尝试匹配带前缀的格式
     if (config.prefix) {
         const pattern = new RegExp(`^${escapeRegExp(config.prefix)}${escapeRegExp(config.separator)}(\\d+)$`);
@@ -67,13 +67,13 @@ export function extractSequence(id: string, config: IdConfig): number | null {
             return parseInt(match[1], 10);
         }
     }
-    
+
     // 尝试直接解析数字
     const numMatch = id.match(/(\d+)$/);
     if (numMatch) {
         return parseInt(numMatch[1], 10);
     }
-    
+
     return null;
 }
 
@@ -122,21 +122,21 @@ export function IdConfigDialog({
     onClose,
 }: IdConfigDialogProps) {
     const [localConfig, setLocalConfig] = useState<IdConfig>(config);
-    
+
     // 预览编号
     const previewId = generateId(localConfig, localConfig.startFrom);
-    
+
     // 更新配置字段
     const updateField = useCallback(<K extends keyof IdConfig>(field: K, value: IdConfig[K]) => {
         setLocalConfig(prev => ({ ...prev, [field]: value }));
     }, []);
-    
+
     // 保存配置
     const handleSave = useCallback(() => {
         onConfigChange(localConfig);
         onClose();
     }, [localConfig, onConfigChange, onClose]);
-    
+
     // 切换冻结状态
     const toggleFrozen = useCallback(() => {
         if (localConfig.frozen) {
@@ -154,11 +154,11 @@ export function IdConfigDialog({
     return createPortal(
         <div className="fixed inset-0 z-[200] flex items-center justify-center">
             {/* 背景遮罩 */}
-            <div 
+            <div
                 className="absolute inset-0 bg-black/30 backdrop-blur-sm"
                 onClick={onClose}
             />
-            
+
             {/* 对话框 */}
             <div className="relative bg-white rounded-xl shadow-2xl w-[420px] max-h-[80vh] overflow-hidden">
                 {/* 头部 */}
@@ -175,7 +175,7 @@ export function IdConfigDialog({
                         <X size={18} />
                     </button>
                 </div>
-                
+
                 {/* 内容 */}
                 <div className="p-5 space-y-5">
                     {/* 当前编号显示 */}
@@ -193,7 +193,7 @@ export function IdConfigDialog({
                             </div>
                         </div>
                     )}
-                    
+
                     {/* 冻结状态警告 */}
                     {localConfig.frozen && (
                         <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
@@ -203,7 +203,7 @@ export function IdConfigDialog({
                             </div>
                         </div>
                     )}
-                    
+
                     {/* 前缀设置 */}
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
@@ -226,7 +226,7 @@ export function IdConfigDialog({
                             前缀会自动转为大写，留空则只使用数字编号
                         </p>
                     </div>
-                    
+
                     {/* 分隔符设置 */}
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
@@ -252,7 +252,7 @@ export function IdConfigDialog({
                             ))}
                         </div>
                     </div>
-                    
+
                     {/* 数字位数设置 */}
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
@@ -278,7 +278,7 @@ export function IdConfigDialog({
                             ))}
                         </div>
                     </div>
-                    
+
                     {/* 起始编号设置 */}
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
@@ -300,7 +300,7 @@ export function IdConfigDialog({
                             新建数据块时的起始编号
                         </p>
                     </div>
-                    
+
                     {/* 预览 */}
                     <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
                         <div className="text-xs text-slate-500 mb-2">编号预览</div>
@@ -319,7 +319,7 @@ export function IdConfigDialog({
                             <span className="text-slate-400">...</span>
                         </div>
                     </div>
-                    
+
                     {/* 冻结编号开关 */}
                     <div className="pt-3 border-t border-slate-100">
                         <div className="flex items-center justify-between">
@@ -356,7 +356,7 @@ export function IdConfigDialog({
                         </div>
                     </div>
                 </div>
-                
+
                 {/* 底部按钮 */}
                 <div className="flex justify-end gap-2 px-5 py-4 border-t border-slate-100 bg-slate-50">
                     <button

@@ -49,6 +49,15 @@ export function parseMarkdownToBlocks(markdown: string): Block[] {
                     language,
                     yaml: codeLines.join('\n'),
                 });
+            } else if (language === 'file') {
+                // 文件块
+                const fileRef = parseFileBlockContent(codeLines.join('\n'));
+                blocks.push({
+                    id: generateBlockId(),
+                    type: 'file',
+                    content: codeLines.join('\n'),
+                    fileRef,
+                });
             } else {
                 blocks.push({
                     id: generateBlockId(),
@@ -151,6 +160,57 @@ function isSpecialLine(line: string): boolean {
 }
 
 /**
+ * 解析文件块内容
+ */
+function parseFileBlockContent(content: string): Block['fileRef'] {
+    const lines = content.split('\n');
+    const ref: NonNullable<Block['fileRef']> = {
+        path: '',
+        name: '',
+    };
+
+    for (const line of lines) {
+        const [key, ...valueParts] = line.split(':');
+        const value = valueParts.join(':').trim();
+
+        if (key && value) {
+            switch (key.trim()) {
+                case 'path':
+                    ref.path = value;
+                    break;
+                case 'name':
+                    ref.name = value;
+                    break;
+                case 'size':
+                    ref.size = parseInt(value, 10) || undefined;
+                    break;
+                case 'mimeType':
+                    ref.mimeType = value;
+                    break;
+                case 'extension':
+                    ref.extension = value;
+                    break;
+            }
+        }
+    }
+
+    return ref.path ? ref : undefined;
+}
+
+/**
+ * 序列化文件引用为块内容
+ */
+function serializeFileRef(fileRef: NonNullable<Block['fileRef']>): string {
+    const lines: string[] = [];
+    lines.push(`path: ${fileRef.path}`);
+    lines.push(`name: ${fileRef.name}`);
+    if (fileRef.size !== undefined) lines.push(`size: ${fileRef.size}`);
+    if (fileRef.mimeType) lines.push(`mimeType: ${fileRef.mimeType}`);
+    if (fileRef.extension) lines.push(`extension: ${fileRef.extension}`);
+    return lines.join('\n');
+}
+
+/**
  * 将块数组序列化为 Markdown
  */
 export function blocksToMarkdown(blocks: Block[]): string {
@@ -168,6 +228,11 @@ export function blocksToMarkdown(blocks: Block[]): string {
                 return `\`\`\`${block.language || ''}\n${block.content}\n\`\`\``;
             case 'yaml':
                 return `\`\`\`${block.language || 'yaml'}\n${block.content}\n\`\`\``;
+            case 'file':
+                if (block.fileRef) {
+                    return `\`\`\`file\n${serializeFileRef(block.fileRef)}\n\`\`\``;
+                }
+                return '';
             case 'quote':
                 return block.content.split('\n').map(line => `> ${line}`).join('\n');
             case 'list':

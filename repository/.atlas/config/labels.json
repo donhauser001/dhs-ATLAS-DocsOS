@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "updatedAt": "2026-01-03T05:36:29.490Z",
+  "updatedAt": "2026-01-03T16:19:42.817Z",
   "categories": [
     {
       "id": "core",
@@ -77,12 +77,6 @@
           "isSystem": true
         },
         {
-          "key": "author",
-          "label": "作者",
-          "icon": "user",
-          "isSystem": true
-        },
-        {
           "key": "createdAt",
           "label": "创建时间",
           "icon": "calendar-plus",
@@ -92,6 +86,12 @@
           "key": "updatedAt",
           "label": "更新时间",
           "icon": "calendar-check",
+          "isSystem": true
+        },
+        {
+          "key": "author",
+          "label": "作者",
+          "icon": "user",
           "isSystem": true
         }
       ]
@@ -323,6 +323,116 @@
           "label": "职位",
           "icon": "briefcase",
           "isSystem": true
+        }
+      ]
+    },
+    {
+      "id": "files",
+      "name": "文件与媒体",
+      "description": "文件、图片、附件相关字段",
+      "isSystem": true,
+      "items": [
+        {
+          "key": "file",
+          "label": "文件",
+          "icon": "file",
+          "isSystem": true
+        },
+        {
+          "key": "files",
+          "label": "文件列表",
+          "icon": "files",
+          "isSystem": true
+        },
+        {
+          "key": "image",
+          "label": "图片",
+          "icon": "image",
+          "isSystem": true
+        },
+        {
+          "key": "images",
+          "label": "图片列表",
+          "icon": "images",
+          "isSystem": true
+        },
+        {
+          "key": "attachment",
+          "label": "附件",
+          "icon": "paperclip",
+          "isSystem": true
+        },
+        {
+          "key": "attachments",
+          "label": "附件列表",
+          "icon": "paperclip",
+          "isSystem": true
+        },
+        {
+          "key": "document",
+          "label": "文档",
+          "icon": "file-text",
+          "isSystem": true
+        },
+        {
+          "key": "documents",
+          "label": "文档列表",
+          "icon": "file-text",
+          "isSystem": true
+        },
+        {
+          "key": "photo",
+          "label": "照片",
+          "icon": "camera",
+          "isSystem": true
+        },
+        {
+          "key": "photos",
+          "label": "照片列表",
+          "icon": "camera",
+          "isSystem": true
+        },
+        {
+          "key": "video",
+          "label": "视频",
+          "icon": "video",
+          "isSystem": true
+        },
+        {
+          "key": "videos",
+          "label": "视频列表",
+          "icon": "video",
+          "isSystem": true
+        },
+        {
+          "key": "audio",
+          "label": "音频",
+          "icon": "music",
+          "isSystem": true
+        },
+        {
+          "key": "logo",
+          "label": "标志",
+          "icon": "image",
+          "isSystem": true
+        },
+        {
+          "key": "cover",
+          "label": "封面",
+          "icon": "image",
+          "isSystem": true
+        },
+        {
+          "key": "thumbnail",
+          "label": "缩略图",
+          "icon": "image",
+          "isSystem": true
+        },
+        {
+          "key": "changzhu",
+          "label": "客户常驻文件",
+          "icon": "archive",
+          "isSystem": false
         }
       ]
     },

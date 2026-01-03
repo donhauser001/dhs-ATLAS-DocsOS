@@ -158,9 +158,7 @@ export function WorkspaceLayout({ sidebar, content, anchors }: WorkspaceLayoutPr
 
         {/* Content */}
         <main className="flex-1 overflow-hidden flex flex-col">
-          <ScrollArea className="flex-1">
-            {content}
-          </ScrollArea>
+          {content}
         </main>
 
         {/* Anchors Panel (optional) */}

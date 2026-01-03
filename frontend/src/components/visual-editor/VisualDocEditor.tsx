@@ -82,9 +82,7 @@ export function VisualDocEditor({
     const [isDirty, setIsDirty] = useState(false);
     const [_showPropertySelector, setShowPropertySelector] = useState(false); // 保留：用于富文本编辑器的属性选择器
     const [showComponentPanel, setShowComponentPanel] = useState(true);
-    
-    // 视口同步：记录最后选中的块 ID，用于模式切换时恢复位置
-    const [lastBlockId, setLastBlockId] = useState<string | null>(null);
+
 
     // Commit Buffer：批量收集变更，显式提交
     // 注意：addChange 将在子组件中通过 context 或 props 使用
@@ -96,7 +94,7 @@ export function VisualDocEditor({
         hasPendingChanges,
         pendingCount,
     } = useCommitBuffer();
-    
+
     // 暴露 pendingChanges 供调试（未来移除）
     void pendingChanges;
 
@@ -136,36 +134,29 @@ export function VisualDocEditor({
         setIsDirty(true);
     }, []);
 
-    // 视口同步：模式切换处理
+    // 内部模式切换处理（用于 hideHeader=false 的普通文档）
     const handleViewModeChange = useCallback((newMode: ViewMode) => {
-        // 切换前：保存当前选中的块 ID（如果在编辑模式）
+        // 确保内容已同步
         if (viewMode === 'edit' && blockEditorRef.current) {
-            const currentId = blockEditorRef.current.getSelectedBlockId?.();
-            if (currentId) {
-                setLastBlockId(currentId);
-            }
-            // 确保内容已同步
             blockEditorRef.current.flushContent?.();
         }
         setViewMode(newMode);
     }, [viewMode]);
 
-    // 视口同步：切回编辑模式时恢复滚动位置
+    // 外部模式同步：当 hideHeader 为 true 时，外部控制视图模式
+    const prevInitialModeRef = useRef(initialMode);
+
     useEffect(() => {
-        if (viewMode === 'edit' && lastBlockId) {
-            // 延迟执行，等待 DOM 渲染完成
-            const timer = setTimeout(() => {
-                const element = document.getElementById(`block-${lastBlockId}`);
-                if (element) {
-                    element.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
-                }
-            }, 100);
-            return () => clearTimeout(timer);
+        if (hideHeader && initialMode !== prevInitialModeRef.current) {
+            // 确保内容已同步
+            if (prevInitialModeRef.current === 'edit' && blockEditorRef.current) {
+                blockEditorRef.current.flushContent?.();
+            }
+            prevInitialModeRef.current = initialMode;
+            setViewMode(initialMode);
         }
-    }, [viewMode, lastBlockId]);
+    }, [initialMode, hideHeader]);
+
 
     // 处理文档组件变化
     // 简化设计：选项值就是显示名，无需同步
@@ -354,7 +345,7 @@ export function VisualDocEditor({
     }, [frontmatter, documentPath]);
 
     return (
-        <div className="visual-doc-editor min-h-full flex flex-col bg-white">
+        <div className="visual-doc-editor min-h-full h-full flex flex-col bg-white relative">
             {/* 顶部工具栏（hideHeader 为 true 时隐藏） - sticky 固定在顶部 */}
             {!hideHeader && (
                 <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-3 border-b border-slate-200 bg-slate-50">
@@ -464,8 +455,8 @@ export function VisualDocEditor({
                 />
             )}
 
-            {/* 主内容区域 */}
-            <div className="flex-1 flex overflow-hidden">
+            {/* 主内容区域 - 底部留出空间给固定状态栏 */}
+            <div className="flex-1 flex overflow-hidden pb-12">
                 {/* 左侧组件面板（仅编辑模式显示） */}
                 {viewMode === 'edit' && (
                     <ComponentPanel
@@ -476,56 +467,52 @@ export function VisualDocEditor({
                     />
                 )}
 
-                {/* 内容区域 */}
-                <div className="flex-1 overflow-auto">
-                    {viewMode === 'read' && (
-                        // 阅读模式 - 只读渲染
-                        <div className="max-w-4xl mx-auto px-6 py-8">
-                            <RichTextEditor
-                                ref={richTextEditorRef}
-                                content={bodyContent}
-                                showToolbar={false}
-                                disabled={true}
-                                minHeight="auto"
-                            />
-                        </div>
-                    )}
+                {/* 内容区域 - 使用 CSS 隐藏实现缓存，避免重复渲染 */}
+                <div id="editor-scroll-container" className="flex-1 overflow-auto">
+                    {/* 阅读模式 - 只读渲染 */}
+                    <div
+                        className={cn("max-w-4xl mx-auto px-6 py-8", viewMode !== 'read' && "hidden")}
+                    >
+                        <RichTextEditor
+                            ref={richTextEditorRef}
+                            content={bodyContent}
+                            showToolbar={false}
+                            disabled={true}
+                            minHeight="auto"
+                        />
+                    </div>
 
-                    {viewMode === 'edit' && (
-                        // 编辑模式 - 块式 Markdown 编辑器
-                        <div className="h-full flex flex-col">
-                            <BlockEditor
-                                ref={blockEditorRef}
-                                value={bodyContent}
-                                onChange={(val) => {
-                                    setBodyContent(val);
-                                    setIsDirty(true);
-                                }}
-                                onSave={handleSave}
-                                className="flex-1"
-                                documentComponents={documentComponents}
-                                onInjectComponents={handleInjectComponents}
-                            />
-                        </div>
-                    )}
+                    {/* 编辑模式 - 块式 Markdown 编辑器（始终渲染，CSS 隐藏） */}
+                    <div className={cn("h-full flex flex-col", viewMode !== 'edit' && "hidden")}>
+                        <BlockEditor
+                            ref={blockEditorRef}
+                            value={bodyContent}
+                            onChange={(val) => {
+                                setBodyContent(val);
+                                setIsDirty(true);
+                            }}
+                            onSave={handleSave}
+                            className="flex-1"
+                            documentComponents={documentComponents}
+                            onInjectComponents={handleInjectComponents}
+                        />
+                    </div>
 
-                    {viewMode === 'source' && (
-                        // 源码模式 - CodeMirror 编辑器
-                        <div className="h-full">
-                            <CodeMirrorEditor
-                                ref={codeEditorRef}
-                                value={sourceContent}
-                                onChange={handleSourceChange}
-                                onSave={handleSave}
-                                className="h-full"
-                            />
-                        </div>
-                    )}
+                    {/* 源码模式 - CodeMirror 编辑器（始终渲染，CSS 隐藏） */}
+                    <div className={cn("h-full", viewMode !== 'source' && "hidden")}>
+                        <CodeMirrorEditor
+                            ref={codeEditorRef}
+                            value={sourceContent}
+                            onChange={handleSourceChange}
+                            onSave={handleSave}
+                            className="h-full"
+                        />
+                    </div>
                 </div>
             </div>
 
-            {/* 底部状态栏 - sticky 固定在底部 */}
-            <div className="sticky bottom-0 z-10 flex items-center justify-between px-6 py-2 border-t border-slate-200 
+            {/* 底部状态栏 - absolute 固定在编辑器底部 */}
+            <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-between px-6 py-2 border-t border-slate-200 
                       bg-slate-50 text-xs text-slate-500">
                 <div className="flex items-center gap-3">
                     {/* 组件面板切换按钮 */}
@@ -555,7 +542,7 @@ export function VisualDocEditor({
                             未保存
                         </span>
                     )}
-                    
+
                     {/* Commit Buffer 待提交变更显示 */}
                     {hasPendingChanges && (
                         <div className="flex items-center gap-2 ml-2 px-2 py-1 bg-amber-50 border border-amber-200 rounded">

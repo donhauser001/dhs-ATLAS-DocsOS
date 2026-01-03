@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2026-01-03T12:28:54.490Z",
+  "generated_at": "2026-01-03T16:39:06.005Z",
   "documents": [
     {
       "path": "genesis/tokens.md",
@@ -37,15 +37,6 @@
         "note"
       ],
       "modified_at": "2026-01-02T19:45:16.037Z"
-    },
-    {
-      "path": "客户管理-理想版.md",
-      "title": "客户管理-理想版",
-      "document_type": "unknown",
-      "block_count": 0,
-      "anchors": [],
-      "types": [],
-      "modified_at": "2026-01-03T05:57:17.376Z"
     },
     {
       "path": "用户列表.md",
@@ -4114,7 +4105,7 @@
         "directory_index",
         "client"
       ],
-      "modified_at": "2026-01-03T12:28:54.472Z"
+      "modified_at": "2026-01-03T16:39:05.988Z"
     }
   ],
   "directories": [
@@ -4140,10 +4131,10 @@
     }
   ],
   "stats": {
-    "total_documents": 285,
+    "total_documents": 284,
     "total_blocks": 696,
     "total_anchors": 696
   },
-  "repo_head": "2a02d17f6ad1647f61d262e44f74a8278262deff",
+  "repo_head": "34cfcff8aa7081312b65beebc5e2554245749931",
   "stale": true
 }

@@ -14,6 +14,7 @@ import labelsRouter from './api/labels.js';
 import autoCompleteRouter from './api/auto-complete.js';
 import displayConfigRouter from './api/display-config.js';
 import dataTemplatesRouter from './api/data-templates.js';
+import filesRouter from './api/files.js';
 import { config, validateConfig, ensureDirectories } from './config.js';
 import { optionalAuth } from './middleware/permission.js';
 
@@ -84,6 +85,8 @@ app.use('/api/documents', autoCompleteRouter);
 app.use('/api/display-config', displayConfigRouter);
 // Phase 3.8: 数据模板
 app.use('/api/data-templates', dataTemplatesRouter);
+// Phase 3.9: 文件管理
+app.use('/api/files', filesRouter);
 
 app.listen(config.port, () => {
   console.log(`ATLAS Runtime listening on port ${config.port}`);
