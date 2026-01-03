@@ -54,6 +54,8 @@ interface BlockItemProps {
     documentComponents?: Record<string, DocumentComponentDefinition>;
     /** 注入模板组件到文档的回调 */
     onInjectComponents?: (components: Record<string, TemplateComponent>) => void;
+    /** 块失焦回调（用于防抖优化） */
+    onBlur?: () => void;
 }
 
 export function BlockItem({
@@ -67,6 +69,7 @@ export function BlockItem({
     onSyncDataStructure,
     documentComponents = {},
     onInjectComponents,
+    onBlur,
 }: BlockItemProps) {
     const [showTypeMenu, setShowTypeMenu] = useState(false);
     const [showTemplateSelector, setShowTemplateSelector] = useState(false);
@@ -286,6 +289,7 @@ export function BlockItem({
 
     return (
         <div
+            id={`block-${block.id}`}
             ref={setNodeRef}
             style={style}
             className={`group relative flex items-start transition-all duration-150 rounded-lg
@@ -295,6 +299,7 @@ export function BlockItem({
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onClick={onSelect}
+            onBlur={onBlur}
         >
             {/* 左侧操作区 - Notion 风格：+ 和手柄横排 */}
             <div className={`flex items-center pt-1.5 pr-1 transition-opacity duration-150 

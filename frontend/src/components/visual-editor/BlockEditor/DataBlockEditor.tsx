@@ -17,7 +17,7 @@ import { SaveTemplateDialog } from './SaveTemplateDialog';
 import { FieldSettingsDialog } from './FieldSettingsDialog';
 import { StatusOptionsDialog, DEFAULT_STATUS_OPTIONS, type StatusOption } from './StatusOptionsDialog';
 import { IdConfigDialog, DEFAULT_ID_CONFIG, type IdConfig } from './IdConfigDialog';
-import { ComponentControl } from './ComponentControls';
+import { ComponentControl, FallbackControl } from './ComponentControls';
 import { FIXED_FIELD_KEYS } from './types';
 import { cn } from '@/lib/utils';
 import type { DocumentComponentDefinition } from '../ComponentPanel/types';
@@ -607,6 +607,7 @@ export function DataBlockEditor({
                                 />
                             </div>
                         ) : boundComponent ? (
+                            // 组件存在，渲染组件控件
                             <div className="flex-1">
                                 <ComponentControl
                                     component={boundComponent}
@@ -614,7 +615,17 @@ export function DataBlockEditor({
                                     onChange={(newValue) => updateFieldValue(index, newValue)}
                                 />
                             </div>
+                        ) : boundComponentId ? (
+                            // 绑定存在但组件定义不存在 - 失效态降级 (Iron Rule 3)
+                            <div className="flex-1">
+                                <FallbackControl
+                                    componentId={boundComponentId}
+                                    value={field.value}
+                                    onChange={(newValue) => updateFieldValue(index, newValue)}
+                                />
+                            </div>
                         ) : (
+                            // 无绑定，普通输入框
                             <input
                                 type="text"
                                 value={String(field.value)}

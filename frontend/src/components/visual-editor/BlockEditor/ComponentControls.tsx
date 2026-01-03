@@ -13,6 +13,7 @@ import {
     Star,
     X,
     Calendar,
+    AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type {
@@ -494,6 +495,72 @@ function DateControl({
 
 // ============================================================
 // 主组件 - 根据类型渲染对应控件
+// ============================================================
+
+// ============================================================
+// 失效态降级控件 (Iron Rule 3)
+// ============================================================
+
+interface FallbackControlProps {
+    /** 组件 ID（用于显示） */
+    componentId: string;
+    /** 当前值 */
+    value: unknown;
+    /** 值变化回调 */
+    onChange: (value: unknown) => void;
+}
+
+/**
+ * 组件不可用时的降级渲染
+ * 
+ * 根据 Iron Rule 3：任何插件组件在插件不存在时必须仍能渲染。
+ * 显示警告信息、原始数据和手动输入框。
+ */
+export function FallbackControl({
+    componentId,
+    value,
+    onChange,
+}: FallbackControlProps) {
+    const displayValue = typeof value === 'object' 
+        ? JSON.stringify(value, null, 2) 
+        : String(value ?? '');
+
+    return (
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-center gap-2 text-amber-700 mb-2">
+                <AlertTriangle size={16} />
+                <span className="font-medium text-sm">组件不可用</span>
+            </div>
+            <div className="text-xs text-amber-600 mb-2">
+                组件 ID: <code className="bg-amber-100 px-1 rounded">{componentId}</code>
+            </div>
+            {typeof value === 'object' && value !== null && (
+                <div className="text-xs bg-white p-2 rounded border border-amber-200 font-mono overflow-auto max-h-24 mb-2">
+                    {displayValue}
+                </div>
+            )}
+            <div className="flex gap-2">
+                <input
+                    type="text"
+                    value={typeof value === 'object' ? '' : String(value ?? '')}
+                    onChange={(e) => onChange(e.target.value)}
+                    className={cn(
+                        'flex-1 text-xs px-2 py-1 border border-amber-200 rounded',
+                        'focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400',
+                        'placeholder:text-amber-400'
+                    )}
+                    placeholder="手动输入值..."
+                />
+            </div>
+            <p className="text-[10px] text-amber-500 mt-2">
+                该字段绑定的组件未找到，可能已被删除或来自未导入的模板。
+            </p>
+        </div>
+    );
+}
+
+// ============================================================
+// 组件控件主入口
 // ============================================================
 
 export interface ComponentControlProps {

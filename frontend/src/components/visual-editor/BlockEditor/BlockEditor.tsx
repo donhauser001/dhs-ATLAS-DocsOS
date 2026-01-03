@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect, useCallback, forwardRef, useImperativeHandle, useRef } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 import {
     DndContext,
     closestCenter,
@@ -40,6 +41,10 @@ export interface BlockEditorRef {
     getContent: () => string;
     setContent: (content: string) => void;
     focus: () => void;
+    /** 获取当前选中的块 ID（用于视口同步） */
+    getSelectedBlockId: () => string | null;
+    /** 立即同步内容（跳过防抖） */
+    flushContent: () => void;
 }
 
 export interface BlockEditorProps {
@@ -83,19 +88,6 @@ export const BlockEditor = forwardRef<BlockEditorRef, BlockEditorProps>(function
         }
     }, [value]);
 
-    useImperativeHandle(ref, () => ({
-        getContent: () => blocksToMarkdown(blocks),
-        setContent: (content: string) => {
-            const parsedBlocks = parseMarkdownToBlocks(content);
-            setBlocks(parsedBlocks.length > 0 ? parsedBlocks : [createEmptyBlock()]);
-        },
-        focus: () => {
-            if (blocks.length > 0) {
-                setSelectedBlockId(blocks[0].id);
-            }
-        },
-    }), [blocks]);
-
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -107,10 +99,42 @@ export const BlockEditor = forwardRef<BlockEditorRef, BlockEditorProps>(function
         content: '',
     }), []);
 
+    // 防抖序列化：延迟 300ms 后再触发 onChange
+    // 提升大文档时的输入性能
+    const debouncedSerialize = useDebouncedCallback((newBlocks: Block[]) => {
+        onChange(blocksToMarkdown(newBlocks));
+    }, 300);
+
+    // 立即同步（用于保存前或块失焦时）
+    const flushSerialize = useCallback(() => {
+        debouncedSerialize.flush();
+    }, [debouncedSerialize]);
+
     const updateBlocks = useCallback((newBlocks: Block[]) => {
         setBlocks(newBlocks);
-        onChange(blocksToMarkdown(newBlocks));
-    }, [onChange]);
+        debouncedSerialize(newBlocks);
+    }, [debouncedSerialize]);
+
+    // 块失焦时立即同步
+    const handleBlockBlur = useCallback(() => {
+        flushSerialize();
+    }, [flushSerialize]);
+
+    // 暴露给父组件的方法
+    useImperativeHandle(ref, () => ({
+        getContent: () => blocksToMarkdown(blocks),
+        setContent: (content: string) => {
+            const parsedBlocks = parseMarkdownToBlocks(content);
+            setBlocks(parsedBlocks.length > 0 ? parsedBlocks : [createEmptyBlock()]);
+        },
+        focus: () => {
+            if (blocks.length > 0) {
+                setSelectedBlockId(blocks[0].id);
+            }
+        },
+        getSelectedBlockId: () => selectedBlockId,
+        flushContent: flushSerialize,
+    }), [blocks, selectedBlockId, flushSerialize]);
 
     const handleDragStart = (event: DragStartEvent) => {
         setActiveId(String(event.active.id));
@@ -319,6 +343,7 @@ export const BlockEditor = forwardRef<BlockEditorRef, BlockEditorProps>(function
                                 onSyncDataStructure={handleSyncDataStructure}
                                 documentComponents={documentComponents}
                                 onInjectComponents={onInjectComponents}
+                                onBlur={handleBlockBlur}
                             />
                         ))}
                     </div>

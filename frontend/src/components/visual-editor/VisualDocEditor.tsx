@@ -26,6 +26,7 @@ import {
     Variable,
     PanelLeftClose,
     PanelLeft,
+    Clock,
 } from 'lucide-react';
 import yaml from 'js-yaml';
 
@@ -36,7 +37,7 @@ import { ComponentPanel, type DocumentComponentDefinition } from './ComponentPan
 import { CodeMirrorEditor, type CodeMirrorEditorRef } from '@/components/editor/smart-editor/CodeMirrorEditor';
 import { PropertyViewNode, setPropertyViewContext } from './RichTextEditor/extensions/PropertyView';
 import { createSlashCommandExtension, defaultCommands, type CommandItem } from './RichTextEditor/extensions/SlashCommand';
-import { useProperties } from './hooks';
+import { useProperties, useCommitBuffer } from './hooks';
 import { cn } from '@/lib/utils';
 
 // 创建 lowlight 实例
@@ -81,6 +82,23 @@ export function VisualDocEditor({
     const [isDirty, setIsDirty] = useState(false);
     const [_showPropertySelector, setShowPropertySelector] = useState(false); // 保留：用于富文本编辑器的属性选择器
     const [showComponentPanel, setShowComponentPanel] = useState(true);
+    
+    // 视口同步：记录最后选中的块 ID，用于模式切换时恢复位置
+    const [lastBlockId, setLastBlockId] = useState<string | null>(null);
+
+    // Commit Buffer：批量收集变更，显式提交
+    // 注意：addChange 将在子组件中通过 context 或 props 使用
+    const {
+        pendingChanges,
+        addChange: _addChange, // 保留供未来使用
+        commitAll,
+        discardAll,
+        hasPendingChanges,
+        pendingCount,
+    } = useCommitBuffer();
+    
+    // 暴露 pendingChanges 供调试（未来移除）
+    void pendingChanges;
 
     // 文档组件状态（从 frontmatter._components 读取）
     // 注意：字段-组件绑定现在存储在每个数据块内部（_bindings），不再是文档级
@@ -117,6 +135,37 @@ export function VisualDocEditor({
         });
         setIsDirty(true);
     }, []);
+
+    // 视口同步：模式切换处理
+    const handleViewModeChange = useCallback((newMode: ViewMode) => {
+        // 切换前：保存当前选中的块 ID（如果在编辑模式）
+        if (viewMode === 'edit' && blockEditorRef.current) {
+            const currentId = blockEditorRef.current.getSelectedBlockId?.();
+            if (currentId) {
+                setLastBlockId(currentId);
+            }
+            // 确保内容已同步
+            blockEditorRef.current.flushContent?.();
+        }
+        setViewMode(newMode);
+    }, [viewMode]);
+
+    // 视口同步：切回编辑模式时恢复滚动位置
+    useEffect(() => {
+        if (viewMode === 'edit' && lastBlockId) {
+            // 延迟执行，等待 DOM 渲染完成
+            const timer = setTimeout(() => {
+                const element = document.getElementById(`block-${lastBlockId}`);
+                if (element) {
+                    element.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [viewMode, lastBlockId]);
 
     // 处理文档组件变化
     // 简化设计：选项值就是显示名，无需同步
@@ -323,7 +372,7 @@ export function VisualDocEditor({
                         <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
                             <button
                                 type="button"
-                                onClick={() => setViewMode('read')}
+                                onClick={() => handleViewModeChange('read')}
                                 className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors
                          ${viewMode === 'read'
                                         ? 'bg-white text-slate-800 shadow-sm'
@@ -334,7 +383,7 @@ export function VisualDocEditor({
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setViewMode('edit')}
+                                onClick={() => handleViewModeChange('edit')}
                                 className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors
                          ${viewMode === 'edit'
                                         ? 'bg-white text-slate-800 shadow-sm'
@@ -345,7 +394,7 @@ export function VisualDocEditor({
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setViewMode('source')}
+                                onClick={() => handleViewModeChange('source')}
                                 className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors
                          ${viewMode === 'source'
                                         ? 'bg-white text-slate-800 shadow-sm'
@@ -371,7 +420,7 @@ export function VisualDocEditor({
                                         if (onCancel) {
                                             onCancel();
                                         } else {
-                                            setViewMode('read');
+                                            handleViewModeChange('read');
                                         }
                                     }}
                                     className="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-900 
@@ -505,6 +554,30 @@ export function VisualDocEditor({
                         <span className="text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
                             未保存
                         </span>
+                    )}
+                    
+                    {/* Commit Buffer 待提交变更显示 */}
+                    {hasPendingChanges && (
+                        <div className="flex items-center gap-2 ml-2 px-2 py-1 bg-amber-50 border border-amber-200 rounded">
+                            <Clock size={12} className="text-amber-600" />
+                            <span className="text-amber-700">
+                                {pendingCount} 项待提交变更
+                            </span>
+                            <button
+                                type="button"
+                                onClick={commitAll}
+                                className="text-xs text-amber-700 hover:text-amber-900 underline"
+                            >
+                                提交
+                            </button>
+                            <button
+                                type="button"
+                                onClick={discardAll}
+                                className="text-xs text-amber-500 hover:text-amber-700 underline"
+                            >
+                                放弃
+                            </button>
+                        </div>
                     )}
                 </div>
                 <div className="flex items-center gap-3">
