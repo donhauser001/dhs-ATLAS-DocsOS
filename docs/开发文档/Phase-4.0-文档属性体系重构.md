@@ -1730,33 +1730,90 @@ const inferNarrativeWeight = (diff: DocumentDiff): NarrativeWeight => {
 
 ### 10.2 传记官 AI（Biographer AI）
 
-一个专门负责"旁观与记录"的 AI 角色。
+一个拥有独立身份的**数字员工**，专门负责"旁观与记录"。
 
-#### Profile 定义
+#### 完整 Profile 定义
 
 ```yaml
 ---
-title: "传记官 AI"
+# === 身份信息 ===
+title: "传记官"
+author: system
 document_type: system.ai_profile
+
+# === 四维属性 ===
 atlas:
-  function: biographer
+  essence:
+    category: system
+    type: agent                    # 本质：系统代理
+  function:
+    primary: biographer.chronicler # 功能：传记撰写
+  display:
+    mode: profile.agent            # 显现：AI 员工卡片
   capabilities:
-    - git_log_read        # 读取 Git 历史
-    - narrative_generate  # 生成叙事文本
-    - timeline_build      # 构建时间线
-    
+    - git.log_reader               # 读取 Git 历史
+    - adl.diff_analyzer            # 解析 ADL 变更
+    - content.writer               # 撰写内容
+    - web.publisher                # 发布到网站
+
+# === 认知沙箱（权限边界）===
+sandbox:
+  read:
+    - "/**"                        # 全库读取权限（获取素材）
+  write:
+    - "/facts/stories/**"          # 只能写入故事目录
+    - "/pages/stories/**"          # 只能写入故事页面
+  deny:
+    - "/system/secrets/**"         # 禁止访问机密
+
+# === 性格配置 ===
+personality:
+  style: "entrepreneurial"         # entrepreneurial | historian | journalist
+  tone: "inspiring"                # inspiring | neutral | dramatic
+  perspective: "first_person_plural" # we/our (第一人称复数)
+  
+# === 调度配置 ===
 schedule:
-  daily: "23:59"          # 每日总结
-  weekly: "Sunday 20:00"  # 周报生成
-  monthly: "1st 10:00"    # 月度回顾
+  daily_briefing: "08:00"          # 每日简报
+  weekly_story: "Friday 18:00"     # 周故事
+  monthly_chronicle: "1st 10:00"   # 月度编年史
+  
+# === 输出配置 ===
+output:
+  story_path: "/pages/stories/"
+  briefing_path: "/facts/briefings/"
+  auto_publish: true               # 自动发布到官网
+  publish_channel: "纪实频道"
 ---
 
-## 职责
-- 不参与业务操作
-- 定期扫描 Git Log
-- 解析 ADL 文档 Diff
-- 将数据变动翻译成叙事文本
+## 职责说明
+
+我是这个组织的**数字史官**。
+
+我不参与任何业务操作，我的唯一使命是：
+- 旁观每一次文档变更
+- 捕捉每一个关键决策
+- 将冰冷的数据翻译成有温度的故事
+
+## 我看到的不是代码
+
+- 不是 `git commit -m "update"`
+- 而是："这周，我们通过 Proposal 雇佣了一位新的财务 AI"
+
+## 我的叙事原则
+
+1. **真实**：每一句话都有 Git SHA 作为证据
+2. **有温度**：凌晨两点的提交，是决策者的坚守
+3. **可追溯**：读者可以点击任何事件，穿越到那一刻
 ```
+
+#### 性格风格对照
+
+| 风格 | 描述 | 示例输出 |
+|------|------|----------|
+| `entrepreneurial` | 激进的创业家风格 | "这一周，我们打了一场漂亮的仗！" |
+| `historian` | 严谨的史官风格 | "本周共处理订单 23 笔，环比增长 15%。" |
+| `journalist` | 新闻记者风格 | "深夜两点，一个紧急提案悄然发起..." |
 
 #### 核心能力
 
@@ -1766,8 +1823,171 @@ schedule:
 | **情感弧光提取** | 分析操作时间（深夜/周末）、频率变化，推断决策压力 |
 | **角色群像** | 追踪 AI 员工和人类用户的 Commit 模式，描绘角色画像 |
 | **跨文档透射** | 传记中引用原始文档快照、附件、讨论记录 |
+| **自动配图** | 引用本周新上传的图片作为故事插图 |
 
-### 10.3 日志周报生成器（入门级实现）
+### 10.3 语义事件钩子
+
+在 ADL 执行成功后，向传记官模块发送语义事件。
+
+#### 事件定义
+
+```typescript
+// backend/src/events/narrative-events.ts
+
+interface NarrativeEvent {
+  timestamp: string;
+  actor: string;              // 执行者（用户/AI）
+  action: 'create' | 'update' | 'delete' | 'transition';
+  target: {
+    path: string;             // 文档路径
+    type: string;             // 文档类型
+    title: string;            // 文档标题
+  };
+  semantic: {
+    weight: 'high' | 'medium' | 'low' | 'noise';
+    tags: string[];           // ['milestone', 'first_order', 'late_night']
+    context?: string;         // 额外上下文
+  };
+  diff?: {
+    fields: string[];         // 变更的字段
+    summary: string;          // 变更摘要
+  };
+  git: {
+    commitSha: string;
+    branch: string;
+  };
+}
+```
+
+#### 钩子集成
+
+```typescript
+// backend/src/adl/executor.ts
+
+import { emitNarrativeEvent } from '../events/narrative-events.js';
+
+async function executeProposal(proposal: ADLProposal): Promise<ExecutionResult> {
+  // ... 执行 Proposal 逻辑 ...
+  
+  // 执行成功后，发送语义事件
+  await emitNarrativeEvent({
+    timestamp: new Date().toISOString(),
+    actor: proposal.author,
+    action: proposal.operation,
+    target: {
+      path: proposal.targetPath,
+      type: proposal.documentType,
+      title: proposal.title,
+    },
+    semantic: {
+      weight: inferNarrativeWeight(proposal),
+      tags: extractNarrativeTags(proposal),
+    },
+    git: {
+      commitSha: result.commitSha,
+      branch: 'main',
+    },
+  });
+  
+  return result;
+}
+```
+
+#### 传记官订阅
+
+```typescript
+// backend/src/agents/biographer/subscriber.ts
+
+import { subscribeNarrativeEvents } from '../../events/narrative-events.js';
+
+// 传记官订阅所有语义事件
+subscribeNarrativeEvents(async (event) => {
+  // 过滤低权重事件
+  if (event.semantic.weight === 'noise') return;
+  
+  // 存入今日素材池
+  await appendToDailyPool(event);
+  
+  // 如果是高权重事件，立即记录
+  if (event.semantic.weight === 'high') {
+    await logMilestone(event);
+  }
+});
+```
+
+### 10.4 自动发布流程
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  语义事件    │────▶│  素材池     │────▶│  传记官 AI  │
+│  (实时)     │     │  (累积)     │     │  (定时)     │
+└─────────────┘     └─────────────┘     └──────┬──────┘
+                                               │
+                    生成 Markdown              │
+                                               ▼
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  官网同步    │◀────│  页面系统    │◀────│ /pages/     │
+│  (自动)     │     │  (Phase 4.1) │     │ stories/    │
+└─────────────┘     └─────────────┘     └─────────────┘
+```
+
+#### 输出示例
+
+```markdown
+---
+title: "2026年第1周：从零到一的起点"
+author: 传记官
+created: 2026-01-07T18:00:00Z
+document_type: content.story
+show_in_nav: true
+nav_section: "纪实频道"
+---
+
+# 2026年第1周：从零到一的起点
+
+> 本文由传记官 AI 自动生成，基于 47 次文档变更。
+
+## 本周概览
+
+这一周，我们迈出了数字化转型的第一步。
+
+| 指标 | 数值 | 环比 |
+|------|------|------|
+| 新增客户 | 8 位 | - |
+| 处理订单 | 23 单 | - |
+| 完成任务 | 45 项 | - |
+
+## 关键时刻
+
+### 1月3日 · 首个大客户签约
+
+> 📌 **证据链**: [查看原始合同](/facts/contracts/C-2026-001.md) | [Git Commit](git:abc123)
+
+下午 3 点 42 分，一份期待已久的合同终于落地。这不仅仅是一笔交易，
+更是市场对我们产品的第一次正式认可。
+
+### 1月5日 · 深夜的战略调整
+
+> ⏰ 时间戳: 02:17 AM
+
+凌晨两点，创始人仍在系统前。一个紧急的价格调整提案被发起，
+这个决策后来被证明是本周最关键的转折点。
+
+## 团队群像
+
+- **销售助理 AI**: 本周最活跃，发起 120 次客户跟进
+- **财务助理 AI**: 默默完成 8 笔对账，0 误差
+
+## 下周展望
+
+3 个任务即将到期，2 位客户等待跟进。战斗还在继续。
+
+---
+
+*本故事基于 Git 版本库自动生成，每一句话都有据可查。*
+```
+
+### 10.5 日志周报生成器（MVP 实现）
 
 作为传记官的"缩小版"，可在第一个样板间中内置。
 
@@ -1820,7 +2040,7 @@ triggers:
 ---
 ```
 
-### 10.4 可交互数字博物馆
+### 10.6 可交互数字博物馆
 
 传记不只是文字，而是**可交互的数字博物馆**。
 
@@ -1850,17 +2070,38 @@ triggers:
 | 对比视图 | 展示"之前 vs 之后"的变化 |
 | 人物卡片 | 点击人名/AI名，展示其在该时期的活动统计 |
 
-### 10.5 开发路线（Phase 6.x 预留）
+### 10.7 开发路线（Phase 6.x 预留）
 
-| 阶段 | 内容 | 依赖 |
-|------|------|------|
-| 6.1 | 叙事权重元数据定义 | Phase 4.0 属性体系 |
-| 6.2 | Git Log 解析引擎 | - |
-| 6.3 | 周报生成器 AI | Phase 3.3 AI Profile |
-| 6.4 | 时间线可视化组件 | Phase 4.2 投射引擎 |
-| 6.5 | 传记官 AI 完整版 | 6.1-6.4 |
-| 6.6 | 时间穿越视图 | Git 快照恢复 |
-| 6.7 | 可交互数字博物馆 | 6.1-6.6 |
+| 阶段 | 内容 | 依赖 | 说明 |
+|------|------|------|------|
+| 6.1 | 叙事权重元数据 | Phase 4.0 属性体系 | `narrative_weight` 字段 |
+| 6.2 | 语义事件钩子 | ADL Executor | 变更 → 事件发射 |
+| 6.3 | Git Log 解析引擎 | - | Diff 语义化解析 |
+| **6.4** | **每日简报生成器** | 6.1-6.3 | **MVP，可先行实现** |
+| 6.5 | 周故事生成器 | 6.4 | 传记官基础版 |
+| 6.6 | 传记官 Profile | Phase 3.3 AI Profile | 完整 AI 员工身份 |
+| 6.7 | 自动发布流程 | Phase 4.1 页面系统 | 故事 → 官网同步 |
+| 6.8 | 时间线可视化 | Phase 4.2 投射引擎 | 事件时间轴组件 |
+| 6.9 | 时间穿越视图 | Git 快照恢复 | 点击日期 → 穿越 |
+| 6.10 | 可交互数字博物馆 | 6.1-6.9 | 终极形态 |
+
+#### 建议实现顺序
+
+```
+Phase 4.0 完成后立即可做:
+├─ 6.1 叙事权重元数据（1天）
+├─ 6.2 语义事件钩子（2天）
+└─ 6.4 每日简报生成器（3天）← 第一个样板间的杀手功能
+
+Phase 4.1-4.2 完成后:
+├─ 6.5 周故事生成器
+├─ 6.7 自动发布流程
+└─ 6.8 时间线可视化
+
+长期目标:
+├─ 6.9 时间穿越视图
+└─ 6.10 可交互数字博物馆
+```
 
 ---
 
