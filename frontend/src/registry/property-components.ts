@@ -17,9 +17,9 @@ const componentRegistry = new Map<string, PropertyComponent>();
 // === 初始化内置组件 ===
 
 function initBuiltinComponents() {
-  builtinComponents.forEach(component => {
-    componentRegistry.set(component.id, component);
-  });
+    builtinComponents.forEach(component => {
+        componentRegistry.set(component.id, component);
+    });
 }
 
 // 立即初始化
@@ -33,16 +33,16 @@ initBuiltinComponents();
  * @throws 如果组件 ID 已存在且非内置组件
  */
 export function registerComponent(component: PropertyComponent): void {
-  const existingComponent = componentRegistry.get(component.id);
-  
-  // 如果是内置组件，不允许覆盖
-  if (existingComponent && builtinComponents.some(c => c.id === component.id)) {
-    console.warn(`[PropertyRegistry] Cannot override builtin component: ${component.id}`);
-    return;
-  }
-  
-  componentRegistry.set(component.id, component);
-  console.log(`[PropertyRegistry] Registered component: ${component.id} v${component.version}`);
+    const existingComponent = componentRegistry.get(component.id);
+
+    // 如果是内置组件，不允许覆盖
+    if (existingComponent && builtinComponents.some(c => c.id === component.id)) {
+        console.warn(`[PropertyRegistry] Cannot override builtin component: ${component.id}`);
+        return;
+    }
+
+    componentRegistry.set(component.id, component);
+    console.log(`[PropertyRegistry] Registered component: ${component.id} v${component.version}`);
 }
 
 /**
@@ -51,17 +51,17 @@ export function registerComponent(component: PropertyComponent): void {
  * @returns 是否成功注销
  */
 export function unregisterComponent(id: string): boolean {
-  // 不允许注销内置组件
-  if (builtinComponents.some(c => c.id === id)) {
-    console.warn(`[PropertyRegistry] Cannot unregister builtin component: ${id}`);
-    return false;
-  }
-  
-  const result = componentRegistry.delete(id);
-  if (result) {
-    console.log(`[PropertyRegistry] Unregistered component: ${id}`);
-  }
-  return result;
+    // 不允许注销内置组件
+    if (builtinComponents.some(c => c.id === id)) {
+        console.warn(`[PropertyRegistry] Cannot unregister builtin component: ${id}`);
+        return false;
+    }
+
+    const result = componentRegistry.delete(id);
+    if (result) {
+        console.log(`[PropertyRegistry] Unregistered component: ${id}`);
+    }
+    return result;
 }
 
 /**
@@ -70,7 +70,7 @@ export function unregisterComponent(id: string): boolean {
  * @returns 组件定义，如果不存在则返回 null
  */
 export function getComponent(id: PropertyComponentType): PropertyComponent | null {
-  return componentRegistry.get(id) || null;
+    return componentRegistry.get(id) || null;
 }
 
 /**
@@ -78,30 +78,30 @@ export function getComponent(id: PropertyComponentType): PropertyComponent | nul
  * @param id 组件 ID
  */
 export function hasComponent(id: string): boolean {
-  return componentRegistry.has(id);
+    return componentRegistry.has(id);
 }
 
 /**
  * 获取所有已注册的组件
  */
 export function getAllComponents(): PropertyComponent[] {
-  return Array.from(componentRegistry.values());
+    return Array.from(componentRegistry.values());
 }
 
 /**
  * 获取所有内置组件
  */
 export function getBuiltinComponents(): PropertyComponent[] {
-  return builtinComponents;
+    return builtinComponents;
 }
 
 /**
  * 获取所有插件组件
  */
 export function getPluginComponents(): PropertyComponent[] {
-  return Array.from(componentRegistry.values()).filter(
-    c => !builtinComponents.some(b => b.id === c.id)
-  );
+    return Array.from(componentRegistry.values()).filter(
+        c => !builtinComponents.some(b => b.id === c.id)
+    );
 }
 
 // === 失效态渲染 ===
@@ -111,25 +111,25 @@ export function getPluginComponents(): PropertyComponent[] {
  * 当组件不存在时使用
  */
 export function createFallbackComponent(
-  componentId: string,
-  lastValue: unknown,
-  lastConfig: unknown
+    componentId: string,
+    lastValue: unknown,
+    lastConfig: unknown
 ): React.ReactNode {
-  return React.createElement(
-    'div',
-    {
-      className: 'inline-flex items-center gap-2 px-3 py-2 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-sm'
-    },
-    React.createElement(AlertTriangle, { size: 16 }),
-    React.createElement('div', { className: 'flex flex-col' },
-      React.createElement('span', { className: 'font-medium' }, `组件不可用: ${componentId}`),
-      lastValue !== undefined && React.createElement(
-        'span', 
-        { className: 'text-xs text-amber-600' }, 
-        `最后值: ${typeof lastValue === 'object' ? JSON.stringify(lastValue) : String(lastValue)}`
-      )
-    )
-  );
+    return React.createElement(
+        'div',
+        {
+            className: 'inline-flex items-center gap-2 px-3 py-2 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-sm'
+        },
+        React.createElement(AlertTriangle, { size: 16 }),
+        React.createElement('div', { className: 'flex flex-col' },
+            React.createElement('span', { className: 'font-medium' }, `组件不可用: ${componentId}`),
+            lastValue !== undefined && React.createElement(
+                'span',
+                { className: 'text-xs text-amber-600' },
+                `最后值: ${typeof lastValue === 'object' ? JSON.stringify(lastValue) : String(lastValue)}`
+            )
+        )
+    );
 }
 
 /**
@@ -137,34 +137,34 @@ export function createFallbackComponent(
  * 如果组件不存在，渲染 fallback
  */
 export function safeRenderComponent(
-  componentId: PropertyComponentType,
-  mode: 'editor' | 'view' | 'inline',
-  value: unknown,
-  config: PropertyComponentConfig,
-  onChange?: (value: unknown) => void,
-  context?: { disabled?: boolean; readonly?: boolean }
+    componentId: PropertyComponentType,
+    mode: 'editor' | 'view' | 'inline',
+    value: unknown,
+    config: PropertyComponentConfig,
+    onChange?: (value: unknown) => void,
+    context?: { disabled?: boolean; readonly?: boolean }
 ): React.ReactNode {
-  const component = getComponent(componentId);
-  
-  if (!component) {
-    return createFallbackComponent(componentId, value, config);
-  }
-  
-  try {
-    switch (mode) {
-      case 'editor':
-        return component.renderEditor(value, config, onChange || (() => {}), context);
-      case 'view':
-        return component.renderView(value, config, context);
-      case 'inline':
-        return component.renderInline(value, config);
-      default:
-        return component.renderView(value, config, context);
+    const component = getComponent(componentId);
+
+    if (!component) {
+        return createFallbackComponent(componentId, value, config);
     }
-  } catch (error) {
-    console.error(`[PropertyRegistry] Error rendering component ${componentId}:`, error);
-    return component.renderFallback(value, config);
-  }
+
+    try {
+        switch (mode) {
+            case 'editor':
+                return component.renderEditor(value, config, onChange || (() => { }), context);
+            case 'view':
+                return component.renderView(value, config, context);
+            case 'inline':
+                return component.renderInline(value, config);
+            default:
+                return component.renderView(value, config, context);
+        }
+    } catch (error) {
+        console.error(`[PropertyRegistry] Error rendering component ${componentId}:`, error);
+        return component.renderFallback(value, config);
+    }
 }
 
 // === 组件元数据 ===
@@ -173,56 +173,56 @@ export function safeRenderComponent(
  * 组件分类信息
  */
 export interface ComponentCategory {
-  id: string;
-  name: string;
-  icon: string;
-  components: PropertyComponent[];
+    id: string;
+    name: string;
+    icon: string;
+    components: PropertyComponent[];
 }
 
 /**
  * 获取分类后的组件列表
  */
 export function getCategorizedComponents(): ComponentCategory[] {
-  const allComponents = getAllComponents();
-  
-  return [
-    {
-      id: 'basic',
-      name: '基础',
-      icon: 'type',
-      components: allComponents.filter(c => ['text', 'textarea', 'number'].includes(c.id)),
-    },
-    {
-      id: 'selection',
-      name: '选择',
-      icon: 'list',
-      components: allComponents.filter(c => ['select', 'multi-select', 'checkbox'].includes(c.id)),
-    },
-    {
-      id: 'rating',
-      name: '评分',
-      icon: 'star',
-      components: allComponents.filter(c => ['rating'].includes(c.id)),
-    },
-    {
-      id: 'datetime',
-      name: '日期时间',
-      icon: 'calendar',
-      components: allComponents.filter(c => ['date', 'datetime'].includes(c.id)),
-    },
-    {
-      id: 'advanced',
-      name: '高级',
-      icon: 'puzzle',
-      components: allComponents.filter(c => ['link', 'user', 'file', 'color', 'icon', 'formula'].includes(c.id)),
-    },
-    {
-      id: 'plugins',
-      name: '插件',
-      icon: 'plug',
-      components: getPluginComponents(),
-    },
-  ].filter(category => category.components.length > 0);
+    const allComponents = getAllComponents();
+
+    return [
+        {
+            id: 'basic',
+            name: '基础',
+            icon: 'type',
+            components: allComponents.filter(c => ['text', 'textarea', 'number'].includes(c.id)),
+        },
+        {
+            id: 'selection',
+            name: '选择',
+            icon: 'list',
+            components: allComponents.filter(c => ['select', 'multi-select', 'checkbox'].includes(c.id)),
+        },
+        {
+            id: 'rating',
+            name: '评分',
+            icon: 'star',
+            components: allComponents.filter(c => ['rating'].includes(c.id)),
+        },
+        {
+            id: 'datetime',
+            name: '日期时间',
+            icon: 'calendar',
+            components: allComponents.filter(c => ['date', 'datetime'].includes(c.id)),
+        },
+        {
+            id: 'advanced',
+            name: '高级',
+            icon: 'puzzle',
+            components: allComponents.filter(c => ['link', 'user', 'file', 'color', 'icon', 'formula'].includes(c.id)),
+        },
+        {
+            id: 'plugins',
+            name: '插件',
+            icon: 'plug',
+            components: getPluginComponents(),
+        },
+    ].filter(category => category.components.length > 0);
 }
 
 // === 导出类型 ===

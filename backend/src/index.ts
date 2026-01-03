@@ -37,6 +37,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(express.text({ type: 'text/plain' }));
 
 // Session 配置
 app.use(session({

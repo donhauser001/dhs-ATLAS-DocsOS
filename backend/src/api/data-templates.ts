@@ -16,12 +16,12 @@ const router = Router();
  * GET /api/data-templates
  */
 router.get('/', (_req: Request, res: Response, next: NextFunction) => {
-  try {
-    const config = templateService.getTemplateConfig();
-    res.json({ success: true, data: config });
-  } catch (error) {
-    next(error);
-  }
+    try {
+        const config = templateService.getTemplateConfig();
+        res.json({ success: true, data: config });
+    } catch (error) {
+        next(error);
+    }
 });
 
 /**
@@ -29,12 +29,12 @@ router.get('/', (_req: Request, res: Response, next: NextFunction) => {
  * GET /api/data-templates/all
  */
 router.get('/all', (_req: Request, res: Response, next: NextFunction) => {
-  try {
-    const templates = templateService.getAllTemplates();
-    res.json({ success: true, data: templates });
-  } catch (error) {
-    next(error);
-  }
+    try {
+        const templates = templateService.getAllTemplates();
+        res.json({ success: true, data: templates });
+    } catch (error) {
+        next(error);
+    }
 });
 
 /**
@@ -42,15 +42,15 @@ router.get('/all', (_req: Request, res: Response, next: NextFunction) => {
  * GET /api/data-templates/template/:id
  */
 router.get('/template/:id', (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const template = templateService.getTemplate(req.params.id);
-    if (!template) {
-      return res.status(404).json({ success: false, error: 'Template not found' });
+    try {
+        const template = templateService.getTemplate(req.params.id);
+        if (!template) {
+            return res.status(404).json({ success: false, error: 'Template not found' });
+        }
+        res.json({ success: true, data: template });
+    } catch (error) {
+        next(error);
     }
-    res.json({ success: true, data: template });
-  } catch (error) {
-    next(error);
-  }
 });
 
 /**
@@ -58,12 +58,25 @@ router.get('/template/:id', (req: Request, res: Response, next: NextFunction) =>
  * GET /api/data-templates/template/:id/yaml
  */
 router.get('/template/:id/yaml', (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const yaml = templateService.generateYamlFromTemplate(req.params.id);
-    res.json({ success: true, data: yaml });
-  } catch (error) {
-    next(error);
-  }
+    try {
+        const yaml = templateService.generateYamlFromTemplate(req.params.id);
+        res.json({ success: true, data: yaml });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * 从模板生成数据块（返回 YAML 和组件）
+ * GET /api/data-templates/template/:id/generate
+ */
+router.get('/template/:id/generate', (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const result = templateService.generateFromTemplate(req.params.id);
+        res.json({ success: true, data: result });
+    } catch (error) {
+        next(error);
+    }
 });
 
 // ============================================================
@@ -75,18 +88,18 @@ router.get('/template/:id/yaml', (req: Request, res: Response, next: NextFunctio
  * POST /api/data-templates/categories
  */
 router.post('/categories', (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { id, name, description } = req.body;
+    try {
+        const { id, name, description } = req.body;
 
-    if (!id || !name) {
-      return res.status(400).json({ success: false, error: 'id and name are required' });
+        if (!id || !name) {
+            return res.status(400).json({ success: false, error: 'id and name are required' });
+        }
+
+        const category = templateService.addCategory(id, name, description);
+        res.json({ success: true, data: category });
+    } catch (error) {
+        next(error);
     }
-
-    const category = templateService.addCategory(id, name, description);
-    res.json({ success: true, data: category });
-  } catch (error) {
-    next(error);
-  }
 });
 
 /**
@@ -94,13 +107,13 @@ router.post('/categories', (req: Request, res: Response, next: NextFunction) => 
  * PUT /api/data-templates/categories/:id
  */
 router.put('/categories/:id', (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { name, description } = req.body;
-    const category = templateService.updateCategory(req.params.id, name, description);
-    res.json({ success: true, data: category });
-  } catch (error) {
-    next(error);
-  }
+    try {
+        const { name, description } = req.body;
+        const category = templateService.updateCategory(req.params.id, name, description);
+        res.json({ success: true, data: category });
+    } catch (error) {
+        next(error);
+    }
 });
 
 /**
@@ -108,12 +121,12 @@ router.put('/categories/:id', (req: Request, res: Response, next: NextFunction) 
  * DELETE /api/data-templates/categories/:id
  */
 router.delete('/categories/:id', (req: Request, res: Response, next: NextFunction) => {
-  try {
-    templateService.deleteCategory(req.params.id);
-    res.json({ success: true });
-  } catch (error) {
-    next(error);
-  }
+    try {
+        templateService.deleteCategory(req.params.id);
+        res.json({ success: true });
+    } catch (error) {
+        next(error);
+    }
 });
 
 // ============================================================
@@ -125,27 +138,27 @@ router.delete('/categories/:id', (req: Request, res: Response, next: NextFunctio
  * POST /api/data-templates/templates/:categoryId
  */
 router.post('/templates/:categoryId', (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { id, name, description, dataType, fields } = req.body;
+    try {
+        const { id, name, description, dataType, fields } = req.body;
 
-    if (!id || !name || !dataType || !fields) {
-      return res.status(400).json({
-        success: false,
-        error: 'id, name, dataType, and fields are required',
-      });
+        if (!id || !name || !dataType || !fields) {
+            return res.status(400).json({
+                success: false,
+                error: 'id, name, dataType, and fields are required',
+            });
+        }
+
+        const template = templateService.addTemplate(req.params.categoryId, {
+            id,
+            name,
+            description,
+            dataType,
+            fields,
+        });
+        res.json({ success: true, data: template });
+    } catch (error) {
+        next(error);
     }
-
-    const template = templateService.addTemplate(req.params.categoryId, {
-      id,
-      name,
-      description,
-      dataType,
-      fields,
-    });
-    res.json({ success: true, data: template });
-  } catch (error) {
-    next(error);
-  }
 });
 
 /**
@@ -153,28 +166,32 @@ router.post('/templates/:categoryId', (req: Request, res: Response, next: NextFu
  * POST /api/data-templates/from-data
  */
 router.post('/from-data', (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { categoryId, templateId, name, description, dataType, fieldKeys } = req.body;
+    try {
+        const { categoryId, templateId, name, description, dataType, fieldKeys, bindings, components, statusOptions, idConfig } = req.body;
 
-    if (!categoryId || !templateId || !name || !dataType || !fieldKeys) {
-      return res.status(400).json({
-        success: false,
-        error: 'categoryId, templateId, name, dataType, and fieldKeys are required',
-      });
+        if (!categoryId || !templateId || !name || !dataType || !fieldKeys) {
+            return res.status(400).json({
+                success: false,
+                error: 'categoryId, templateId, name, dataType, and fieldKeys are required',
+            });
+        }
+
+        const template = templateService.createTemplateFromData({
+            categoryId,
+            templateId,
+            name,
+            description: description || '',
+            dataType,
+            fieldKeys,
+            bindings,
+            components,
+            statusOptions,
+            idConfig,
+        });
+        res.json({ success: true, data: template });
+    } catch (error) {
+        next(error);
     }
-
-    const template = templateService.createTemplateFromData(
-      categoryId,
-      templateId,
-      name,
-      description || '',
-      dataType,
-      fieldKeys
-    );
-    res.json({ success: true, data: template });
-  } catch (error) {
-    next(error);
-  }
 });
 
 /**
@@ -182,18 +199,18 @@ router.post('/from-data', (req: Request, res: Response, next: NextFunction) => {
  * PUT /api/data-templates/templates/:id
  */
 router.put('/templates/:id', (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { name, description, dataType, fields } = req.body;
-    const template = templateService.updateTemplate(req.params.id, {
-      name,
-      description,
-      dataType,
-      fields,
-    });
-    res.json({ success: true, data: template });
-  } catch (error) {
-    next(error);
-  }
+    try {
+        const { name, description, dataType, fields } = req.body;
+        const template = templateService.updateTemplate(req.params.id, {
+            name,
+            description,
+            dataType,
+            fields,
+        });
+        res.json({ success: true, data: template });
+    } catch (error) {
+        next(error);
+    }
 });
 
 /**
@@ -201,12 +218,12 @@ router.put('/templates/:id', (req: Request, res: Response, next: NextFunction) =
  * DELETE /api/data-templates/templates/:id
  */
 router.delete('/templates/:id', (req: Request, res: Response, next: NextFunction) => {
-  try {
-    templateService.deleteTemplate(req.params.id);
-    res.json({ success: true });
-  } catch (error) {
-    next(error);
-  }
+    try {
+        templateService.deleteTemplate(req.params.id);
+        res.json({ success: true });
+    } catch (error) {
+        next(error);
+    }
 });
 
 export default router;

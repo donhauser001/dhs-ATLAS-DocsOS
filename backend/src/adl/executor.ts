@@ -43,14 +43,14 @@ export async function executeProposal(proposal: Proposal): Promise<ExecuteResult
       error: `Document not found in registry: ${proposal.target_file}`,
     };
   }
-  
+
   if (!handle.exists) {
     return {
       success: false,
       error: `Document does not exist: ${proposal.target_file}`,
     };
   }
-  
+
   // Phase 2: 获取安全的绝对路径
   const targetPath = getSafeAbsolutePath(proposal.target_file);
   if (!targetPath) {
@@ -59,7 +59,7 @@ export async function executeProposal(proposal: Proposal): Promise<ExecuteResult
       error: `Unsafe path rejected by Registry: ${proposal.target_file}`,
     };
   }
-  
+
   // 先校验（使用安全路径）
   const validation = validateProposal(proposal);
   if (!validation.valid) {
@@ -68,42 +68,42 @@ export async function executeProposal(proposal: Proposal): Promise<ExecuteResult
       error: `Validation failed: ${validation.errors.map(e => e.message).join('; ')}`,
     };
   }
-  
+
   const backupPath = `${targetPath}.backup-${Date.now()}`;
   const tempPath = `${targetPath}.tmp-${Date.now()}`;
-  
+
   let backupCreated = false;
-  
+
   try {
     // 1. 读取原文档并创建备份
     const originalContent = readFileSync(targetPath, 'utf-8');
     copyFileSync(targetPath, backupPath);
     backupCreated = true;
-    
+
     // 2. 应用所有操作，生成新内容
     let newContent = originalContent;
     for (const op of proposal.ops) {
       newContent = applyOperation(newContent, op);
     }
-    
+
     // 3. 先写到临时文件
     writeFileSync(tempPath, newContent, 'utf-8');
-    
+
     // 4. 替换原文件
     copyFileSync(tempPath, targetPath);
-    
+
     // 5. Git commit（使用 config.repositoryRoot）
     const git: SimpleGit = simpleGit(config.repositoryRoot);
-    
+
     await git.add(proposal.target_file);
-    
+
     const commitMessage = `[ADL] ${proposal.id}: ${getCommitMessage(proposal)}`;
     const commitResult = await git.commit(commitMessage);
-    
+
     // 6. 成功后清理临时文件和备份
     cleanupFile(tempPath);
     cleanupFile(backupPath);
-    
+
     return {
       success: true,
       commit_hash: commitResult.commit,
@@ -118,11 +118,11 @@ export async function executeProposal(proposal: Proposal): Promise<ExecuteResult
         console.error('[Executor] Failed to rollback:', rollbackError);
       }
     }
-    
+
     // 清理临时文件
     cleanupFile(tempPath);
     cleanupFile(backupPath);
-    
+
     return {
       success: false,
       error: String(error),
@@ -170,35 +170,35 @@ function applyUpdateYaml(content: string, op: Extract<Operation, { op: 'update_y
   const lines = content.split('\n');
   const doc = parseADL(content);
   const block = findBlockByAnchor(doc, op.anchor);
-  
+
   if (!block) {
     return content;
   }
-  
+
   // 找到这个 block 的 YAML 区域
   const { yamlStart, yamlEnd } = findYamlBlockRange(lines, block.startLine - 1);
-  
+
   if (yamlStart === -1 || yamlEnd === -1) {
     return content;
   }
-  
+
   // 解析当前 YAML
   const yamlContent = lines.slice(yamlStart + 1, yamlEnd).join('\n');
   const machine = yaml.load(yamlContent) as Record<string, unknown>;
-  
+
   // 更新值
   setNestedValue(machine, op.path, op.value);
-  
+
   // 生成新的 YAML（使用统一配置）
   const newYaml = yaml.dump(machine, config.yamlDumpOptions).trim();
-  
+
   // 替换原 YAML 内容
   const newLines = [
     ...lines.slice(0, yamlStart + 1),
     newYaml,
     ...lines.slice(yamlEnd),
   ];
-  
+
   return newLines.join('\n');
 }
 
@@ -209,11 +209,11 @@ function applyInsertBlock(content: string, op: Extract<Operation, { op: 'insert_
   const lines = content.split('\n');
   const doc = parseADL(content);
   const afterBlock = findBlockByAnchor(doc, op.after);
-  
+
   if (!afterBlock) {
     return content;
   }
-  
+
   // 生成新 block 内容
   const newBlockLines = [
     '',
@@ -227,7 +227,7 @@ function applyInsertBlock(content: string, op: Extract<Operation, { op: 'insert_
     '',
     op.block.body,
   ];
-  
+
   // 在 afterBlock 结束后插入
   const insertLine = afterBlock.endLine;
   const newLines = [
@@ -235,7 +235,7 @@ function applyInsertBlock(content: string, op: Extract<Operation, { op: 'insert_
     ...newBlockLines,
     ...lines.slice(insertLine),
   ];
-  
+
   return newLines.join('\n');
 }
 
@@ -253,7 +253,7 @@ function applyAppendEvent(content: string, op: Extract<Operation, { op: 'append_
       body: '',
     },
   };
-  
+
   return applyInsertBlock(content, insertOp);
 }
 
@@ -264,21 +264,21 @@ function applyUpdateBody(content: string, op: Extract<Operation, { op: 'update_b
   const lines = content.split('\n');
   const doc = parseADL(content);
   const block = findBlockByAnchor(doc, op.anchor);
-  
+
   if (!block) {
     return content;
   }
-  
+
   // 找到 YAML 块结束位置
   const { yamlEnd } = findYamlBlockRange(lines, block.startLine - 1);
-  
+
   if (yamlEnd === -1) {
     return content;
   }
-  
+
   // 找到下一个 block 或文档结尾
   const nextBlockStart = findNextBlockStart(lines, yamlEnd + 1);
-  
+
   // 替换 body 内容
   const newLines = [
     ...lines.slice(0, yamlEnd + 1),
@@ -287,7 +287,7 @@ function applyUpdateBody(content: string, op: Extract<Operation, { op: 'update_b
     '',
     ...lines.slice(nextBlockStart),
   ];
-  
+
   return newLines.join('\n');
 }
 
@@ -297,23 +297,23 @@ function applyUpdateBody(content: string, op: Extract<Operation, { op: 'update_b
 function findYamlBlockRange(lines: string[], blockStartLine: number): { yamlStart: number; yamlEnd: number } {
   let yamlStart = -1;
   let yamlEnd = -1;
-  
+
   for (let i = blockStartLine; i < lines.length; i++) {
     const line = lines[i]?.trim() || '';
-    
+
     if (line === '```yaml' && yamlStart === -1) {
       yamlStart = i;
     } else if (line === '```' && yamlStart !== -1 && yamlEnd === -1) {
       yamlEnd = i;
       break;
     }
-    
+
     // 遇到下一个 heading 就停止
     if (i > blockStartLine && /^#{1,6}\s+/.test(line)) {
       break;
     }
   }
-  
+
   return { yamlStart, yamlEnd };
 }
 
@@ -322,13 +322,13 @@ function findYamlBlockRange(lines: string[], blockStartLine: number): { yamlStar
  */
 function findNextBlockStart(lines: string[], startLine: number): number {
   const headingRegex = /^#{1,6}\s+.+\{#[a-zA-Z0-9_-]+\}\s*$/;
-  
+
   for (let i = startLine; i < lines.length; i++) {
     if (headingRegex.test(lines[i] || '')) {
       return i;
     }
   }
-  
+
   return lines.length;
 }
 
@@ -338,10 +338,10 @@ function findNextBlockStart(lines: string[], startLine: number): number {
 function setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
   const parts = path.split('.');
   let current = obj;
-  
+
   for (let i = 0; i < parts.length - 1; i++) {
     const part = parts[i];
-    
+
     // 处理数组索引
     const arrayMatch = part.match(/^(\w+)\[(\d+)\]$/);
     if (arrayMatch) {
@@ -361,9 +361,9 @@ function setNestedValue(obj: Record<string, unknown>, path: string, value: unkno
       current = current[part] as Record<string, unknown>;
     }
   }
-  
+
   const lastPart = parts[parts.length - 1];
-  
+
   // 处理最后一个部分的数组索引
   const arrayMatch = lastPart.match(/^(\w+)\[(\d+)\]$/);
   if (arrayMatch) {
@@ -395,7 +395,7 @@ function getCommitMessage(proposal: Proposal): string {
         return 'unknown operation';
     }
   }).join(', ');
-  
+
   return opSummary;
 }
 
@@ -412,7 +412,7 @@ import type { ADLDocument, AtlasFrontmatter } from './types.js';
  */
 export function serializeADL(doc: ADLDocument): string {
   const lines: string[] = [];
-  
+
   // 1. 序列化 Frontmatter
   if (doc.frontmatter && Object.keys(doc.frontmatter).length > 0) {
     lines.push('---');
@@ -420,24 +420,24 @@ export function serializeADL(doc: ADLDocument): string {
     lines.push('---');
     lines.push('');
   }
-  
+
   // 2. 序列化每个 Block
   for (let i = 0; i < doc.blocks.length; i++) {
     const block = doc.blocks[i];
-    
+
     // 添加 Block 分隔符（第一个 Block 除外）
     if (i > 0) {
       lines.push('');
       lines.push('---');
       lines.push('');
     }
-    
+
     // Heading - 重建完整的 Markdown 标题格式
     const hashes = '#'.repeat(block.level || 1);
     const heading = `${hashes} ${block.heading} {#${block.anchor}}`;
     lines.push(heading);
     lines.push('');
-    
+
     // Machine Zone (YAML)
     if (block.machine && Object.keys(block.machine).length > 0) {
       lines.push('```yaml');
@@ -445,13 +445,13 @@ export function serializeADL(doc: ADLDocument): string {
       lines.push('```');
       lines.push('');
     }
-    
+
     // Human Zone (Body)
     if (block.body && block.body.trim()) {
       lines.push(block.body.trim());
       lines.push('');
     }
   }
-  
+
   return lines.join('\n');
 }

@@ -76,7 +76,7 @@ export function SmartDocEditor({
   // 检测缺失字段
   useEffect(() => {
     if (!documentPath) return;
-    
+
     getMissingFields(documentPath)
       .then(result => {
         setMissingFields(result.missingFields || []);
@@ -104,11 +104,11 @@ export function SmartDocEditor({
     if (!document || isSaving) return;
     setIsSaving(true);
     setAutoCompleteMessage(null);
-    
+
     try {
       const fullContent = buildFrontmatter() + '\n' + documentContent;
       await onSave(fullContent);
-      
+
       try {
         const result = await applyAutoComplete(documentPath);
         if (result.changes && result.changes.length > 0) {
@@ -118,7 +118,7 @@ export function SmartDocEditor({
       } catch (autoCompleteError) {
         console.warn('Auto-complete failed:', autoCompleteError);
       }
-      
+
       setIsDirty(false);
       setMissingFields([]);
       clearDraft();
@@ -132,7 +132,7 @@ export function SmartDocEditor({
   // 一键补齐处理
   const handleAutoComplete = useCallback(async () => {
     if (!documentPath) return;
-    
+
     try {
       const result = await applyAutoComplete(documentPath);
       if (result.changes && result.changes.length > 0) {
@@ -193,7 +193,7 @@ export function SmartDocEditor({
 
     const draftKey = `atlas-draft-${documentPath}`;
     const draftContent = buildFrontmatter() + '\n' + documentContent;
-    
+
     const timer = setTimeout(() => {
       try {
         localStorage.setItem(draftKey, JSON.stringify({
@@ -274,8 +274,8 @@ export function SmartDocEditor({
             disabled={!isDirty || isSaving}
             className={cn(
               'px-4 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5',
-              isDirty 
-                ? 'bg-violet-600 text-white hover:bg-violet-700' 
+              isDirty
+                ? 'bg-violet-600 text-white hover:bg-violet-700'
                 : 'bg-slate-100 text-slate-400 cursor-not-allowed'
             )}
           >
@@ -353,10 +353,10 @@ export function SmartDocEditor({
 
           {/* 正文编辑区 */}
           <div className="mt-6">
-            <ContentEditor 
-              content={documentContent} 
-              onChange={handleContentChange} 
-              onSave={handleSave} 
+            <ContentEditor
+              content={documentContent}
+              onChange={handleContentChange}
+              onSave={handleSave}
             />
           </div>
         </div>
@@ -620,12 +620,12 @@ function ObsidianPropertyRow({
       <div className="flex items-center justify-center w-8 pt-0.5">
         {icon}
       </div>
-      
+
       {/* 标签 */}
       <div className="w-24 shrink-0 pt-0.5">
         <span className="text-sm text-slate-500">{label}</span>
       </div>
-      
+
       {/* 值 */}
       <div className="flex-1 min-w-0">
         {renderValueEditor()}
@@ -641,9 +641,9 @@ interface TagsEditorProps {
 }
 
 function TagsEditor({ value, onChange }: TagsEditorProps) {
-  const tags = Array.isArray(value) 
-    ? value 
-    : typeof value === 'string' 
+  const tags = Array.isArray(value)
+    ? value
+    : typeof value === 'string'
       ? value.split(',').map(s => s.trim()).filter(Boolean)
       : [];
 

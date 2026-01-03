@@ -94,18 +94,18 @@ export function EntityListRenderer({
     // 从文档 blocks 提取实体数据
     const extractEntitiesFromBlocks = (): FunctionEntry[] => {
         const blockEntities: FunctionEntry[] = [];
-        
+
         for (const block of document.blocks) {
             // 跳过没有 machine 数据的 blocks
             if (!block.machine || typeof block.machine !== 'object') continue;
-            
+
             // 跳过 directory_index 类型的 blocks
             if (block.machine.type === 'directory_index' || block.machine.type === 'entity_index') continue;
-            
+
             // 检查是否有 type 字段
             const blockType = block.machine.type as string | undefined;
             if (!blockType) continue;
-            
+
             // 构建实体数据
             const entity: FunctionEntry = {
                 path: `${document.path}#${block.anchor}`,
@@ -119,10 +119,10 @@ export function EntityListRenderer({
                 },
                 entity_type: blockType,
             };
-            
+
             blockEntities.push(entity);
         }
-        
+
         return blockEntities;
     };
 
@@ -200,7 +200,7 @@ export function EntityListRenderer({
         } else {
             blockRef = entity.path;
         }
-        
+
         setSelectedEntityRef(blockRef);
         setSelectedEntityTitle(entity.title);
         setDrawerOpen(true);

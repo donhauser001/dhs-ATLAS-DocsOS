@@ -42,7 +42,7 @@ export function DocumentPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeAnchor, setActiveAnchor] = useState<string | undefined>();
-  
+
   // 视图模式状态（用于特殊功能文档）
   const [viewMode, setViewMode] = useState<ViewMode>('read');
 
