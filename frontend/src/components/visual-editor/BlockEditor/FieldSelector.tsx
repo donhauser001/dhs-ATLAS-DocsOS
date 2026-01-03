@@ -231,7 +231,7 @@ export function FieldSelector({ existingKeys, onSelect, onClose }: FieldSelector
             {totalAvailable} 个可用字段
           </span>
           <a
-            href="/settings"
+            href="/settings/labels"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-[11px] text-purple-500 hover:text-purple-600"

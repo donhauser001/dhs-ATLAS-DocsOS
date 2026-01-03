@@ -2,12 +2,14 @@
  * SettingsPage - 系统设置页面
  * 
  * 提供系统配置的入口：
- * - 标签管理
- * - （未来扩展）
+ * - 标签管理 (/settings/labels)
+ * - 数据模板 (/settings/data-templates)
+ * 
+ * 支持 URL 定位，可通过 URL 直接访问特定设置板块
  */
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ArrowLeft, Tag, Database } from 'lucide-react';
@@ -48,9 +50,27 @@ const MENU_ITEMS: MenuItem[] = [
 // ============================================================
 
 export function SettingsPage() {
-  const [activeItem, setActiveItem] = useState(MENU_ITEMS[0].id);
+  const { section } = useParams<{ section?: string }>();
+  const navigate = useNavigate();
+
+  // 获取当前激活的板块（从 URL 参数或默认第一个）
+  const activeItem = section && MENU_ITEMS.find(item => item.id === section)
+    ? section
+    : MENU_ITEMS[0].id;
+
+  // 如果 URL 没有 section 参数，重定向到默认板块
+  useEffect(() => {
+    if (!section) {
+      navigate(`/settings/${MENU_ITEMS[0].id}`, { replace: true });
+    }
+  }, [section, navigate]);
 
   const currentItem = MENU_ITEMS.find(item => item.id === activeItem);
+
+  // 切换板块时更新 URL
+  const handleSectionChange = (itemId: string) => {
+    navigate(`/settings/${itemId}`);
+  };
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -64,6 +84,9 @@ export function SettingsPage() {
             </Button>
           </Link>
           <span className="font-semibold text-lg tracking-tight">系统设置</span>
+          {currentItem && (
+            <span className="text-sm text-muted-foreground">/ {currentItem.label}</span>
+          )}
         </div>
       </header>
 
@@ -77,10 +100,10 @@ export function SettingsPage() {
                 <button
                   key={item.id}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${activeItem === item.id
-                      ? 'bg-primary text-primary-foreground'
-                      : 'hover:bg-slate-100 text-slate-700'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-slate-100 text-slate-700'
                     }`}
-                  onClick={() => setActiveItem(item.id)}
+                  onClick={() => handleSectionChange(item.id)}
                 >
                   {item.icon}
                   <div>

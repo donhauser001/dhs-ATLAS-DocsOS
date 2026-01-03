@@ -264,7 +264,7 @@ export function TemplateSelector({ onSelect, onClose, onSelectBlank }: TemplateS
             {totalTemplates} 个可用模板
           </span>
           <a
-            href="/settings?tab=data-templates"
+            href="/settings/data-templates"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[11px] text-amber-500 hover:text-amber-600"

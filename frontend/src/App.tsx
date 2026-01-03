@@ -89,8 +89,13 @@ function App() {
             <Route path="/users" element={
               <Navigate to="/workspace/用户列表.md" replace />
             } />
-            {/* 系统设置 */}
+            {/* 系统设置 - 支持 URL 定位 */}
             <Route path="/settings" element={
+              <ProtectedRoute>
+                <SettingsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings/:section" element={
               <ProtectedRoute>
                 <SettingsPage />
               </ProtectedRoute>
