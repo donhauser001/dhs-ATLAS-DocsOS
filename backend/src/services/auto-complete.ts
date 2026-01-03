@@ -367,15 +367,8 @@ export function detectMissingFields(
     });
   }
   
-  if (doc.frontmatter?.updated === undefined) {
-    missing.push({
-      key: 'updated',
-      label: '更新时间',
-      suggestedValue: now,
-      reason: '当前时间',
-      category: 'metadata',
-    });
-  }
+  // 注意：updated 字段不作为缺失字段提示，因为会在保存时自动更新
+  // 用户无需手动补齐
   
   if (doc.frontmatter?.author === undefined && context.currentUser) {
     missing.push({

@@ -432,8 +432,10 @@ export function serializeADL(doc: ADLDocument): string {
       lines.push('');
     }
     
-    // Heading
-    lines.push(block.heading);
+    // Heading - 重建完整的 Markdown 标题格式
+    const hashes = '#'.repeat(block.level || 1);
+    const heading = `${hashes} ${block.heading} {#${block.anchor}}`;
+    lines.push(heading);
     lines.push('');
     
     // Machine Zone (YAML)
