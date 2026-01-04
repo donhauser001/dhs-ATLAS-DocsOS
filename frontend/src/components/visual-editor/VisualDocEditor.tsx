@@ -17,28 +17,71 @@ import Image from '@tiptap/extension-image';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
 import {
-    Save,
-    X,
     Eye,
     Edit3,
     Code,
-    Loader2,
     Variable,
     PanelLeftClose,
     PanelLeft,
     Clock,
+    X,
+    Loader2,
+    Save,
 } from 'lucide-react';
 import yaml from 'js-yaml';
 
 import { PropertiesPanel } from './PropertiesPanel';
-import { RichTextEditor, type RichTextEditorRef } from './RichTextEditor';
+// RichTextEditor 保留用于未来扩展
+// import { RichTextEditor, type RichTextEditorRef } from './RichTextEditor';
 import { BlockEditor, type BlockEditorRef } from './BlockEditor';
 import { ComponentPanel, type DocumentComponentDefinition } from './ComponentPanel';
 import { CodeMirrorEditor, type CodeMirrorEditorRef } from '@/components/editor/smart-editor/CodeMirrorEditor';
 import { PropertyViewNode, setPropertyViewContext } from './RichTextEditor/extensions/PropertyView';
 import { createSlashCommandExtension, defaultCommands, type CommandItem } from './RichTextEditor/extensions/SlashCommand';
+import { DisplayRenderer } from '@/components/display-renderers';
 import { useProperties, useCommitBuffer } from './hooks';
 import { cn } from '@/lib/utils';
+
+// ============================================================
+// 显现模式相关工具函数
+// ============================================================
+
+/**
+ * 获取 localStorage key（用于存储显现模式偏好）
+ */
+function getDisplayModeStorageKey(documentPath: string): string {
+    return `atlas-display-mode:${documentPath}`;
+}
+
+/**
+ * 从 frontmatter 获取可用的显现模式列表
+ */
+function getAvailableDisplayModes(frontmatter: Record<string, unknown>): string[] {
+    const atlas = (frontmatter.atlas as Record<string, unknown>) || {};
+    const rawDisplay = atlas.display;
+
+    if (Array.isArray(rawDisplay)) {
+        return rawDisplay.map(String);
+    } else if (typeof rawDisplay === 'string' && rawDisplay) {
+        return [rawDisplay];
+    }
+
+    // 默认使用单栏文章
+    return ['article.single'];
+}
+
+/**
+ * 获取初始显现模式（优先 localStorage，其次第一个可用模式）
+ */
+function getInitialDisplayMode(documentPath: string, availableModes: string[]): string {
+    if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem(getDisplayModeStorageKey(documentPath));
+        if (saved && availableModes.includes(saved)) {
+            return saved;
+        }
+    }
+    return availableModes[0] || 'article.single';
+}
 
 // 创建 lowlight 实例
 const lowlight = createLowlight(common);
@@ -70,7 +113,7 @@ export function VisualDocEditor({
     frontmatter: initialFrontmatter,
     bodyContent: initialBodyContent,
     onSave,
-    onCancel,
+    onCancel: _onCancel, // 保留 prop 供未来使用
     initialMode = 'edit',
     hideHeader = false,
 }: VisualDocEditorProps) {
@@ -82,6 +125,21 @@ export function VisualDocEditor({
     const [isDirty, setIsDirty] = useState(false);
     const [_showPropertySelector, setShowPropertySelector] = useState(false); // 保留：用于富文本编辑器的属性选择器
     const [showComponentPanel, setShowComponentPanel] = useState(true);
+
+    // 显现模式状态
+    const availableDisplayModes = useMemo(() => getAvailableDisplayModes(frontmatter), [frontmatter]);
+    const [displayMode, setDisplayMode] = useState<string>(() =>
+        getInitialDisplayMode(documentPath, availableDisplayModes)
+    );
+
+    // 显现模式变更处理
+    const handleDisplayModeChange = useCallback((mode: string) => {
+        // 保存到 localStorage
+        if (typeof window !== 'undefined') {
+            localStorage.setItem(getDisplayModeStorageKey(documentPath), mode);
+        }
+        setDisplayMode(mode);
+    }, [documentPath]);
 
 
     // Commit Buffer：批量收集变更，显式提交
@@ -105,7 +163,7 @@ export function VisualDocEditor({
     );
 
     // 引用
-    const richTextEditorRef = useRef<RichTextEditorRef>(null);
+    // const richTextEditorRef = useRef<RichTextEditorRef>(null); // 保留用于未来扩展
     const blockEditorRef = useRef<BlockEditorRef>(null);
     const codeEditorRef = useRef<CodeMirrorEditorRef>(null);
 
@@ -278,20 +336,20 @@ export function VisualDocEditor({
         const sortFrontmatterKeys = (fm: Record<string, unknown>): Record<string, unknown> => {
             const sorted: Record<string, unknown> = {};
             const keys = Object.keys(fm);
-            
+
             // 先按预定义顺序添加
             for (const key of FRONTMATTER_KEY_ORDER) {
                 if (key in fm) {
                     sorted[key] = fm[key];
                 }
             }
-            
+
             // 再添加其他键（按字母顺序）
             const remainingKeys = keys.filter(k => !FRONTMATTER_KEY_ORDER.includes(k)).sort();
             for (const key of remainingKeys) {
                 sorted[key] = fm[key];
             }
-            
+
             return sorted;
         };
 
@@ -438,50 +496,6 @@ export function VisualDocEditor({
                                 源码
                             </button>
                         </div>
-
-                        {/* 操作按钮 */}
-                        <div className="flex items-center gap-2 ml-4">
-                            {/* 取消按钮：有更改时显示，点击后丢弃更改并切换到阅读模式 */}
-                            {isDirty && (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        // 重置内容
-                                        setFrontmatter(initialFrontmatter);
-                                        setBodyContent(initialBodyContent);
-                                        setIsDirty(false);
-                                        // 如果有外部取消回调则调用，否则切换到阅读模式
-                                        if (onCancel) {
-                                            onCancel();
-                                        } else {
-                                            handleViewModeChange('read');
-                                        }
-                                    }}
-                                    className="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-900 
-                           hover:bg-slate-100 rounded-md transition-colors"
-                                >
-                                    <X size={16} className="inline mr-1" />
-                                    取消
-                                </button>
-                            )}
-                            <button
-                                type="button"
-                                onClick={handleSave}
-                                disabled={!isDirty || isSaving}
-                                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors 
-                         flex items-center gap-1.5
-                         ${isDirty
-                                        ? 'bg-purple-600 text-white hover:bg-purple-700'
-                                        : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
-                            >
-                                {isSaving ? (
-                                    <Loader2 size={16} className="animate-spin" />
-                                ) : (
-                                    <Save size={16} />
-                                )}
-                                {isSaving ? '保存中...' : '保存'}
-                            </button>
-                        </div>
                     </div>
                 </div>
             )}
@@ -495,6 +509,10 @@ export function VisualDocEditor({
                         setIsDirty(true);
                     }}
                     disabled={viewMode === 'read'}
+                    mode={viewMode === 'read' ? 'read' : 'edit'}
+                    documentPath={documentPath}
+                    displayMode={displayMode}
+                    onDisplayModeChange={handleDisplayModeChange}
                 />
             )}
 
@@ -512,16 +530,19 @@ export function VisualDocEditor({
 
                 {/* 内容区域 - 使用 CSS 隐藏实现缓存，避免重复渲染 */}
                 <div id="editor-scroll-container" className="flex-1 overflow-auto">
-                    {/* 阅读模式 - 只读渲染 */}
-                    <div
-                        className={cn("max-w-4xl mx-auto px-6 py-8", viewMode !== 'read' && "hidden")}
-                    >
-                        <RichTextEditor
-                            ref={richTextEditorRef}
-                            content={bodyContent}
-                            showToolbar={false}
-                            disabled={true}
-                            minHeight="auto"
+                    {/* 阅读模式 - 使用显现模式渲染器 */}
+                    <div className={cn(viewMode !== 'read' && "hidden")}>
+                        <DisplayRenderer
+                            displayMode={displayMode}
+                            documentPath={documentPath}
+                            title={docTitle}
+                            bodyContent={bodyContent}
+                            frontmatter={frontmatter}
+                            readonly={true}
+                            capabilities={(() => {
+                                const atlas = (frontmatter.atlas as Record<string, unknown>) || {};
+                                return Array.isArray(atlas.capabilities) ? atlas.capabilities as string[] : [];
+                            })()}
                         />
                     </div>
 

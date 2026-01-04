@@ -13,7 +13,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { WorkspaceLayout } from '@/components/layout/WorkspaceLayout';
 import { WorkspaceTree } from '@/components/workspace/WorkspaceTree';
-import { AnchorList } from '@/components/workspace/AnchorList';
+// Phase 4.0.2: 移除 AnchorList，使用双栏文章模式内置目录
+// import { AnchorList } from '@/components/workspace/AnchorList';
 import { VisualDocEditor, type ViewMode } from '@/components/visual-editor';
 import { RendererSelector } from '@/components/RendererSelector';
 import { fetchDocument, type ADLDocument } from '@/api/adl';
@@ -127,13 +128,14 @@ export function DocumentPage() {
 
   const sidebar = <WorkspaceTree tree={tree} />;
 
-  const anchors = doc ? (
-    <AnchorList
-      blocks={doc.blocks}
-      activeAnchor={activeAnchor}
-      onAnchorClick={handleAnchorClick}
-    />
-  ) : null;
+  // Phase 4.0.2: 移除右侧文档结构面板，改用双栏文章模式的内置目录
+  // const anchors = doc ? (
+  //   <AnchorList
+  //     blocks={doc.blocks}
+  //     activeAnchor={activeAnchor}
+  //     onAnchorClick={handleAnchorClick}
+  //   />
+  // ) : null;
 
   // 视图切换按钮组（用于特殊功能文档）
   function ViewModeToggle() {
@@ -287,7 +289,6 @@ export function DocumentPage() {
     <WorkspaceLayout
       sidebar={sidebar}
       content={content}
-      anchors={anchors}
     />
   );
 }

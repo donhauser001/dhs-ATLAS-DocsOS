@@ -1,8 +1,24 @@
 {
   "version": "1.0",
-  "generated_at": "2026-01-03T16:20:34.611Z",
-  "repo_head": "34cfcff8aa7081312b65beebc5e2554245749931",
+  "generated_at": "2026-01-04T06:06:42.838Z",
+  "repo_head": "8434642c8d333ea736f2a15a0343bac01e9633d4",
   "functions": {
+    "article": {
+      "documents": [
+        {
+          "path": "atlas-test-402.md",
+          "title": "ATLAS 4.0.2 测试文档",
+          "capabilities": [
+            "crud",
+            "export",
+            "share",
+            "comment"
+          ],
+          "indexed_fields": {}
+        }
+      ],
+      "count": 1
+    },
     "entity_list": {
       "documents": [
         {
@@ -10,7 +26,10 @@
           "id": "client-management",
           "title": "客户管理",
           "capabilities": [
-            "nav.sidebar"
+            "nav.sidebar",
+            "export",
+            "statistics",
+            "print"
           ],
           "indexed_fields": {
             "id": "client-management",
@@ -24,6 +43,17 @@
             "order": 20
           },
           "entity_type": "client"
+        },
+        {
+          "path": "测试-项目管理.md",
+          "title": "项目管理测试",
+          "capabilities": [
+            "crud",
+            "export",
+            "statistics",
+            "share"
+          ],
+          "indexed_fields": {}
         },
         {
           "path": "用户列表.md",
@@ -47,7 +77,7 @@
           "entity_type": "user"
         }
       ],
-      "count": 2
+      "count": 3
     },
     "principal": {
       "documents": [
@@ -6701,6 +6731,110 @@
         }
       ],
       "count": 277
+    },
+    "collection": {
+      "documents": [
+        {
+          "path": "视图测试/列表视图测试.md",
+          "title": "任务管理列表",
+          "capabilities": [
+            "crud",
+            "export",
+            "filter"
+          ],
+          "indexed_fields": {}
+        }
+      ],
+      "count": 1
+    },
+    "calendar": {
+      "documents": [
+        {
+          "path": "视图测试/日历视图测试.md",
+          "title": "团队日程安排",
+          "capabilities": [
+            "crud",
+            "export",
+            "share"
+          ],
+          "indexed_fields": {}
+        }
+      ],
+      "count": 1
+    },
+    "timeline": {
+      "documents": [
+        {
+          "path": "视图测试/时间线视图测试.md",
+          "title": "产品发展历程",
+          "capabilities": [
+            "export",
+            "share"
+          ],
+          "indexed_fields": {}
+        }
+      ],
+      "count": 1
+    },
+    "gallery": {
+      "documents": [
+        {
+          "path": "视图测试/画廊视图测试.md",
+          "title": "设计作品集",
+          "capabilities": [
+            "export",
+            "share",
+            "comment"
+          ],
+          "indexed_fields": {}
+        }
+      ],
+      "count": 1
+    },
+    "project": {
+      "documents": [
+        {
+          "path": "视图测试/看板视图测试.md",
+          "title": "项目看板",
+          "capabilities": [
+            "crud",
+            "export",
+            "filter"
+          ],
+          "indexed_fields": {}
+        }
+      ],
+      "count": 1
+    },
+    "structure": {
+      "documents": [
+        {
+          "path": "视图测试/结构视图测试.md",
+          "title": "产品功能架构",
+          "capabilities": [
+            "export",
+            "share"
+          ],
+          "indexed_fields": {}
+        }
+      ],
+      "count": 1
+    },
+    "entity_detail": {
+      "documents": [
+        {
+          "path": "视图测试/详情视图测试.md",
+          "title": "客户详情 - 腾讯科技",
+          "capabilities": [
+            "crud",
+            "export",
+            "share",
+            "comment"
+          ],
+          "indexed_fields": {}
+        }
+      ],
+      "count": 1
     }
   },
   "navigation": {

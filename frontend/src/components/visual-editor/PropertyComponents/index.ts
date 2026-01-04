@@ -12,6 +12,7 @@ export { DateComponent } from './DateComponent';
 export { CheckboxComponent } from './CheckboxComponent';
 export { NumberComponent } from './NumberComponent';
 export { TextareaComponent } from './TextareaComponent';
+export { TagsComponent } from './TagsComponent';
 
 // 组件列表（用于注册）
 import { TextComponent } from './TextComponent';
@@ -21,6 +22,7 @@ import { DateComponent } from './DateComponent';
 import { CheckboxComponent } from './CheckboxComponent';
 import { NumberComponent } from './NumberComponent';
 import { TextareaComponent } from './TextareaComponent';
+import { TagsComponent } from './TagsComponent';
 
 import type { PropertyComponent } from '@/types/property';
 
@@ -35,6 +37,7 @@ export const builtinComponents: PropertyComponent[] = [
   CheckboxComponent,
   RatingComponent,
   DateComponent,
+  TagsComponent,
 ];
 
 /**

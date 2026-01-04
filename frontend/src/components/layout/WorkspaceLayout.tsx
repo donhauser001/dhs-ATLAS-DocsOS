@@ -72,11 +72,25 @@ export function WorkspaceLayout({ sidebar, content, anchors }: WorkspaceLayoutPr
     <div className="h-screen flex flex-col bg-background">
       {/* Header */}
       <header className="h-14 border-b flex items-center justify-between px-4 flex-shrink-0">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <Link to="/" className="font-semibold text-lg tracking-tight">
             ATLAS
           </Link>
           <span className="text-muted-foreground text-sm">Workspace</span>
+
+          {/* 搜索框 */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSearchOpen(true)}
+            className="gap-2 ml-4"
+          >
+            <Search className="h-4 w-4" />
+            <span className="hidden sm:inline">搜索</span>
+            <kbd className="hidden sm:inline-flex items-center gap-1 rounded border bg-muted px-1.5 text-xs">
+              <span className="text-xs">⌘</span>K
+            </kbd>
+          </Button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -92,32 +106,6 @@ export function WorkspaceLayout({ sidebar, content, anchors }: WorkspaceLayoutPr
             <RefreshCw className={`h-4 w-4 ${isRebuilding ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">{isRebuilding ? '重建中...' : '重建索引'}</span>
           </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSearchOpen(true)}
-            className="gap-2"
-          >
-            <Search className="h-4 w-4" />
-            <span className="hidden sm:inline">搜索</span>
-            <kbd className="hidden sm:inline-flex items-center gap-1 rounded border bg-muted px-1.5 text-xs">
-              <span className="text-xs">⌘</span>K
-            </kbd>
-          </Button>
-
-          {/* 系统设置 */}
-          <Link to="/settings">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-2"
-              title="系统设置"
-            >
-              <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">设置</span>
-            </Button>
-          </Link>
 
           {user && (
             <div className="flex items-center gap-2 ml-2 pl-2 border-l">
@@ -154,6 +142,19 @@ export function WorkspaceLayout({ sidebar, content, anchors }: WorkspaceLayoutPr
           <ScrollArea className="flex-1">
             {sidebar}
           </ScrollArea>
+          {/* 底部设置按钮 */}
+          <div className="p-3 border-t">
+            <Link to="/settings" className="block">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+              >
+                <Settings className="h-4 w-4" />
+                <span>设置</span>
+              </Button>
+            </Link>
+          </div>
         </aside>
 
         {/* Content */}

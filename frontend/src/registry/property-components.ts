@@ -190,7 +190,7 @@ export function getCategorizedComponents(): ComponentCategory[] {
             id: 'basic',
             name: '基础',
             icon: 'type',
-            components: allComponents.filter(c => ['text', 'textarea', 'number'].includes(c.id)),
+            components: allComponents.filter(c => ['text', 'textarea', 'number', 'tags'].includes(c.id)),
         },
         {
             id: 'selection',

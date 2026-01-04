@@ -5,6 +5,14 @@
 // 主组件
 export { PropertiesPanel } from './PropertiesPanel';
 
+// 阅读模式组件
+export { DocumentInfoCard } from './DocumentInfoCard';
+export type { DocumentInfoCardProps } from './DocumentInfoCard';
+
+// 视图切换器
+export { ViewSwitcher, useViewPreference } from './ViewSwitcher';
+export type { ViewSwitcherProps } from './ViewSwitcher';
+
 // 子组件
 export { SortablePropertyRow } from './SortablePropertyRow';
 export { SortableCustomProperty } from './SortableCustomProperty';
@@ -15,6 +23,7 @@ export { AddPropertyDialog } from './AddPropertyDialog';
 // 类型
 export type {
     PropertiesPanelProps,
+    PropertiesPanelMode,
     SortablePropertyRowProps,
     SortableCustomPropertyProps,
     SystemPropertyConfig,
@@ -30,6 +39,7 @@ export {
     getColorClasses,
     getDefaultTagColor,
     formatDateDisplay,
+    formatRelativeTime,
     getComponentIcon,
     getLucideIcon,
 } from './utils';
