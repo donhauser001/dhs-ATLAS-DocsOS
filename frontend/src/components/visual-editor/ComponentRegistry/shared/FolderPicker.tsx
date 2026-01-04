@@ -5,7 +5,6 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { Folder, FolderOpen, ChevronRight, ChevronDown, X, Check, Loader2, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getFolderTree, createFolder } from '@/api/files';
@@ -133,8 +132,7 @@ export function FolderPicker({
     const [loading, setLoading] = useState(false);
     const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set(['/']));
     const [tempSelected, setTempSelected] = useState<string>(value || '/');
-    const triggerRef = useRef<HTMLButtonElement>(null);
-    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+    const containerRef = useRef<HTMLDivElement>(null);
 
     // 新建目录状态
     const [creatingIn, setCreatingIn] = useState<string | null>(null);
@@ -163,31 +161,25 @@ export function FolderPicker({
         }
     }, [isOpen, loadTree, value]);
 
-    // 计算下拉位置
-    useEffect(() => {
-        if (isOpen && triggerRef.current) {
-            const rect = triggerRef.current.getBoundingClientRect();
-            setDropdownPosition({
-                top: rect.bottom + 4,
-                left: rect.left,
-                width: Math.max(rect.width, 280),
-            });
-        }
-    }, [isOpen]);
-
     // 点击外部关闭
     useEffect(() => {
         if (!isOpen) return;
+        
         const handleClickOutside = (e: MouseEvent) => {
-            if (triggerRef.current && !triggerRef.current.contains(e.target as Node)) {
-                const dropdown = document.getElementById('folder-picker-dropdown');
-                if (dropdown && !dropdown.contains(e.target as Node)) {
-                    setIsOpen(false);
-                }
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setIsOpen(false);
             }
         };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        
+        // 延迟添加，避免立即触发
+        const timeoutId = setTimeout(() => {
+            document.addEventListener('click', handleClickOutside);
+        }, 0);
+        
+        return () => {
+            clearTimeout(timeoutId);
+            document.removeEventListener('click', handleClickOutside);
+        };
     }, [isOpen]);
 
     // 展开/折叠
@@ -260,9 +252,8 @@ export function FolderPicker({
     const displayText = value ? value : placeholder;
 
     return (
-        <>
+        <div ref={containerRef} className="relative">
             <button
-                ref={triggerRef}
                 type="button"
                 onClick={() => !disabled && setIsOpen(!isOpen)}
                 disabled={disabled}
@@ -288,122 +279,113 @@ export function FolderPicker({
                 )}
             </button>
 
-            {isOpen &&
-                createPortal(
-                    <div
-                        id="folder-picker-dropdown"
-                        className="fixed z-[200] bg-white rounded-lg shadow-xl border border-slate-200 overflow-hidden"
-                        style={{
-                            top: dropdownPosition.top,
-                            left: dropdownPosition.left,
-                            width: dropdownPosition.width,
-                        }}
-                    >
-                        {/* 头部 */}
-                        <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 bg-slate-50">
-                            <span className="text-xs font-medium text-slate-500">选择上传目录</span>
+            {isOpen && (
+                <div
+                    className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-slate-200 overflow-hidden z-50"
+                >
+                    {/* 头部 */}
+                    <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 bg-slate-50">
+                        <span className="text-xs font-medium text-slate-500">选择保存目录</span>
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className="p-0.5 hover:bg-slate-200 rounded"
+                        >
+                            <X size={14} className="text-slate-400" />
+                        </button>
+                    </div>
+
+                    {/* 目录树 */}
+                    <div className="max-h-64 overflow-auto p-2">
+                        {loading ? (
+                            <div className="flex items-center justify-center py-8">
+                                <Loader2 className="animate-spin text-slate-400" size={20} />
+                            </div>
+                        ) : tree ? (
+                            <>
+                                <TreeNode
+                                    node={tree}
+                                    level={0}
+                                    selectedPath={tempSelected}
+                                    expandedPaths={expandedPaths}
+                                    onSelect={setTempSelected}
+                                    onToggle={handleToggle}
+                                    onCreateFolder={handleStartCreate}
+                                />
+
+                                {/* 新建目录输入框 */}
+                                {creatingIn !== null && (
+                                    <div className="flex items-center gap-2 px-3 py-2 mt-1 mx-1 bg-purple-50 rounded-md border border-purple-200">
+                                        <Folder size={14} className="text-purple-400 flex-shrink-0" />
+                                        <input
+                                            type="text"
+                                            value={newFolderName}
+                                            onChange={(e) => setNewFolderName(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') handleConfirmCreate();
+                                                if (e.key === 'Escape') handleCancelCreate();
+                                            }}
+                                            placeholder="新文件夹名称"
+                                            className="flex-1 text-sm bg-transparent outline-none placeholder:text-purple-300"
+                                            autoFocus
+                                            disabled={creating}
+                                        />
+                                        {creating ? (
+                                            <Loader2 size={14} className="animate-spin text-purple-500" />
+                                        ) : (
+                                            <>
+                                                <button
+                                                    onClick={handleConfirmCreate}
+                                                    disabled={!newFolderName.trim()}
+                                                    className="text-xs text-purple-600 hover:text-purple-800 disabled:opacity-50"
+                                                >
+                                                    创建
+                                                </button>
+                                                <button
+                                                    onClick={handleCancelCreate}
+                                                    className="text-xs text-slate-400 hover:text-slate-600"
+                                                >
+                                                    取消
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="text-center text-slate-400 py-4 text-sm">
+                                加载失败
+                            </div>
+                        )}
+                    </div>
+
+                    {/* 底部 */}
+                    <div className="flex items-center justify-between px-3 py-2 border-t border-slate-100 bg-slate-50">
+                        <button
+                            onClick={() => handleStartCreate(tempSelected)}
+                            className="flex items-center gap-1 px-2 py-1 text-xs text-slate-600 hover:text-purple-600 hover:bg-purple-50 rounded transition-colors"
+                        >
+                            <Plus size={12} />
+                            新建目录
+                        </button>
+                        <div className="flex items-center gap-2">
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="p-0.5 hover:bg-slate-200 rounded"
+                                className="px-3 py-1 text-xs text-slate-600 hover:bg-slate-100 rounded"
                             >
-                                <X size={14} className="text-slate-400" />
+                                取消
                             </button>
-                        </div>
-
-                        {/* 目录树 */}
-                        <div className="max-h-64 overflow-auto p-2">
-                            {loading ? (
-                                <div className="flex items-center justify-center py-8">
-                                    <Loader2 className="animate-spin text-slate-400" size={20} />
-                                </div>
-                            ) : tree ? (
-                                <>
-                                    <TreeNode
-                                        node={tree}
-                                        level={0}
-                                        selectedPath={tempSelected}
-                                        expandedPaths={expandedPaths}
-                                        onSelect={setTempSelected}
-                                        onToggle={handleToggle}
-                                        onCreateFolder={handleStartCreate}
-                                    />
-
-                                    {/* 新建目录输入框 */}
-                                    {creatingIn !== null && (
-                                        <div className="flex items-center gap-2 px-3 py-2 mt-1 mx-1 bg-purple-50 rounded-md border border-purple-200">
-                                            <Folder size={14} className="text-purple-400 flex-shrink-0" />
-                                            <input
-                                                type="text"
-                                                value={newFolderName}
-                                                onChange={(e) => setNewFolderName(e.target.value)}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter') handleConfirmCreate();
-                                                    if (e.key === 'Escape') handleCancelCreate();
-                                                }}
-                                                placeholder="新文件夹名称"
-                                                className="flex-1 text-sm bg-transparent outline-none placeholder:text-purple-300"
-                                                autoFocus
-                                                disabled={creating}
-                                            />
-                                            {creating ? (
-                                                <Loader2 size={14} className="animate-spin text-purple-500" />
-                                            ) : (
-                                                <>
-                                                    <button
-                                                        onClick={handleConfirmCreate}
-                                                        disabled={!newFolderName.trim()}
-                                                        className="text-xs text-purple-600 hover:text-purple-800 disabled:opacity-50"
-                                                    >
-                                                        创建
-                                                    </button>
-                                                    <button
-                                                        onClick={handleCancelCreate}
-                                                        className="text-xs text-slate-400 hover:text-slate-600"
-                                                    >
-                                                        取消
-                                                    </button>
-                                                </>
-                                            )}
-                                        </div>
-                                    )}
-                                </>
-                            ) : (
-                                <div className="text-center text-slate-400 py-4 text-sm">
-                                    加载失败
-                                </div>
-                            )}
-                        </div>
-
-                        {/* 底部 */}
-                        <div className="flex items-center justify-between px-3 py-2 border-t border-slate-100 bg-slate-50">
                             <button
-                                onClick={() => handleStartCreate(tempSelected)}
-                                className="flex items-center gap-1 px-2 py-1 text-xs text-slate-600 hover:text-purple-600 hover:bg-purple-50 rounded transition-colors"
+                                onClick={handleConfirm}
+                                className="px-3 py-1 text-xs text-white bg-purple-600 hover:bg-purple-700 rounded"
                             >
-                                <Plus size={12} />
-                                新建目录
+                                确认
                             </button>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => setIsOpen(false)}
-                                    className="px-3 py-1 text-xs text-slate-600 hover:bg-slate-100 rounded"
-                                >
-                                    取消
-                                </button>
-                                <button
-                                    onClick={handleConfirm}
-                                    className="px-3 py-1 text-xs text-white bg-purple-600 hover:bg-purple-700 rounded"
-                                >
-                                    确认
-                                </button>
-                            </div>
                         </div>
-                    </div>,
-                    document.body
-                )}
-        </>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }
 
 export default FolderPicker;
-

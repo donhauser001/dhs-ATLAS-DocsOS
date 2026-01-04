@@ -178,7 +178,7 @@ export const BlockEditor = forwardRef<BlockEditorRef, BlockEditorProps>(function
         const currentBlock = newBlocks[index];
 
         // 如果转换为数据块且当前内容为空，使用默认模板
-        if (newType === 'yaml' && (!currentBlock.content || currentBlock.content.trim() === '')) {
+        if (newType === 'data' && (!currentBlock.content || currentBlock.content.trim() === '')) {
             newBlocks[index] = {
                 ...currentBlock,
                 type: newType,
@@ -192,7 +192,7 @@ export const BlockEditor = forwardRef<BlockEditorRef, BlockEditorProps>(function
     };
 
     // 同步数据块结构（纯前端操作）
-    // 找到当前文档中所有同类型的 YAML 数据块，统一字段结构、组件绑定、状态选项和编号配置
+    // 找到当前文档中所有同类型的 atlas-data 数据块，统一字段结构、组件绑定、状态选项和编号配置
     const handleSyncDataStructure = useCallback((dataType: string, fieldKeys: string[], sourceBindings?: Record<string, string>, sourceStatusOptions?: StatusOption[], sourceIdConfig?: IdConfig) => {
         let updatedCount = 0;
 
@@ -209,8 +209,8 @@ export const BlockEditor = forwardRef<BlockEditorRef, BlockEditorProps>(function
         let nextSequence = idConfig.startFrom;
 
         const newBlocks = currentBlocks.map((block) => {
-            // 只处理 YAML 块
-            if (block.type !== 'yaml') return block;
+            // 只处理数据块
+            if (block.type !== 'data') return block;
 
             try {
                 // 解析 YAML 内容
@@ -395,10 +395,10 @@ function renderReadOnlyBlock(block: Block): React.ReactNode {
                     </pre>
                 </div>
             );
-        case 'yaml':
+        case 'data':
             return (
                 <div className="px-3 py-2">
-                    <span className="text-[10px] font-medium text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">数据</span>
+                    <span className="text-[10px] font-medium text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded">atlas-data</span>
                     <pre className="mt-2 text-sm font-mono text-slate-600">{block.content}</pre>
                 </div>
             );

@@ -1,0 +1,63 @@
+# 能力配置
+# 定义该文档类型启用的能力
+
+default:
+  - editable
+  - searchable
+  - linkable
+  - exportable
+
+available:
+  # 基础操作类
+  - id: "editable"
+    name: "可编辑"
+    description: "允许编辑联系人信息"
+    requires_permission: "write"
+    
+  - id: "searchable"
+    name: "可搜索"
+    description: "可以被全局搜索找到"
+    requires_permission: "read"
+    
+  - id: "linkable"
+    name: "可链接"
+    description: "可以被其他文档引用"
+    requires_permission: "read"
+
+  # 数据操作类
+  - id: "exportable"
+    name: "可导出"
+    description: "导出为 vCard/CSV/Excel"
+    requires_permission: "read"
+    
+  - id: "importable"
+    name: "可导入"
+    description: "从外部文件导入联系人"
+    requires_permission: "write"
+
+  # 协作类
+  - id: "shareable"
+    name: "可分享"
+    description: "生成联系人分享卡片"
+    
+  - id: "commentable"
+    name: "可评论"
+    description: "添加联系人相关备注"
+
+  # 扩展类
+  - id: "syncable"
+    name: "可同步"
+    description: "与外部通讯录同步"
+    requires_permission: "admin"
+    
+  - id: "qrcode"
+    name: "二维码"
+    description: "生成联系人二维码名片"
+
+# 能力约束
+constraints:
+  # 某些能力需要其他能力
+  dependencies:
+    "importable": ["editable"]
+    "syncable": ["importable", "exportable"]
+

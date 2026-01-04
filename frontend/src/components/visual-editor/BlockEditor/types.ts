@@ -11,7 +11,7 @@ export type BlockType =
     | 'quote'
     | 'list'
     | 'divider'
-    | 'yaml'
+    | 'data'      // Phase 4.1: 改名为 data，对应 ```atlas-data 块
     | 'file';
 
 export interface Block {
@@ -22,7 +22,7 @@ export interface Block {
     language?: string;
     /** 列表项（用于列表类型） */
     items?: string[];
-    /** YAML 原始内容 */
+    /** @deprecated 使用 content 代替 */
     yaml?: string;
     /** 文件引用（用于文件类型） */
     fileRef?: {
@@ -48,7 +48,7 @@ export const BLOCK_TYPE_OPTIONS: BlockTypeOption[] = [
     { type: 'heading3', label: '三级标题', icon: 'Heading3', shortcut: 'Ctrl+3' },
     { type: 'quote', label: '引用', icon: 'Quote', shortcut: 'Ctrl+Q' },
     { type: 'code', label: '代码块', icon: 'Code', shortcut: 'Ctrl+E' },
-    { type: 'yaml', label: '数据', icon: 'Database', shortcut: 'Ctrl+D' },
+    { type: 'data', label: '数据块', icon: 'Database', shortcut: 'Ctrl+D' },
     { type: 'file', label: '文件', icon: 'Paperclip', shortcut: 'Ctrl+F' },
     { type: 'list', label: '列表', icon: 'List', shortcut: 'Ctrl+L' },
     { type: 'divider', label: '分隔线', icon: 'Minus' },

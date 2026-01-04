@@ -1,0 +1,37 @@
+# 类型包声明文件
+# 版本: 1.0
+
+# === 基础信息 ===
+id: "contact"
+name: "联系人"
+version: "1.0.0"
+description: "联系人信息管理类型包，包含个人信息、联系方式、社交账号等数据块，适用于通讯录、人脉管理等场景"
+author: "atlas_official"
+license: "MIT"
+
+# === 分类与标签 ===
+category: "business"
+subcategory: "crm"
+tags:
+  - 联系人
+  - 通讯录
+  - 人脉
+  - CRM
+
+# === 显示配置 ===
+icon: "user"
+color: "#8B5CF6"
+preview_image: "assets/preview.png"
+
+# === 依赖与兼容 ===
+atlas_version: ">=4.1.0"
+dependencies: []
+conflicts: []
+
+# === 发布信息 ===
+published: true
+created_at: "2026-01-04"
+updated_at: "2026-01-04"
+downloads: 986
+rating: 4.7
+

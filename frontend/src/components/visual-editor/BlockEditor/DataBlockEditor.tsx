@@ -9,8 +9,25 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, Trash2, RefreshCw, CheckCircle2, Tag, Lock, Save, Link2, Settings, ChevronDown, Check, CircleDot } from 'lucide-react';
+import { Plus, Trash2, RefreshCw, CheckCircle2, Tag, Lock, Save, Link2, Settings, ChevronDown, Check, CircleDot, GripVertical } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { useLabels } from '@/providers/LabelProvider';
 import { FieldSelector } from './FieldSelector';
 import { SaveTemplateDialog } from './SaveTemplateDialog';
@@ -183,6 +200,214 @@ interface DataBlockEditorProps {
     documentComponents?: Record<string, DocumentComponentDefinition>;
 }
 
+// ============================================================
+// SortableField - 可拖拽的字段项组件
+// ============================================================
+
+interface SortableFieldProps {
+    field: { key: string; value: string | number | boolean | string[] | null };
+    index: number;
+    isFixed: boolean;
+    isStatusField: boolean;
+    isIdField: boolean;
+    isIdFrozen: boolean;
+    boundComponentId: string | undefined;
+    boundComponent: DocumentComponentDefinition | null;
+    statusOptions: StatusOption[];
+    getLabel: (key: string) => string;
+    renderFieldIcon: (key: string) => React.ReactNode;
+    getStatusColorClassName: (color: string) => string;
+    updateFieldValue: (index: number, value: unknown) => void;
+    removeField: (index: number) => void;
+    onEditField: () => void;
+    onEditStatusOptions: () => void;
+    onEditIdConfig: () => void;
+}
+
+function SortableField({
+    field,
+    index,
+    isFixed,
+    isStatusField,
+    isIdField,
+    isIdFrozen,
+    boundComponentId,
+    boundComponent,
+    statusOptions,
+    getLabel,
+    renderFieldIcon,
+    getStatusColorClassName,
+    updateFieldValue,
+    removeField,
+    onEditField,
+    onEditStatusOptions,
+    onEditIdConfig,
+}: SortableFieldProps) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: field.key });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+    };
+
+    // 获取字段标签的点击处理函数和提示文本
+    const getFieldLabelAction = () => {
+        if (isStatusField) {
+            return { onClick: onEditStatusOptions, title: "点击配置状态选项" };
+        }
+        if (isIdField) {
+            return { onClick: onEditIdConfig, title: "点击配置编号格式" };
+        }
+        return { onClick: onEditField, title: "点击设置字段" };
+    };
+    const fieldLabelAction = getFieldLabelAction();
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={cn(
+                "group flex items-center gap-2 py-1.5 px-2 -mx-2 rounded-lg hover:bg-slate-50/80 transition-colors",
+                isDragging && "bg-slate-100 shadow-sm"
+            )}
+        >
+            {/* 拖拽手柄 */}
+            <button
+                type="button"
+                className="cursor-grab active:cursor-grabbing p-0.5 text-slate-300 hover:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                {...attributes}
+                {...listeners}
+            >
+                <GripVertical size={14} />
+            </button>
+
+            {/* 字段标签 - 可点击打开设置对话框 */}
+            <button
+                type="button"
+                onClick={fieldLabelAction.onClick}
+                className="min-w-[100px] flex items-center gap-1.5 text-left hover:bg-slate-100 rounded-md px-1 py-0.5 -mx-1 transition-colors"
+                title={fieldLabelAction.title}
+            >
+                {renderFieldIcon(field.key)}
+                <span className="text-sm text-slate-500 truncate">
+                    {getLabel(field.key)}
+                </span>
+                {/* 固定字段标记 */}
+                {isFixed && (
+                    <span title="固定字段">
+                        <Lock size={10} className="text-slate-300 flex-shrink-0" />
+                    </span>
+                )}
+                {/* status 字段显示设置图标 */}
+                {isStatusField && (
+                    <span title="点击配置状态选项">
+                        <Settings size={10} className="text-purple-400 flex-shrink-0" />
+                    </span>
+                )}
+                {/* id 字段显示设置图标 */}
+                {isIdField && (
+                    <span title="点击配置编号格式">
+                        <Settings size={10} className="text-blue-400 flex-shrink-0" />
+                    </span>
+                )}
+                {/* id 字段冻结标记 */}
+                {isIdFrozen && (
+                    <span className="text-[10px] text-amber-600 bg-amber-50 px-1 rounded flex-shrink-0" title="编号已冻结">
+                        <Lock size={10} className="inline-block" />
+                    </span>
+                )}
+                {/* 组件绑定标记（status/id 字段不显示） */}
+                {boundComponent && !isStatusField && !isIdField && (
+                    <span className="text-[10px] text-purple-500 bg-purple-50 px-1 rounded flex-shrink-0">
+                        <Link2 size={10} className="inline-block" />
+                    </span>
+                )}
+            </button>
+
+            {/* 字段值 */}
+            {/* status 字段使用专用下拉控件 */}
+            {isStatusField ? (
+                <StatusSelectControl
+                    value={String(field.value || '')}
+                    options={statusOptions}
+                    onChange={(newValue) => updateFieldValue(index, newValue)}
+                    getColorClassName={getStatusColorClassName}
+                />
+            ) : isIdField ? (
+                // id 字段：显示为带样式的编号，冻结时不可编辑
+                <div className="flex-1 flex items-center gap-2">
+                    <input
+                        type="text"
+                        value={String(field.value || '')}
+                        onChange={(e) => updateFieldValue(index, e.target.value)}
+                        disabled={isIdFrozen}
+                        className={cn(
+                            "flex-1 px-2 py-1 text-sm font-mono border rounded-md transition-colors",
+                            isIdFrozen
+                                ? "bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed"
+                                : "bg-white border-slate-200 text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 hover:border-slate-300"
+                        )}
+                        placeholder="编号..."
+                    />
+                </div>
+            ) : boundComponent ? (
+                // 组件存在，渲染组件控件
+                <div className="flex-1">
+                    <ComponentControl
+                        component={boundComponent}
+                        value={field.value}
+                        onChange={(newValue) => updateFieldValue(index, newValue)}
+                    />
+                </div>
+            ) : boundComponentId ? (
+                // 绑定存在但组件定义不存在 - 失效态降级 (Iron Rule 3)
+                <div className="flex-1">
+                    <FallbackControl
+                        componentId={boundComponentId}
+                        value={field.value}
+                        onChange={(newValue) => updateFieldValue(index, newValue)}
+                    />
+                </div>
+            ) : (
+                // 无绑定，普通输入框
+                <input
+                    type="text"
+                    value={String(field.value)}
+                    onChange={(e) => updateFieldValue(index, e.target.value)}
+                    className="flex-1 w-full px-2 py-1 text-sm text-slate-700 border border-slate-200 rounded-md
+                        focus:outline-none focus:ring-2 focus:ring-purple-400/30 focus:border-purple-400
+                        hover:border-slate-300 transition-colors"
+                    placeholder="输入值..."
+                />
+            )}
+
+            {/* 删除按钮 - 固定字段不可删除 */}
+            {isFixed ? (
+                <div className="w-6 h-6 flex items-center justify-center" title="固定字段，不可删除">
+                    <Lock size={12} className="text-slate-200" />
+                </div>
+            ) : (
+                <button
+                    onClick={() => removeField(index)}
+                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-50 
+                        text-slate-300 hover:text-red-500 transition-all"
+                    title="删除字段"
+                >
+                    <Trash2 size={14} />
+                </button>
+            )}
+        </div>
+    );
+}
+
 export function DataBlockEditor({
     content,
     onChange,
@@ -190,8 +415,16 @@ export function DataBlockEditor({
     onSyncStructure,
     documentComponents = {},
 }: DataBlockEditorProps) {
-    const { getLabel, getIcon } = useLabels();
+    const { getLabel: getLabelFromProvider, getIcon } = useLabels();
     const [fields, setFields] = useState<DataField[]>([]);
+    // 数据块类型（从 type 字段提取，用于同步功能）
+    const [dataType, setDataType] = useState<string | null>(null);
+    // 保留原始的系统字段（type, schema 等，用于保存时恢复）
+    const [systemFields, setSystemFields] = useState<Record<string, unknown>>({});
+    // 从 schema 中提取的字段标签映射（插件级别配置）
+    const [schemaLabels, setSchemaLabels] = useState<Record<string, string>>({});
+    // 是否使用 data 包装结构（schema + data 格式）
+    const [hasDataWrapper, setHasDataWrapper] = useState(false);
     // 数据块内部的字段-组件绑定（存储在 YAML 的 _bindings 字段中）
     const [fieldBindings, setFieldBindings] = useState<Record<string, string>>({});
     // 数据块级别的状态选项（存储在 YAML 的 _status_options 字段中）
@@ -209,6 +442,27 @@ export function DataBlockEditor({
     // 编号配置对话框
     const [showIdConfigDialog, setShowIdConfigDialog] = useState(false);
     const addFieldButtonRef = useRef<HTMLButtonElement>(null);
+
+    /**
+     * 三级优先级标签查找
+     * 1. 组件定义的标签（通过 _bindings 映射到 _components）
+     * 2. 标签管理的标签（LabelProvider）
+     * 3. 字段键名（兜底）
+     */
+    const getLabel = useCallback((key: string): string => {
+        // 1. 优先使用组件定义的标签（通过 fieldBindings 映射到 documentComponents）
+        const componentId = fieldBindings[key];
+        if (componentId && documentComponents[componentId]?.label) {
+            return documentComponents[componentId].label;
+        }
+        // 2. 其次使用标签管理的标签
+        const providerLabel = getLabelFromProvider(key);
+        if (providerLabel && providerLabel !== key) {
+            return providerLabel;
+        }
+        // 3. 兜底：返回字段键名
+        return key;
+    }, [fieldBindings, documentComponents, getLabelFromProvider]);
 
     // 计算弹出框位置
     const openFieldSelector = useCallback(() => {
@@ -266,8 +520,51 @@ export function DataBlockEditor({
                     setIdConfig(DEFAULT_ID_CONFIG);
                 }
 
-                // 过滤掉内部字段，只保留用户数据字段
-                const fieldArray: DataField[] = Object.entries(data)
+                // 提取并保存系统字段（type, schema），用于保存时恢复
+                const SYSTEM_FIELD_KEYS = ['type', 'schema', 'data'];
+                const sysFields: Record<string, unknown> = {};
+                for (const key of ['type', 'schema']) {
+                    if (key in data) {
+                        sysFields[key] = data[key];
+                    }
+                }
+                setSystemFields(sysFields);
+                
+                // 从 schema 中提取字段标签映射（插件级别配置）
+                const schemaArray = data['schema'] as Array<{ key: string; label?: string }> | undefined;
+                if (schemaArray && Array.isArray(schemaArray)) {
+                    const labels: Record<string, string> = {};
+                    for (const item of schemaArray) {
+                        if (item.key && item.label) {
+                            labels[item.key] = item.label;
+                        }
+                    }
+                    setSchemaLabels(labels);
+                } else {
+                    setSchemaLabels({});
+                }
+                
+                // 提取 type 字段（用于同步功能）
+                const typeValue = data['type'];
+                setDataType(typeValue ? String(typeValue) : null);
+
+                // 判断数据结构：schema + data 格式 vs 扁平格式
+                // 如果有 data 字段且是对象，使用 data 字段内容；否则使用扁平结构
+                let userData: Record<string, unknown>;
+                const isDataWrapped = data['data'] && typeof data['data'] === 'object' && !Array.isArray(data['data']);
+                setHasDataWrapper(isDataWrapped);
+                
+                if (isDataWrapped) {
+                    // schema + data 格式：使用 data 字段的内容
+                    userData = data['data'] as Record<string, unknown>;
+                } else {
+                    // 扁平格式：过滤掉系统字段
+                    userData = Object.fromEntries(
+                        Object.entries(data).filter(([key]) => !key.startsWith('_') && !SYSTEM_FIELD_KEYS.includes(key))
+                    );
+                }
+
+                const fieldArray: DataField[] = Object.entries(userData)
                     .filter(([key]) => !key.startsWith('_'))
                     .map(([key, value]) => ({
                         key,
@@ -288,23 +585,44 @@ export function DataBlockEditor({
         }
     }, [content]);
 
-    // 获取数据类型（从 type 字段）
-    const dataType = useMemo(() => {
-        const typeField = fields.find((f) => f.key === 'type');
-        return typeField ? String(typeField.value) : null;
-    }, [fields]);
+    // dataType 现在从 state 中获取（在解析时提取）
 
-    // 获取当前字段的 key 列表（用于同步）
+    // 获取当前字段的 key 列表（用于同步，包含 type）
     const fieldKeys = useMemo(() => {
-        return fields.map((f) => f.key);
-    }, [fields]);
+        const keys = fields.map((f) => f.key);
+        // 如果有 type，加到开头（确保同步时 type 被包含）
+        if (dataType && !keys.includes('type')) {
+            return ['type', ...keys];
+        }
+        return keys;
+    }, [fields, dataType]);
 
-    // 同步到 YAML（包含 _bindings、_status_options 和 _id_config）
+    // 同步到 YAML（包含 type、data、_bindings、_status_options 和 _id_config，不再写入 schema）
     const syncToYaml = useCallback((fieldArray: DataField[], bindings: Record<string, string>, statusOpts?: StatusOption[], idCfg?: IdConfig) => {
         const obj: Record<string, unknown> = {};
-        for (const field of fieldArray) {
-            obj[field.key] = field.value;
+        
+        // 只写入 type 字段，不再写入 schema（schema 是冗余数据）
+        if (systemFields.type) {
+            obj['type'] = systemFields.type;
         }
+        
+        // 构建用户数据对象
+        const userData: Record<string, unknown> = {};
+        for (const field of fieldArray) {
+            userData[field.key] = field.value;
+        }
+        
+        // 根据原始格式决定如何写入用户数据
+        if (hasDataWrapper) {
+            // schema + data 格式：将用户数据包装在 data 字段中
+            obj['data'] = userData;
+        } else {
+            // 扁平格式：直接写入用户数据字段
+            for (const field of fieldArray) {
+                obj[field.key] = field.value;
+            }
+        }
+        
         // 只有当有绑定时才写入 _bindings
         if (Object.keys(bindings).length > 0) {
             obj[INTERNAL_BINDING_KEY] = bindings;
@@ -323,23 +641,27 @@ export function DataBlockEditor({
         }
         const yamlStr = yaml.dump(obj, { lineWidth: -1, quotingType: '"', forceQuotes: false });
         onChange(yamlStr.trim());
-    }, [onChange, statusOptions, idConfig]);
+    }, [onChange, statusOptions, idConfig, systemFields, hasDataWrapper]);
 
     // 更新字段值（支持字符串、数字、布尔、数组）
     const updateFieldValue = useCallback((index: number, value: unknown) => {
         const newFields = [...fields];
 
         // 处理不同类型的值
-        let parsedValue: string | number | boolean | string[];
+        let parsedValue: string | number | boolean | string[] | null;
 
-        if (Array.isArray(value)) {
+        if (value === null || value === undefined) {
+            // null/undefined 转为空字符串
+            parsedValue = '';
+        } else if (Array.isArray(value)) {
             // 多选组件返回数组，直接保存
             parsedValue = value;
         } else if (typeof value === 'string') {
-            // 字符串：尝试转换为布尔或数字
+            // 字符串：尝试转换为布尔
             if (value === 'true') parsedValue = true;
             else if (value === 'false') parsedValue = false;
-            else if (!isNaN(Number(value)) && value.trim() !== '') parsedValue = Number(value);
+            // 只对短字符串（小于10位）尝试转换为数字，避免手机号等长数字被转换
+            else if (value.length < 10 && !isNaN(Number(value)) && value.trim() !== '') parsedValue = Number(value);
             else parsedValue = value;
         } else if (typeof value === 'number' || typeof value === 'boolean') {
             parsedValue = value;
@@ -352,6 +674,47 @@ export function DataBlockEditor({
         syncToYaml(newFields, fieldBindings);
     }, [fields, fieldBindings, syncToYaml]);
 
+    // 更新 schema（同步字段的 schema 定义）
+    const updateSchema = useCallback((fieldKey: string, action: 'add' | 'remove') => {
+        const currentSchema = (systemFields.schema as Array<{ key: string; label?: string; type?: string }>) || [];
+        
+        if (action === 'add') {
+            // 检查是否已存在
+            if (!currentSchema.some(s => s.key === fieldKey)) {
+                const newSchema = [...currentSchema, { key: fieldKey, label: fieldKey, type: 'text' }];
+                setSystemFields(prev => ({ ...prev, schema: newSchema }));
+                return newSchema;
+            }
+        } else if (action === 'remove') {
+            const newSchema = currentSchema.filter(s => s.key !== fieldKey);
+            setSystemFields(prev => ({ ...prev, schema: newSchema }));
+            return newSchema;
+        }
+        return currentSchema;
+    }, [systemFields.schema]);
+
+    // 重排 schema 顺序
+    const reorderSchema = useCallback((newFields: DataField[]) => {
+        const currentSchema = (systemFields.schema as Array<{ key: string; label?: string; type?: string }>) || [];
+        const schemaMap = new Map(currentSchema.map(s => [s.key, s]));
+        
+        // 按新字段顺序重排 schema
+        const newSchema = newFields
+            .map(f => schemaMap.get(f.key))
+            .filter((s): s is { key: string; label?: string; type?: string } => s !== undefined);
+        
+        // 添加 schema 中存在但 fields 中没有的项（保留在末尾）
+        const fieldKeys = new Set(newFields.map(f => f.key));
+        for (const s of currentSchema) {
+            if (!fieldKeys.has(s.key)) {
+                newSchema.push(s);
+            }
+        }
+        
+        setSystemFields(prev => ({ ...prev, schema: newSchema }));
+        return newSchema;
+    }, [systemFields.schema]);
+
     // 删除字段
     const removeField = useCallback((index: number) => {
         const fieldKey = fields[index]?.key;
@@ -359,18 +722,55 @@ export function DataBlockEditor({
         // 同时移除该字段的绑定
         const newBindings = { ...fieldBindings };
         if (fieldKey) delete newBindings[fieldKey];
+        // 同步更新 schema
+        if (fieldKey) updateSchema(fieldKey, 'remove');
         setFields(newFields);
         setFieldBindings(newBindings);
         syncToYaml(newFields, newBindings);
-    }, [fields, fieldBindings, syncToYaml]);
+    }, [fields, fieldBindings, syncToYaml, updateSchema]);
 
     // 添加字段
     const addField = useCallback((key: string) => {
         if (fields.some((f) => f.key === key)) return;
         const newFields = [...fields, { key, value: '' }];
+        // 同步更新 schema
+        updateSchema(key, 'add');
         setFields(newFields);
         syncToYaml(newFields, fieldBindings);
-    }, [fields, fieldBindings, syncToYaml]);
+    }, [fields, fieldBindings, syncToYaml, updateSchema]);
+
+    // 拖拽排序：移动字段
+    const moveField = useCallback((oldIndex: number, newIndex: number) => {
+        const newFields = arrayMove(fields, oldIndex, newIndex);
+        // 同步更新 schema 顺序
+        reorderSchema(newFields);
+        setFields(newFields);
+        syncToYaml(newFields, fieldBindings);
+    }, [fields, fieldBindings, syncToYaml, reorderSchema]);
+
+    // DnD sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    // 处理拖拽结束
+    const handleDragEnd = useCallback((event: DragEndEvent) => {
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            const oldIndex = fields.findIndex((f) => f.key === active.id);
+            const newIndex = fields.findIndex((f) => f.key === over.id);
+            if (oldIndex !== -1 && newIndex !== -1) {
+                moveField(oldIndex, newIndex);
+            }
+        }
+    }, [fields, moveField]);
 
     // 绑定/解绑组件到字段（数据块级绑定）
     const handleBindComponent = useCallback((fieldKey: string, componentId: string | null) => {
@@ -511,150 +911,40 @@ export function DataBlockEditor({
 
     return (
         <div className="space-y-0.5">
-            {/* 字段列表 */}
-            {fields.map((field, index) => {
-                const isFixed = FIXED_FIELD_KEYS.has(field.key);
-                const isStatusField = field.key === 'status';
-                const isIdField = field.key === 'id';
-                const isIdFrozen = isIdField && idConfig.frozen;
-                const boundComponentId = fieldBindings[field.key];
-                const boundComponent = boundComponentId ? documentComponents[boundComponentId] : null;
-
-                // 获取字段标签的点击处理函数和提示文本
-                const getFieldLabelAction = () => {
-                    if (isStatusField) {
-                        return { onClick: () => setShowStatusOptionsDialog(true), title: "点击配置状态选项" };
-                    }
-                    if (isIdField) {
-                        return { onClick: () => setShowIdConfigDialog(true), title: "点击配置编号格式" };
-                    }
-                    return { onClick: () => setEditingFieldIndex(index), title: "点击设置字段" };
-                };
-                const fieldLabelAction = getFieldLabelAction();
-
-                return (
-                    <div
-                        key={field.key}
-                        className="group flex items-center gap-2 py-1.5 px-2 -mx-2 rounded-lg hover:bg-slate-50/80 transition-colors"
-                    >
-                        {/* 字段标签 - 可点击打开设置对话框 */}
-                        <button
-                            type="button"
-                            onClick={fieldLabelAction.onClick}
-                            className="min-w-[120px] flex items-center gap-1.5 text-left hover:bg-slate-100 rounded-md px-1 py-0.5 -mx-1 transition-colors"
-                            title={fieldLabelAction.title}
-                        >
-                            {renderFieldIcon(field.key)}
-                            <span className="text-sm text-slate-500 truncate">
-                                {getLabel(field.key)}
-                            </span>
-                            {/* 固定字段标记 */}
-                            {isFixed && (
-                                <span title="固定字段">
-                                    <Lock size={10} className="text-slate-300 flex-shrink-0" />
-                                </span>
-                            )}
-                            {/* status 字段显示设置图标 */}
-                            {isStatusField && (
-                                <span title="点击配置状态选项">
-                                    <Settings size={10} className="text-purple-400 flex-shrink-0" />
-                                </span>
-                            )}
-                            {/* id 字段显示设置图标 */}
-                            {isIdField && (
-                                <span title="点击配置编号格式">
-                                    <Settings size={10} className="text-blue-400 flex-shrink-0" />
-                                </span>
-                            )}
-                            {/* id 字段冻结标记 */}
-                            {isIdFrozen && (
-                                <span className="text-[10px] text-amber-600 bg-amber-50 px-1 rounded flex-shrink-0" title="编号已冻结">
-                                    <Lock size={10} className="inline-block" />
-                                </span>
-                            )}
-                            {/* 组件绑定标记（status/id 字段不显示） */}
-                            {boundComponent && !isStatusField && !isIdField && (
-                                <span className="text-[10px] text-purple-500 bg-purple-50 px-1 rounded flex-shrink-0">
-                                    <Link2 size={10} className="inline-block" />
-                                </span>
-                            )}
-                        </button>
-
-                        {/* 字段值 */}
-                        {/* status 字段使用专用下拉控件 */}
-                        {isStatusField ? (
-                            <StatusSelectControl
-                                value={String(field.value || '')}
-                                options={statusOptions}
-                                onChange={(newValue) => updateFieldValue(index, newValue)}
-                                getColorClassName={getStatusColorClassName}
-                            />
-                        ) : isIdField ? (
-                            // id 字段：显示为带样式的编号，冻结时不可编辑
-                            <div className="flex-1 flex items-center gap-2">
-                                <input
-                                    type="text"
-                                    value={String(field.value || '')}
-                                    onChange={(e) => updateFieldValue(index, e.target.value)}
-                                    disabled={isIdFrozen}
-                                    className={cn(
-                                        "flex-1 px-2 py-1 text-sm font-mono border rounded-md transition-colors",
-                                        isIdFrozen
-                                            ? "bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed"
-                                            : "bg-white border-slate-200 text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 hover:border-slate-300"
-                                    )}
-                                    placeholder="编号..."
-                                />
-                            </div>
-                        ) : boundComponent ? (
-                            // 组件存在，渲染组件控件
-                            <div className="flex-1">
-                                <ComponentControl
-                                    component={boundComponent}
-                                    value={field.value}
-                                    onChange={(newValue) => updateFieldValue(index, newValue)}
-                                />
-                            </div>
-                        ) : boundComponentId ? (
-                            // 绑定存在但组件定义不存在 - 失效态降级 (Iron Rule 3)
-                            <div className="flex-1">
-                                <FallbackControl
-                                    componentId={boundComponentId}
-                                    value={field.value}
-                                    onChange={(newValue) => updateFieldValue(index, newValue)}
-                                />
-                            </div>
-                        ) : (
-                            // 无绑定，普通输入框
-                            <input
-                                type="text"
-                                value={String(field.value)}
-                                onChange={(e) => updateFieldValue(index, e.target.value)}
-                                className="flex-1 w-full px-2 py-1 text-sm text-slate-700 border border-slate-200 rounded-md
-                  focus:outline-none focus:ring-2 focus:ring-purple-400/30 focus:border-purple-400
-                  hover:border-slate-300 transition-colors"
-                                placeholder="输入值..."
-                            />
-                        )}
-
-                        {/* 删除按钮 - 固定字段不可删除 */}
-                        {isFixed ? (
-                            <div className="w-6 h-6 flex items-center justify-center" title="固定字段，不可删除">
-                                <Lock size={12} className="text-slate-200" />
-                            </div>
-                        ) : (
-                            <button
-                                onClick={() => removeField(index)}
-                                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-50 
-                  text-slate-300 hover:text-red-500 transition-all"
-                                title="删除字段"
-                            >
-                                <Trash2 size={14} />
-                            </button>
-                        )}
-                    </div>
-                );
-            })}
+            {/* 字段列表 - 可拖拽排序 */}
+            <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+            >
+                <SortableContext
+                    items={fields.map((f) => f.key)}
+                    strategy={verticalListSortingStrategy}
+                >
+                    {fields.map((field, index) => (
+                        <SortableField
+                            key={field.key}
+                            field={field}
+                            index={index}
+                            isFixed={FIXED_FIELD_KEYS.has(field.key)}
+                            isStatusField={field.key === 'status'}
+                            isIdField={field.key === 'id'}
+                            isIdFrozen={field.key === 'id' && idConfig.frozen}
+                            boundComponentId={fieldBindings[field.key]}
+                            boundComponent={fieldBindings[field.key] ? documentComponents[fieldBindings[field.key]] : null}
+                            statusOptions={statusOptions}
+                            getLabel={getLabel}
+                            renderFieldIcon={renderFieldIcon}
+                            getStatusColorClassName={getStatusColorClassName}
+                            updateFieldValue={updateFieldValue}
+                            removeField={removeField}
+                            onEditField={() => setEditingFieldIndex(index)}
+                            onEditStatusOptions={() => setShowStatusOptionsDialog(true)}
+                            onEditIdConfig={() => setShowIdConfigDialog(true)}
+                        />
+                    ))}
+                </SortableContext>
+            </DndContext>
 
             {/* 字段设置对话框 */}
             {editingField && editingFieldIndex !== null && (

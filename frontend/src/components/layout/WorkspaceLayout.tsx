@@ -14,8 +14,9 @@ import { ReactNode, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { FileText, FolderOpen, Search, LogOut, User, RefreshCw, Settings } from 'lucide-react';
+import { FileText, FolderOpen, Search, LogOut, User, RefreshCw, Settings, Plus } from 'lucide-react';
 import { QueryPanel } from '@/components/query/QueryPanel';
+import { NewDocumentDialog } from '@/components/new-document';
 import { useAuthStore } from '@/stores/auth-store';
 import { rebuildGlobalIndex } from '@/api/workspace';
 
@@ -29,14 +30,19 @@ export function WorkspaceLayout({ sidebar, content, anchors }: WorkspaceLayoutPr
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [newDocOpen, setNewDocOpen] = useState(false);
   const [isRebuilding, setIsRebuilding] = useState(false);
 
-  // 全局快捷键 Cmd+K
+  // 全局快捷键 Cmd+K (搜索) / Cmd+N (新建)
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setSearchOpen(true);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
+        e.preventDefault();
+        setNewDocOpen(true);
       }
     }
 
@@ -78,12 +84,25 @@ export function WorkspaceLayout({ sidebar, content, anchors }: WorkspaceLayoutPr
           </Link>
           <span className="text-muted-foreground text-sm">Workspace</span>
 
+          {/* 新建文档按钮 */}
+          <Button
+            size="sm"
+            onClick={() => setNewDocOpen(true)}
+            className="gap-2 ml-4"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">新建</span>
+            <kbd className="hidden sm:inline-flex items-center gap-1 rounded border bg-primary-foreground/20 px-1.5 text-xs text-primary-foreground/80">
+              <span className="text-xs">⌘</span>N
+            </kbd>
+          </Button>
+
           {/* 搜索框 */}
           <Button
             variant="outline"
             size="sm"
             onClick={() => setSearchOpen(true)}
-            className="gap-2 ml-4"
+            className="gap-2"
           >
             <Search className="h-4 w-4" />
             <span className="hidden sm:inline">搜索</span>
@@ -180,6 +199,9 @@ export function WorkspaceLayout({ sidebar, content, anchors }: WorkspaceLayoutPr
 
       {/* Query Panel */}
       <QueryPanel open={searchOpen} onOpenChange={setSearchOpen} />
+
+      {/* New Document Dialog */}
+      <NewDocumentDialog open={newDocOpen} onOpenChange={setNewDocOpen} />
     </div>
   );
 }

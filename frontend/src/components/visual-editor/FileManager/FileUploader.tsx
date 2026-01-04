@@ -32,11 +32,16 @@ export function FileUploader({
         const fileArray = Array.from(files);
         if (fileArray.length === 0) return;
 
-        // 过滤文件类型
+        // 过滤文件类型（兼容带点号和不带点号的格式）
         const validFiles = allowedTypes && allowedTypes.length > 0
             ? fileArray.filter(f => {
                 const ext = f.name.split('.').pop()?.toLowerCase();
-                return ext && allowedTypes.includes(ext);
+                if (!ext) return false;
+                // 同时检查带点号和不带点号的格式
+                return allowedTypes.some(t => {
+                    const normalizedType = t.startsWith('.') ? t.slice(1).toLowerCase() : t.toLowerCase();
+                    return ext === normalizedType;
+                });
             })
             : fileArray;
 

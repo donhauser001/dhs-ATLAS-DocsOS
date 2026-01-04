@@ -162,6 +162,20 @@ export function VisualDocEditor({
         () => (initialFrontmatter._components as Record<string, DocumentComponentDefinition>) || {}
     );
 
+    // 当 frontmatter._components 从外部更新时，同步到 documentComponents
+    // 这确保了当文件重新加载或粘贴新内容时，组件定义能正确同步
+    const prevFrontmatterComponentsRef = useRef<Record<string, DocumentComponentDefinition> | null>(null);
+    useEffect(() => {
+        const newComponents = (frontmatter._components as Record<string, DocumentComponentDefinition>) || {};
+        // 使用 JSON 序列化比较（简单但有效）
+        const newJson = JSON.stringify(newComponents);
+        const prevJson = JSON.stringify(prevFrontmatterComponentsRef.current);
+        if (newJson !== prevJson) {
+            prevFrontmatterComponentsRef.current = newComponents;
+            setDocumentComponents(newComponents);
+        }
+    }, [frontmatter._components]);
+
     // 引用
     // const richTextEditorRef = useRef<RichTextEditorRef>(null); // 保留用于未来扩展
     const blockEditorRef = useRef<BlockEditorRef>(null);
@@ -508,6 +522,7 @@ export function VisualDocEditor({
                         setFrontmatter(newFrontmatter);
                         setIsDirty(true);
                     }}
+                    content={bodyContent}
                     disabled={viewMode === 'read'}
                     mode={viewMode === 'read' ? 'read' : 'edit'}
                     documentPath={documentPath}

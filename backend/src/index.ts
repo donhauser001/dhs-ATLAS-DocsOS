@@ -19,6 +19,8 @@ import docTypesRouter from './api/doc-types.js';
 import functionTypesRouter from './api/function-types.js';
 import displayModesRouter from './api/display-modes.js';
 import capabilitiesRouter from './api/capabilities.js';
+import typePackagesRouter from './api/type-packages.js';
+import pluginsRouter from './api/plugins.js';
 import { config, validateConfig, ensureDirectories } from './config.js';
 import { optionalAuth } from './middleware/permission.js';
 
@@ -96,6 +98,10 @@ app.use('/api/doc-types', docTypesRouter);
 app.use('/api/function-types', functionTypesRouter);
 app.use('/api/display-modes', displayModesRouter);
 app.use('/api/capabilities', capabilitiesRouter);
+// Phase 4.1: 类型包
+app.use('/api/type-packages', typePackagesRouter);
+// Phase 4.1: 插件市场
+app.use('/api/plugins', pluginsRouter);
 
 app.listen(config.port, () => {
   console.log(`ATLAS Runtime listening on port ${config.port}`);

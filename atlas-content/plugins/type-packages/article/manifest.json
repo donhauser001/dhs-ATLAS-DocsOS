@@ -1,0 +1,142 @@
+{
+  "id": "article",
+  "name": "文章",
+  "version": "1.0.0",
+  "type": "type-package",
+  "description": "长文本内容创作，支持目录、阅读模式、字数统计",
+  "author": {
+    "name": "ATLAS Official",
+    "email": "team@atlas.dev",
+    "url": "https://atlas.dev"
+  },
+  "license": "MIT",
+  "keywords": ["文章", "博客", "写作", "内容"],
+  "icon": "file-text",
+  "color": "#EC4899",
+  "isOfficial": true,
+  "category": "content",
+  "defaultFunction": "article",
+  "defaultDisplay": "article.single",
+  "defaultCapabilities": ["editable", "searchable", "publishable", "versionable"],
+  "atlas": {
+    "minVersion": "1.0.0"
+  },
+  "blocks": [
+    {
+      "id": "metadata",
+      "name": "文章信息",
+      "description": "文章元数据",
+      "icon": "info",
+      "color": "#EC4899",
+      "defaultExpanded": true,
+      "fields": [
+        {
+          "key": "title",
+          "type": "text",
+          "label": "标题",
+          "required": true
+        },
+        {
+          "key": "subtitle",
+          "type": "text",
+          "label": "副标题"
+        },
+        {
+          "key": "author",
+          "type": "text",
+          "label": "作者"
+        },
+        {
+          "key": "category",
+          "type": "select",
+          "label": "分类",
+          "options": [
+            { "value": "tech", "label": "技术" },
+            { "value": "life", "label": "生活" },
+            { "value": "business", "label": "商业" },
+            { "value": "culture", "label": "文化" },
+            { "value": "other", "label": "其他" }
+          ]
+        },
+        {
+          "key": "tags",
+          "type": "multi-select",
+          "label": "标签"
+        }
+      ]
+    },
+    {
+      "id": "publish-info",
+      "name": "发布信息",
+      "description": "发布相关设置",
+      "icon": "globe",
+      "color": "#3B82F6",
+      "fields": [
+        {
+          "key": "status",
+          "type": "select",
+          "label": "状态",
+          "options": [
+            { "value": "draft", "label": "草稿" },
+            { "value": "review", "label": "审核中" },
+            { "value": "published", "label": "已发布" },
+            { "value": "archived", "label": "已归档" }
+          ]
+        },
+        {
+          "key": "publish_date",
+          "type": "date",
+          "label": "发布日期"
+        },
+        {
+          "key": "visibility",
+          "type": "select",
+          "label": "可见性",
+          "options": [
+            { "value": "public", "label": "公开" },
+            { "value": "private", "label": "私密" },
+            { "value": "password", "label": "密码保护" }
+          ]
+        },
+        {
+          "key": "featured_image",
+          "type": "image",
+          "label": "封面图"
+        }
+      ]
+    },
+    {
+      "id": "seo",
+      "name": "SEO 设置",
+      "description": "搜索引擎优化",
+      "icon": "search",
+      "color": "#10B981",
+      "fields": [
+        {
+          "key": "seo_title",
+          "type": "text",
+          "label": "SEO 标题"
+        },
+        {
+          "key": "seo_description",
+          "type": "textarea",
+          "label": "SEO 描述"
+        },
+        {
+          "key": "keywords",
+          "type": "text",
+          "label": "关键词"
+        }
+      ]
+    }
+  ],
+  "frontmatterTemplate": {
+    "doc-type": "article",
+    "function-type": "article",
+    "display-mode": "article.single",
+    "capabilities": ["editable", "searchable", "publishable", "versionable"]
+  },
+  "createdAt": "2026-01-01",
+  "updatedAt": "2026-01-04"
+}
+

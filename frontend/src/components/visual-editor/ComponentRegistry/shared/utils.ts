@@ -37,6 +37,6 @@ export const FILE_TYPE_PRESETS = {
     archives: { label: '压缩包', extensions: ['.zip', '.rar', '.7z', '.tar', '.gz'] },
 };
 
-/** 图片扩展名 */
-export const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp'];
+/** 图片扩展名（不带点号） */
+export const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
 

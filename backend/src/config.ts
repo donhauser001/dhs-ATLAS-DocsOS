@@ -40,6 +40,10 @@ export const config = {
   // 文档仓库目录
   repositoryRoot: join(PROJECT_ROOT, 'repository'),
   
+  // Phase 4.1: atlas-content 内容目录
+  atlasContentDir: join(PROJECT_ROOT, 'atlas-content'),
+  typePackagesDir: join(PROJECT_ROOT, 'atlas-content', 'plugins', 'type-packages'),
+  
   // ATLAS 内部数据目录
   atlasDataDir: join(PROJECT_ROOT, 'repository', '.atlas'),
   

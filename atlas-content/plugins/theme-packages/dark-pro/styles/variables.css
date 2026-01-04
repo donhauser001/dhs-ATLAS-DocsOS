@@ -1,0 +1,86 @@
+/**
+ * 暗黑专业版主题 - CSS 变量
+ * 
+ * 专业级深色设计，护眼、高对比度
+ */
+
+:root {
+  /* 强制深色模式 */
+  color-scheme: dark;
+}
+
+.theme-dark-pro,
+.dark.theme-dark-pro {
+  /* 主色调 - 使用天蓝色 */
+  --primary: 199 89% 48%;
+  --primary-foreground: 200 100% 14%;
+
+  /* 次要色 */
+  --secondary: 215 28% 17%;
+  --secondary-foreground: 214 32% 91%;
+
+  /* 背景 - 深邃的蓝灰色 */
+  --background: 222 47% 8%;
+  --foreground: 214 32% 91%;
+
+  /* 卡片 */
+  --card: 217 33% 12%;
+  --card-foreground: 214 32% 91%;
+
+  /* 弹出层 */
+  --popover: 217 33% 12%;
+  --popover-foreground: 214 32% 91%;
+
+  /* 静音色 */
+  --muted: 215 28% 17%;
+  --muted-foreground: 215 20% 65%;
+
+  /* 强调色 */
+  --accent: 215 28% 22%;
+  --accent-foreground: 214 32% 91%;
+
+  /* 危险色 */
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 210 40% 98%;
+
+  /* 边框 */
+  --border: 215 28% 22%;
+  --input: 215 28% 22%;
+  --ring: 199 89% 48%;
+
+  /* 圆角 */
+  --radius: 0.5rem;
+
+  /* 特殊效果 */
+  --glow-primary: 0 0 20px rgba(56, 189, 248, 0.3);
+  --glow-success: 0 0 20px rgba(34, 197, 94, 0.3);
+  --glow-warning: 0 0 20px rgba(245, 158, 11, 0.3);
+  --glow-error: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+/* 代码高亮优化 */
+.theme-dark-pro pre,
+.theme-dark-pro code {
+  background: hsl(217 33% 10%);
+  border-color: hsl(215 28% 22%);
+}
+
+/* 滚动条样式 */
+.theme-dark-pro ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.theme-dark-pro ::-webkit-scrollbar-track {
+  background: hsl(217 33% 12%);
+}
+
+.theme-dark-pro ::-webkit-scrollbar-thumb {
+  background: hsl(215 28% 30%);
+  border-radius: 4px;
+}
+
+.theme-dark-pro ::-webkit-scrollbar-thumb:hover {
+  background: hsl(215 28% 40%);
+}
+

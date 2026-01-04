@@ -1,0 +1,51 @@
+# 显现模式配置
+# 定义该文档类型可用的视图方式
+
+default: "detail.card"
+
+available:
+  # 详情视图组
+  - id: "detail.card"
+    name: "卡片详情"
+    icon: "credit-card"
+    description: "以卡片形式展示联系人详情"
+    
+  - id: "detail.form"
+    name: "表单详情"
+    icon: "file-text"
+    description: "以表单形式展示和编辑联系人"
+    
+  - id: "detail.profile"
+    name: "档案详情"
+    icon: "user-circle"
+    description: "以档案形式展示联系人，突出头像和主要信息"
+
+  # 列表视图组
+  - id: "list.table"
+    name: "表格列表"
+    icon: "table"
+    description: "经典表格形式展示联系人列表"
+    
+  - id: "list.card"
+    name: "卡片列表"
+    icon: "layout-grid"
+    description: "卡片网格形式展示联系人列表"
+    
+  - id: "list.compact"
+    name: "紧凑列表"
+    icon: "list"
+    description: "紧凑行形式展示联系人列表"
+
+  # 特殊视图
+  - id: "gallery.avatar"
+    name: "头像墙"
+    icon: "users"
+    description: "以头像墙形式展示联系人"
+
+# 视图约束
+constraints:
+  # 某些视图需要特定字段
+  field_requirements:
+    "gallery.avatar": ["avatar"]
+    "detail.profile": ["avatar", "name"]
+

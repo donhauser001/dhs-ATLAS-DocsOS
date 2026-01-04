@@ -40,14 +40,14 @@ export function parseMarkdownToBlocks(markdown: string): Block[] {
             }
             i++; // 跳过结束的 ```
 
-            // 判断是否是 YAML 块
-            if (language === 'yaml' || language.startsWith('yaml:')) {
+            // Phase 4.1: atlas-data 数据块
+            // 支持: atlas-data（推荐）, yaml（向后兼容）
+            if (language === 'atlas-data' || language === 'yaml' || language.startsWith('yaml:')) {
                 blocks.push({
                     id: generateBlockId(),
-                    type: 'yaml',
+                    type: 'data',
                     content: codeLines.join('\n'),
-                    language,
-                    yaml: codeLines.join('\n'),
+                    language: 'atlas-data', // 统一使用 atlas-data
                 });
             } else if (language === 'file') {
                 // 文件块
@@ -226,8 +226,9 @@ export function blocksToMarkdown(blocks: Block[]): string {
                 return block.content;
             case 'code':
                 return `\`\`\`${block.language || ''}\n${block.content}\n\`\`\``;
-            case 'yaml':
-                return `\`\`\`${block.language || 'yaml'}\n${block.content}\n\`\`\``;
+            case 'data':
+                // Phase 4.1: 统一使用 atlas-data 标识
+                return `\`\`\`atlas-data\n${block.content}\n\`\`\``;
             case 'file':
                 if (block.fileRef) {
                     return `\`\`\`file\n${serializeFileRef(block.fileRef)}\n\`\`\``;

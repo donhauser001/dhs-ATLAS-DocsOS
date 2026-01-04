@@ -243,12 +243,17 @@ export function FileList({
             result = result.filter(f => f.type !== 'folder');
         }
 
-        // 过滤文件类型
+        // 过滤文件类型（兼容带点号和不带点号的格式）
         if (allowedTypes && allowedTypes.length > 0) {
-            result = result.filter(f =>
-                f.type === 'folder' ||
-                (f.extension && allowedTypes.includes(f.extension.toLowerCase()))
-            );
+            result = result.filter(f => {
+                if (f.type === 'folder') return true;
+                if (!f.extension) return false;
+                const ext = f.extension.toLowerCase();
+                return allowedTypes.some(t => {
+                    const normalizedType = t.startsWith('.') ? t.slice(1).toLowerCase() : t.toLowerCase();
+                    return ext === normalizedType;
+                });
+            });
         }
 
         return result;

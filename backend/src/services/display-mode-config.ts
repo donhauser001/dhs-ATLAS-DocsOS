@@ -123,6 +123,7 @@ const SYSTEM_DISPLAY_MODES: DisplayModeConfig = {
                 { id: 'detail.card', label: '卡片详情', description: '分区卡片', icon: 'square', category: 'detail', isSystem: true },
                 { id: 'detail.form', label: '表单详情', description: '表单布局', icon: 'file-input', category: 'detail', isSystem: true },
                 { id: 'detail.split', label: '分栏详情', description: '左右分栏', icon: 'columns', category: 'detail', isSystem: true },
+                { id: 'detail.tab', label: '选项卡详情', description: '标签页切换', icon: 'folder-kanban', category: 'detail', isSystem: true },
             ],
         },
         {

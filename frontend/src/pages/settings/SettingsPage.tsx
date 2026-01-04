@@ -12,13 +12,15 @@ import { useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowLeft, Tag, Database, FileType, Workflow, Layout, Zap } from 'lucide-react';
+import { ArrowLeft, Tag, Database, FileType, Workflow, Layout, Zap, Package, Users } from 'lucide-react';
 import { LabelSettings } from './LabelSettings';
 import { DataTemplateSettings } from './DataTemplateSettings';
 import { DocTypeSettings } from './DocTypeSettings';
 import { FunctionTypeSettings } from './FunctionTypeSettings';
 import { DisplayModeSettings } from './DisplayModeSettings';
 import { CapabilitySettings } from './CapabilitySettings';
+import { PluginMarketSettings } from './PluginMarketSettings';
+import { AITalentMarketSettings } from './AITalentMarketSettings';
 
 // ============================================================
 // 设置菜单项
@@ -33,6 +35,20 @@ interface MenuItem {
 }
 
 const MENU_ITEMS: MenuItem[] = [
+  {
+    id: 'plugin-market',
+    label: '插件市场',
+    icon: <Package className="h-4 w-4" />,
+    description: '浏览和安装类型包',
+    component: <PluginMarketSettings />,
+  },
+  {
+    id: 'ai-talent-market',
+    label: 'AI 人才市场',
+    icon: <Users className="h-4 w-4" />,
+    description: '雇佣和管理 AI 员工',
+    component: <AITalentMarketSettings />,
+  },
   {
     id: 'labels',
     label: '标签管理',

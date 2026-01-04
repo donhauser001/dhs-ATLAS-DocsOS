@@ -1,0 +1,53 @@
+# 联系人个人信息数据块
+id: contact_personal_info
+name: 个人信息
+description: 联系人的基本信息，包括姓名、头像、联系方式等
+icon: user
+order: 1
+enabled: true
+
+fields:
+  - key: avatar
+    label: 头像
+    component: comp_avatar
+    defaultValue: ""
+  - key: name
+    label: 姓名
+    defaultValue: ""
+  - key: gender
+    label: 性别
+    component: comp_gender
+    defaultValue: ""
+  - key: birthday
+    label: 生日
+    component: comp_birthday
+    defaultValue: ""
+  - key: title
+    label: 职位
+    defaultValue: ""
+  - key: company
+    label: 公司
+    defaultValue: ""
+  - key: department
+    label: 部门
+    defaultValue: ""
+  - key: mobile
+    label: 手机
+    component: comp_phone
+    defaultValue: ""
+  - key: email
+    label: 邮箱
+    component: comp_email
+    defaultValue: ""
+  - key: address
+    label: 快递信息
+    component: comp_address
+    defaultValue: ""
+  - key: tags
+    label: 标签
+    component: comp_tags
+    defaultValue: ""
+  - key: notes
+    label: 备注
+    component: comp_notes
+    defaultValue: ""

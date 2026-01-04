@@ -12,6 +12,7 @@ export function Control({ component, value, onChange, disabled }: ControlProps) 
     const selectDef = component as SelectComponentDefinition;
     const [isOpen, setIsOpen] = useState(false);
     const triggerRef = useRef<HTMLButtonElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
     const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
     const options = selectDef.options || [];
@@ -33,12 +34,20 @@ export function Control({ component, value, onChange, disabled }: ControlProps) 
     useEffect(() => {
         if (!isOpen) return;
         const handleClickOutside = (e: MouseEvent) => {
-            if (triggerRef.current && !triggerRef.current.contains(e.target as Node)) {
-                setIsOpen(false);
-            }
+            const target = e.target as Node;
+            // 检查点击是否在触发器或下拉菜单内部
+            if (triggerRef.current?.contains(target)) return;
+            if (dropdownRef.current?.contains(target)) return;
+            setIsOpen(false);
         };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        // 使用 mousedown 而不是 click，延迟添加监听器避免立即触发
+        const timer = setTimeout(() => {
+            document.addEventListener('mousedown', handleClickOutside);
+        }, 0);
+        return () => {
+            clearTimeout(timer);
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
     }, [isOpen]);
 
     const handleSelect = (optValue: string) => {
@@ -72,6 +81,7 @@ export function Control({ component, value, onChange, disabled }: ControlProps) 
 
             {isOpen && createPortal(
                 <div
+                    ref={dropdownRef}
                     style={dropdownStyle}
                     className="bg-white border border-slate-200 rounded-lg shadow-lg py-1 max-h-60 overflow-y-auto"
                 >

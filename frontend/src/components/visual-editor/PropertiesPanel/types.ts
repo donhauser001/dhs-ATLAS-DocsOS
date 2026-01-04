@@ -13,6 +13,8 @@ export interface PropertiesPanelProps {
     frontmatter: Record<string, unknown>;
     /** frontmatter 变更回调 */
     onFrontmatterChange: (frontmatter: Record<string, unknown>) => void;
+    /** 文档内容（用于解析数据块结构） */
+    content?: string;
     /** 是否禁用（编辑模式下禁用编辑） */
     disabled?: boolean;
     /** 是否默认展开 */

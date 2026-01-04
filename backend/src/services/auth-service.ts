@@ -389,8 +389,8 @@ export function hashPassword(password: string): string {
  * 检查用户是否有权访问指定路径
  */
 export function checkPathPermission(user: PublicUser, path: string): boolean {
-  // Admin 角色可以访问所有路径
-  if (user.role === 'admin') {
+  // Admin 和 Staff 角色可以访问所有路径
+  if (user.role === 'admin' || user.role === 'staff') {
     return true;
   }
 

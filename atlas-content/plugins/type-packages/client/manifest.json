@@ -1,0 +1,194 @@
+{
+  "id": "client",
+  "name": "客户管理",
+  "version": "1.0.0",
+  "type": "type-package",
+  "description": "标准客户关系管理类型包，包含客户基本信息、联系方式、跟进记录等数据块",
+  "author": {
+    "name": "ATLAS Official",
+    "email": "team@atlas.dev",
+    "url": "https://atlas.dev"
+  },
+  "license": "MIT",
+  "keywords": ["CRM", "客户", "销售", "B2B"],
+  "icon": "building",
+  "color": "#3B82F6",
+  "isOfficial": true,
+  "category": "business",
+  "defaultFunction": "entity_detail",
+  "defaultDisplay": "detail.card",
+  "defaultCapabilities": ["editable", "searchable", "linkable"],
+  "atlas": {
+    "minVersion": "1.0.0"
+  },
+  "blocks": [
+    {
+      "id": "basic-info",
+      "name": "基本信息",
+      "description": "客户基本信息",
+      "icon": "info",
+      "color": "#3B82F6",
+      "defaultExpanded": true,
+      "fields": [
+        {
+          "key": "company_name",
+          "type": "text",
+          "label": "公司名称",
+          "required": true
+        },
+        {
+          "key": "industry",
+          "type": "select",
+          "label": "行业",
+          "options": [
+            { "value": "tech", "label": "科技" },
+            { "value": "finance", "label": "金融" },
+            { "value": "education", "label": "教育" },
+            { "value": "media", "label": "传媒" },
+            { "value": "retail", "label": "零售" },
+            { "value": "other", "label": "其他" }
+          ]
+        },
+        {
+          "key": "scale",
+          "type": "select",
+          "label": "企业规模",
+          "options": [
+            { "value": "startup", "label": "初创 (<50人)" },
+            { "value": "small", "label": "小型 (50-200人)" },
+            { "value": "medium", "label": "中型 (200-1000人)" },
+            { "value": "large", "label": "大型 (>1000人)" }
+          ]
+        },
+        {
+          "key": "website",
+          "type": "text",
+          "label": "官网"
+        },
+        {
+          "key": "address",
+          "type": "textarea",
+          "label": "地址"
+        }
+      ]
+    },
+    {
+      "id": "contact-info",
+      "name": "联系方式",
+      "description": "客户联系信息",
+      "icon": "phone",
+      "color": "#8B5CF6",
+      "fields": [
+        {
+          "key": "contact_name",
+          "type": "text",
+          "label": "联系人"
+        },
+        {
+          "key": "phone",
+          "type": "text",
+          "label": "电话"
+        },
+        {
+          "key": "email",
+          "type": "text",
+          "label": "邮箱"
+        },
+        {
+          "key": "wechat",
+          "type": "text",
+          "label": "微信"
+        }
+      ]
+    },
+    {
+      "id": "business-info",
+      "name": "业务信息",
+      "description": "客户业务相关信息",
+      "icon": "briefcase",
+      "color": "#10B981",
+      "fields": [
+        {
+          "key": "status",
+          "type": "select",
+          "label": "客户状态",
+          "options": [
+            { "value": "lead", "label": "潜在客户" },
+            { "value": "prospect", "label": "意向客户" },
+            { "value": "customer", "label": "正式客户" },
+            { "value": "churned", "label": "流失客户" }
+          ]
+        },
+        {
+          "key": "source",
+          "type": "select",
+          "label": "客户来源",
+          "options": [
+            { "value": "referral", "label": "转介绍" },
+            { "value": "website", "label": "官网" },
+            { "value": "exhibition", "label": "展会" },
+            { "value": "cold_call", "label": "陌拜" },
+            { "value": "other", "label": "其他" }
+          ]
+        },
+        {
+          "key": "owner",
+          "type": "text",
+          "label": "负责人"
+        },
+        {
+          "key": "value",
+          "type": "number",
+          "label": "预估价值"
+        }
+      ]
+    },
+    {
+      "id": "follow-up",
+      "name": "跟进记录",
+      "description": "客户跟进历史",
+      "icon": "history",
+      "color": "#F59E0B",
+      "fields": [
+        {
+          "key": "last_contact",
+          "type": "date",
+          "label": "最近联系"
+        },
+        {
+          "key": "next_action",
+          "type": "text",
+          "label": "下一步行动"
+        },
+        {
+          "key": "notes",
+          "type": "textarea",
+          "label": "备注"
+        }
+      ]
+    }
+  ],
+  "views": [
+    {
+      "id": "card",
+      "name": "卡片视图",
+      "component": "ClientCardView",
+      "icon": "layout-grid"
+    },
+    {
+      "id": "detail",
+      "name": "详情视图",
+      "component": "ClientDetailView",
+      "icon": "file-text"
+    }
+  ],
+  "frontmatterTemplate": {
+    "doc-type": "client",
+    "function-type": "entity_detail",
+    "display-mode": "detail.card",
+    "capabilities": ["editable", "searchable", "linkable"]
+  },
+  "createdAt": "2026-01-01",
+  "updatedAt": "2026-01-04"
+}
+

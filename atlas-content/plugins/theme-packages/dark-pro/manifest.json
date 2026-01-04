@@ -1,0 +1,47 @@
+{
+  "id": "dark-pro",
+  "name": "暗黑专业版",
+  "version": "1.0.0",
+  "type": "theme-package",
+  "description": "专业级深色主题，适合长时间工作，护眼设计",
+  "author": {
+    "name": "ATLAS Official",
+    "email": "team@atlas.dev",
+    "url": "https://atlas.dev"
+  },
+  "license": "MIT",
+  "keywords": ["深色", "护眼", "专业"],
+  "icon": "moon",
+  "color": "#1E293B",
+  "isOfficial": true,
+  "mode": "dark",
+  "previewColors": ["#1E293B", "#334155", "#94A3B8", "#F8FAFC"],
+  "colors": [
+    { "name": "--primary", "light": "#3B82F6", "dark": "#38BDF8" },
+    { "name": "--primary-foreground", "light": "#FFFFFF", "dark": "#0C4A6E" },
+    { "name": "--secondary", "light": "#F1F5F9", "dark": "#1E293B" },
+    { "name": "--secondary-foreground", "light": "#0F172A", "dark": "#E2E8F0" },
+    { "name": "--background", "light": "#FFFFFF", "dark": "#0F172A" },
+    { "name": "--foreground", "light": "#0F172A", "dark": "#E2E8F0" },
+    { "name": "--muted", "light": "#F1F5F9", "dark": "#1E293B" },
+    { "name": "--muted-foreground", "light": "#64748B", "dark": "#94A3B8" },
+    { "name": "--accent", "light": "#F1F5F9", "dark": "#334155" },
+    { "name": "--accent-foreground", "light": "#0F172A", "dark": "#E2E8F0" },
+    { "name": "--destructive", "light": "#EF4444", "dark": "#F87171" },
+    { "name": "--destructive-foreground", "light": "#FFFFFF", "dark": "#FFFFFF" },
+    { "name": "--border", "light": "#E2E8F0", "dark": "#334155" },
+    { "name": "--input", "light": "#E2E8F0", "dark": "#334155" },
+    { "name": "--ring", "light": "#3B82F6", "dark": "#38BDF8" }
+  ],
+  "fonts": {
+    "primary": "Inter, system-ui, sans-serif",
+    "secondary": "Inter, system-ui, sans-serif",
+    "mono": "JetBrains Mono, Consolas, monospace"
+  },
+  "styles": [
+    "styles/variables.css"
+  ],
+  "createdAt": "2026-01-01",
+  "updatedAt": "2026-01-03"
+}
+

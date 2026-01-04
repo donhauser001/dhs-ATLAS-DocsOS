@@ -56,7 +56,8 @@ import {
 import {
     DetailCardRenderer,
     DetailFormRenderer,
-    DetailSplitRenderer
+    DetailSplitRenderer,
+    DetailTabRenderer
 } from './detail';
 // 能力面板
 import { CapabilityPanels } from '@/components/capabilities';
@@ -109,6 +110,7 @@ const DISPLAY_RENDERERS: Record<string, React.ComponentType<DisplayRendererProps
     'detail.card': DetailCardRenderer,
     'detail.form': DetailFormRenderer,
     'detail.split': DetailSplitRenderer,
+    'detail.tab': DetailTabRenderer,
 };
 
 /**

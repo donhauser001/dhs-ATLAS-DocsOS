@@ -29,7 +29,16 @@ export type ComponentType =
     | 'file'
     | 'files'
     | 'image'
-    | 'images';
+    | 'images'
+    | 'phone'
+    | 'email'
+    | 'id-card'
+    | 'toggle'
+    | 'folder-picker'
+    | 'avatar'
+    | 'file-list'
+    | 'tags'
+    | 'id-generator';
 
 // ============================================================
 // 组件定义类型
@@ -126,6 +135,102 @@ export interface ImagesComponentDefinition extends BaseComponentDefinition {
     directory?: string;
 }
 
+/** 手机号组件定义 */
+export interface PhoneComponentDefinition extends BaseComponentDefinition {
+    type: 'phone';
+    placeholder?: string;
+    /** 国家代码 */
+    countryCode?: string;
+}
+
+/** 邮箱组件定义 */
+export interface EmailComponentDefinition extends BaseComponentDefinition {
+    type: 'email';
+    placeholder?: string;
+}
+
+/** 身份证号组件定义 */
+export interface IdCardComponentDefinition extends BaseComponentDefinition {
+    type: 'id-card';
+    placeholder?: string;
+    /** 是否显示遮罩（保护隐私） */
+    masked?: boolean;
+}
+
+/** 开关组件定义 */
+export interface ToggleComponentDefinition extends BaseComponentDefinition {
+    type: 'toggle';
+    /** 开启时的文案 */
+    onLabel?: string;
+    /** 关闭时的文案 */
+    offLabel?: string;
+}
+
+/** 目录选择器组件定义 */
+export interface FolderPickerComponentDefinition extends BaseComponentDefinition {
+    type: 'folder-picker';
+    /** 是否支持多选 */
+    multiple?: boolean;
+    /** 根目录（限制选择范围） */
+    rootPath?: string;
+    placeholder?: string;
+}
+
+/** 头像组件定义 */
+export interface AvatarComponentDefinition extends BaseComponentDefinition {
+    type: 'avatar';
+    /** 裁切比例 (1:1 为默认) */
+    aspectRatio?: number;
+    /** 最大尺寸 (KB) */
+    maxSize?: number;
+    /** 上传目录 */
+    directory?: string;
+}
+
+/** 文件列表组件定义 */
+export interface FileListComponentDefinition extends BaseComponentDefinition {
+    type: 'file-list';
+    /** 是否允许下载 */
+    allowDownload?: boolean;
+    /** 是否允许删除 */
+    allowDelete?: boolean;
+    /** 显示模式: list | grid */
+    displayMode?: 'list' | 'grid';
+}
+
+/** 标签组件定义 */
+export interface TagsComponentDefinition extends BaseComponentDefinition {
+    type: 'tags';
+    /** 预设标签选项 */
+    suggestions?: string[];
+    /** 最大标签数量 */
+    maxTags?: number;
+    /** 是否允许创建新标签 */
+    allowCreate?: boolean;
+    /** 标签颜色 */
+    color?: string;
+    placeholder?: string;
+}
+
+/** ID生成器组件定义 */
+export interface IdGeneratorComponentDefinition extends BaseComponentDefinition {
+    type: 'id-generator';
+    /** 前缀 */
+    prefix?: string;
+    /** 后缀 */
+    suffix?: string;
+    /** ID 长度（不含前缀后缀） */
+    length?: number;
+    /** 格式: numeric=纯数字, alpha=纯字母, alphanumeric=字母数字混合, uuid=UUID */
+    format?: 'numeric' | 'alpha' | 'alphanumeric' | 'uuid' | 'timestamp';
+    /** 是否自动生成（创建时自动填充） */
+    autoGenerate?: boolean;
+    /** 是否允许手动编辑 */
+    editable?: boolean;
+    /** 是否大写 */
+    uppercase?: boolean;
+}
+
 /** 文档组件定义联合类型 */
 export type DocumentComponentDefinition =
     | SelectComponentDefinition
@@ -137,7 +242,16 @@ export type DocumentComponentDefinition =
     | FileComponentDefinition
     | FilesComponentDefinition
     | ImageComponentDefinition
-    | ImagesComponentDefinition;
+    | ImagesComponentDefinition
+    | PhoneComponentDefinition
+    | EmailComponentDefinition
+    | IdCardComponentDefinition
+    | ToggleComponentDefinition
+    | FolderPickerComponentDefinition
+    | AvatarComponentDefinition
+    | FileListComponentDefinition
+    | TagsComponentDefinition
+    | IdGeneratorComponentDefinition;
 
 // ============================================================
 // 组件控件 Props

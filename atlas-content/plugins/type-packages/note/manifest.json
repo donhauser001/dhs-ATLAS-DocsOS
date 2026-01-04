@@ -1,0 +1,91 @@
+{
+  "id": "note",
+  "name": "笔记",
+  "version": "1.0.0",
+  "type": "type-package",
+  "description": "知识记录和灵感捕捉，轻量级快速记录",
+  "author": {
+    "name": "ATLAS Official",
+    "email": "team@atlas.dev",
+    "url": "https://atlas.dev"
+  },
+  "license": "MIT",
+  "keywords": ["笔记", "知识管理", "记录"],
+  "icon": "sticky-note",
+  "color": "#14B8A6",
+  "isOfficial": true,
+  "category": "content",
+  "defaultFunction": "wiki",
+  "defaultDisplay": "article.double",
+  "defaultCapabilities": ["editable", "searchable", "linkable"],
+  "atlas": {
+    "minVersion": "1.0.0"
+  },
+  "blocks": [
+    {
+      "id": "note-info",
+      "name": "笔记信息",
+      "description": "笔记基本信息",
+      "icon": "sticky-note",
+      "color": "#14B8A6",
+      "defaultExpanded": true,
+      "fields": [
+        {
+          "key": "title",
+          "type": "text",
+          "label": "标题"
+        },
+        {
+          "key": "tags",
+          "type": "multi-select",
+          "label": "标签"
+        },
+        {
+          "key": "category",
+          "type": "select",
+          "label": "分类",
+          "options": [
+            { "value": "idea", "label": "灵感" },
+            { "value": "learning", "label": "学习" },
+            { "value": "work", "label": "工作" },
+            { "value": "life", "label": "生活" },
+            { "value": "other", "label": "其他" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "links",
+      "name": "关联",
+      "description": "相关链接",
+      "icon": "link",
+      "color": "#3B82F6",
+      "fields": [
+        {
+          "key": "related_notes",
+          "type": "multi-select",
+          "label": "相关笔记"
+        },
+        {
+          "key": "source",
+          "type": "text",
+          "label": "来源"
+        },
+        {
+          "key": "url",
+          "type": "text",
+          "label": "参考链接"
+        }
+      ]
+    }
+  ],
+  "frontmatterTemplate": {
+    "doc-type": "note",
+    "function-type": "wiki",
+    "display-mode": "article.double",
+    "capabilities": ["editable", "searchable", "linkable"]
+  },
+  "createdAt": "2026-01-01",
+  "updatedAt": "2026-01-04"
+}
+

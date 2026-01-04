@@ -155,15 +155,34 @@ export function BlockItem({
     const renderContent = () => {
         const baseInputClass = "w-full bg-transparent resize-none outline-none leading-relaxed overflow-hidden";
 
-        // YAML 块（数据块）- 使用精细化编辑器
-        if (block.type === 'yaml') {
+        // Atlas 数据块 - 使用精细化编辑器
+        if (block.type === 'data') {
+            // 从内容中提取 type 字段的值
+            const typeMatch = block.content.match(/^type:\s*(.+)$/m);
+            const dataTypeId = typeMatch ? typeMatch[1].trim() : '';
+            
+            // 类型 ID → 中文名称映射（后续可从类型包配置动态加载）
+            const TYPE_NAMES: Record<string, string> = {
+                'personal_info': '个人信息',
+                'contact_methods': '联系方式',
+                'address_info': '地址信息',
+                'social_accounts': '社交账号',
+                'tags_notes': '标签与备注',
+                // 通用类型
+                'data': '数据',
+                'info': '信息',
+                'list': '列表',
+                'table': '表格',
+            };
+            
+            const dataTypeName = TYPE_NAMES[dataTypeId] || dataTypeId || '数据';
+            
             return (
                 <div className="px-2 py-2">
                     <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[10px] font-medium text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">数据</span>
-                        {block.language && block.language !== 'yaml' && (
-                            <span className="text-[10px] text-slate-400">{block.language}</span>
-                        )}
+                        <span className="text-[10px] font-medium text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded">
+                            {dataTypeName}
+                        </span>
                     </div>
                     <DataBlockEditor
                         content={block.content}
@@ -391,7 +410,7 @@ export function BlockItem({
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 // 如果是数据类型且当前不是数据类型，显示模板选择器
-                                                if (option.type === 'yaml' && block.type !== 'yaml') {
+                                                if (option.type === 'data' && block.type !== 'data') {
                                                     setShowTypeMenu(false);
                                                     setShowTemplateSelector(true);
                                                 } else if (option.type === 'file') {
@@ -452,8 +471,8 @@ export function BlockItem({
                         className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50"
                     >
                         <TemplateSelector
-                            onSelect={(yamlContent, components) => {
-                                onChange({ ...block, type: 'yaml', content: yamlContent });
+                            onSelect={(dataContent, components) => {
+                                onChange({ ...block, type: 'data', content: dataContent });
                                 // 如果模板有组件，注入到文档
                                 if (components && Object.keys(components).length > 0 && onInjectComponents) {
                                     onInjectComponents(components);
@@ -464,7 +483,7 @@ export function BlockItem({
                             onSelectBlank={() => {
                                 onChange({
                                     ...block,
-                                    type: 'yaml',
+                                    type: 'data',
                                     content: generateDefaultDataBlockContent()
                                 });
                             }}

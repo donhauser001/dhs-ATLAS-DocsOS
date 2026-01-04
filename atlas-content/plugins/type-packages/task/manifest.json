@@ -1,0 +1,112 @@
+{
+  "id": "task",
+  "name": "任务清单",
+  "version": "1.0.0",
+  "type": "type-package",
+  "description": "待办任务管理，支持优先级、截止日期、状态追踪",
+  "author": {
+    "name": "ATLAS Official",
+    "email": "team@atlas.dev",
+    "url": "https://atlas.dev"
+  },
+  "license": "MIT",
+  "keywords": ["任务", "待办", "GTD", "效率"],
+  "icon": "check-square",
+  "color": "#F59E0B",
+  "isOfficial": true,
+  "category": "business",
+  "defaultFunction": "entity_detail",
+  "defaultDisplay": "detail.form",
+  "defaultCapabilities": ["editable", "searchable"],
+  "atlas": {
+    "minVersion": "1.0.0"
+  },
+  "blocks": [
+    {
+      "id": "task-info",
+      "name": "任务信息",
+      "description": "任务基本信息",
+      "icon": "check-square",
+      "color": "#F59E0B",
+      "defaultExpanded": true,
+      "fields": [
+        {
+          "key": "title",
+          "type": "text",
+          "label": "任务标题",
+          "required": true
+        },
+        {
+          "key": "status",
+          "type": "select",
+          "label": "状态",
+          "options": [
+            { "value": "todo", "label": "待办" },
+            { "value": "in_progress", "label": "进行中" },
+            { "value": "done", "label": "已完成" },
+            { "value": "cancelled", "label": "已取消" }
+          ]
+        },
+        {
+          "key": "priority",
+          "type": "select",
+          "label": "优先级",
+          "options": [
+            { "value": "low", "label": "低" },
+            { "value": "medium", "label": "中" },
+            { "value": "high", "label": "高" },
+            { "value": "urgent", "label": "紧急" }
+          ]
+        },
+        {
+          "key": "description",
+          "type": "textarea",
+          "label": "描述"
+        }
+      ]
+    },
+    {
+      "id": "schedule",
+      "name": "时间安排",
+      "description": "任务时间",
+      "icon": "calendar",
+      "color": "#3B82F6",
+      "fields": [
+        {
+          "key": "due_date",
+          "type": "date",
+          "label": "截止日期"
+        },
+        {
+          "key": "start_date",
+          "type": "date",
+          "label": "开始日期"
+        },
+        {
+          "key": "completed_at",
+          "type": "date",
+          "label": "完成日期"
+        },
+        {
+          "key": "estimated_hours",
+          "type": "number",
+          "label": "预估工时"
+        },
+        {
+          "key": "assignee",
+          "type": "text",
+          "label": "负责人"
+        }
+      ]
+    }
+  ],
+  "frontmatterTemplate": {
+    "doc-type": "task",
+    "function-type": "entity_detail",
+    "display-mode": "detail.form",
+    "capabilities": ["editable", "searchable"]
+  },
+  "createdAt": "2026-01-01",
+  "updatedAt": "2026-01-04"
+}
+

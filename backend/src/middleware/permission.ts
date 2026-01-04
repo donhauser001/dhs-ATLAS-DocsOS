@@ -5,7 +5,7 @@
  * Phase 3.3: 支持 Principal 文档认证
  */
 
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import {
   getUserByIdSync,
   getUserById,
@@ -15,6 +15,18 @@ import {
   canExecuteProposal,
   type PublicUser,
 } from '../services/auth-service.js';
+
+/**
+ * 异步中间件包装器
+ * 确保 Express 正确处理异步中间件的错误和返回值
+ */
+function asyncHandler(
+  fn: (req: Request, res: Response, next: NextFunction) => Promise<void>
+): RequestHandler {
+  return (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+}
 
 // 扩展 Request 类型
 declare global {

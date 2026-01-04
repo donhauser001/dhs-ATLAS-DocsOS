@@ -1,0 +1,184 @@
+{
+  "id": "project",
+  "name": "项目管理",
+  "version": "1.0.0",
+  "type": "type-package",
+  "description": "项目全生命周期管理，包含里程碑、任务、进度追踪",
+  "author": {
+    "name": "ATLAS Official",
+    "email": "team@atlas.dev",
+    "url": "https://atlas.dev"
+  },
+  "license": "MIT",
+  "keywords": ["项目", "任务", "进度", "协作"],
+  "icon": "folder",
+  "color": "#10B981",
+  "isOfficial": true,
+  "category": "business",
+  "defaultFunction": "entity_detail",
+  "defaultDisplay": "detail.card",
+  "defaultCapabilities": ["editable", "searchable", "linkable", "versionable"],
+  "atlas": {
+    "minVersion": "1.0.0"
+  },
+  "blocks": [
+    {
+      "id": "project-info",
+      "name": "项目信息",
+      "description": "项目基本信息",
+      "icon": "folder",
+      "color": "#10B981",
+      "defaultExpanded": true,
+      "fields": [
+        {
+          "key": "name",
+          "type": "text",
+          "label": "项目名称",
+          "required": true
+        },
+        {
+          "key": "code",
+          "type": "text",
+          "label": "项目编号"
+        },
+        {
+          "key": "status",
+          "type": "select",
+          "label": "项目状态",
+          "options": [
+            { "value": "planning", "label": "规划中" },
+            { "value": "in_progress", "label": "进行中" },
+            { "value": "on_hold", "label": "暂停" },
+            { "value": "completed", "label": "已完成" },
+            { "value": "cancelled", "label": "已取消" }
+          ]
+        },
+        {
+          "key": "priority",
+          "type": "select",
+          "label": "优先级",
+          "options": [
+            { "value": "low", "label": "低" },
+            { "value": "medium", "label": "中" },
+            { "value": "high", "label": "高" },
+            { "value": "urgent", "label": "紧急" }
+          ]
+        },
+        {
+          "key": "description",
+          "type": "textarea",
+          "label": "项目描述"
+        }
+      ]
+    },
+    {
+      "id": "timeline",
+      "name": "时间线",
+      "description": "项目时间安排",
+      "icon": "calendar",
+      "color": "#F59E0B",
+      "fields": [
+        {
+          "key": "start_date",
+          "type": "date",
+          "label": "开始日期"
+        },
+        {
+          "key": "end_date",
+          "type": "date",
+          "label": "截止日期"
+        },
+        {
+          "key": "actual_end",
+          "type": "date",
+          "label": "实际完成"
+        },
+        {
+          "key": "progress",
+          "type": "number",
+          "label": "进度 (%)",
+          "validation": {
+            "min": 0,
+            "max": 100
+          }
+        }
+      ]
+    },
+    {
+      "id": "team",
+      "name": "项目团队",
+      "description": "项目成员",
+      "icon": "users",
+      "color": "#8B5CF6",
+      "fields": [
+        {
+          "key": "manager",
+          "type": "text",
+          "label": "项目经理"
+        },
+        {
+          "key": "members",
+          "type": "multi-select",
+          "label": "团队成员"
+        },
+        {
+          "key": "stakeholders",
+          "type": "textarea",
+          "label": "干系人"
+        }
+      ]
+    },
+    {
+      "id": "budget",
+      "name": "预算信息",
+      "description": "项目预算",
+      "icon": "dollar-sign",
+      "color": "#3B82F6",
+      "fields": [
+        {
+          "key": "budget",
+          "type": "number",
+          "label": "预算金额"
+        },
+        {
+          "key": "spent",
+          "type": "number",
+          "label": "已支出"
+        },
+        {
+          "key": "currency",
+          "type": "select",
+          "label": "货币",
+          "options": [
+            { "value": "CNY", "label": "人民币" },
+            { "value": "USD", "label": "美元" },
+            { "value": "EUR", "label": "欧元" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "milestones",
+      "name": "里程碑",
+      "description": "项目里程碑",
+      "icon": "flag",
+      "color": "#EF4444",
+      "fields": [
+        {
+          "key": "milestones",
+          "type": "textarea",
+          "label": "里程碑列表"
+        }
+      ]
+    }
+  ],
+  "frontmatterTemplate": {
+    "doc-type": "project",
+    "function-type": "entity_detail",
+    "display-mode": "detail.card",
+    "capabilities": ["editable", "searchable", "linkable", "versionable"]
+  },
+  "createdAt": "2026-01-01",
+  "updatedAt": "2026-01-04"
+}
+
