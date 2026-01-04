@@ -1296,6 +1296,209 @@ _values: { ... }
 
 > **核心原则**：列表不仅是展示，更是数据操作的入口。但所有写操作必须经过权限校验。
 
+##### 能力与视图协作架构
+
+> **关键洞察**：能力是「契约」，视图是「载体」。
+> 同一个能力在不同视图下有不同的 UI 表现形式。
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        能力与视图协作架构                                  │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│   ┌───────────────────────────────────────────────────────────────┐     │
+│   │                    能力层（Capability Layer）                   │     │
+│   │    定义"能做什么" + "谁能做"，与视图无关                         │     │
+│   │    atlas.capabilities: [crud, export, share, comment, ...]    │     │
+│   └───────────────────────────────┬───────────────────────────────┘     │
+│                                   │                                      │
+│                                   ▼                                      │
+│   ┌───────────────────────────────────────────────────────────────┐     │
+│   │                 能力适配器注册表（Adapter Registry）             │     │
+│   │    每种视图为每种能力注册对应的 UI 适配器                         │     │
+│   └───────────────────────────────┬───────────────────────────────┘     │
+│                                   │                                      │
+│       ┌───────────────────────────┼───────────────────────────┐         │
+│       ▼                           ▼                           ▼         │
+│  ┌──────────────┐          ┌──────────────┐          ┌──────────────┐  │
+│  │  list.table  │          │  list.card   │          │   kanban     │  │
+│  │   适配器     │          │    适配器     │          │    适配器    │  │
+│  ├──────────────┤          ├──────────────┤          ├──────────────┤  │
+│  │ crud.create  │          │ crud.create  │          │ crud.create  │  │
+│  │ → 顶部新增行 │          │ → 新增卡片   │          │ → 列底新增   │  │
+│  │              │          │              │          │              │  │
+│  │ crud.edit    │          │ crud.edit    │          │ crud.edit    │  │
+│  │ → 行内编辑   │          │ → 弹窗表单   │          │ → 弹窗表单   │  │
+│  │              │          │              │          │              │  │
+│  │ crud.delete  │          │ crud.delete  │          │ crud.delete  │  │
+│  │ → 行末删除键 │          │ → 卡片角标   │          │ → 卡片菜单   │  │
+│  └──────────────┘          └──────────────┘          └──────────────┘  │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+##### 各视图的 CRUD 适配方案
+
+| 视图类型 | Create | Read | Update | Delete |
+|----------|--------|------|--------|--------|
+| **list.table** | 顶部"新增"按钮 → 插入空白行 | 默认 | 双击单元格行内编辑 | 行末删除图标 |
+| **list.card** | 顶部"新增"按钮 → 弹窗表单 | 默认 | 卡片悬停编辑图标 → 弹窗 | 卡片悬停删除图标 |
+| **list.compact** | 底部输入框快速新增 | 默认 | 点击行展开编辑 | 行末删除图标 |
+| **kanban.column** | 列底"+"按钮 → 新增卡片 | 默认 | 拖拽改状态 / 点击编辑 | 卡片右键菜单删除 |
+| **kanban.swimlane** | 同上 | 默认 | 同上 | 同上 |
+| **calendar.month** | 点击日期 → 新建事件 | 默认 | 点击事件 → 弹窗编辑 | 弹窗内删除按钮 |
+| **calendar.week** | 拖拽创建时间块 | 默认 | 拖拽调整时间 / 点击编辑 | 弹窗内删除按钮 |
+| **timeline.vertical** | "新增节点"按钮 | 默认 | 点击节点 → 弹窗编辑 | 弹窗内删除按钮 |
+| **timeline.gantt** | "新增任务"按钮 | 默认 | 拖拽调整时间 / 双击编辑 | 右键菜单删除 |
+| **gallery.grid** | "上传"按钮 | 默认 | 点击图片 → 弹窗编辑信息 | 弹窗内删除 / 批量选择删除 |
+| **detail.card** | N/A（单条记录） | 默认 | 点击字段编辑 / 编辑模式 | 页面级删除按钮 |
+| **detail.form** | N/A | 默认 | 表单直接编辑 | 页面级删除按钮 |
+| **tree.outline** | 节点后"+"按钮 | 默认 | 点击节点文字编辑 | 节点右键删除 |
+
+##### 适配器接口设计
+
+```typescript
+// 能力适配器接口
+interface CapabilityAdapter<T extends string> {
+  capability: T;                    // 能力标识 'crud' | 'export' | 'share' ...
+  
+  // 渲染方法：返回该能力在此视图下的 UI 组件
+  render: (context: AdapterContext) => React.ReactNode;
+  
+  // 操作方法：执行能力对应的操作
+  execute?: (action: string, payload: any) => Promise<void>;
+}
+
+// 适配器上下文
+interface AdapterContext {
+  viewMode: string;                 // 当前视图模式 'list.table' | 'kanban' ...
+  permissions: CapabilityPermissions; // 权限信息
+  data: any[];                      // 数据
+  selectedItems?: any[];            // 已选中项
+  onDataChange: (data: any[]) => void; // 数据变更回调
+}
+
+// CRUD 适配器示例
+const TableCrudAdapter: CapabilityAdapter<'crud'> = {
+  capability: 'crud',
+  
+  render: ({ permissions, data, onDataChange }) => (
+    <>
+      {/* 顶部操作栏 */}
+      {permissions.canCreate && <AddRowButton />}
+      
+      {/* 表格内的编辑/删除 */}
+      <Table>
+        {data.map(row => (
+          <TableRow key={row.id}>
+            {/* 行内编辑 */}
+            {permissions.canEdit && <InlineEditCells row={row} />}
+            
+            {/* 行末操作 */}
+            <ActionCell>
+              {permissions.canEdit && <EditButton />}
+              {permissions.canDelete && <DeleteButton />}
+            </ActionCell>
+          </TableRow>
+        ))}
+      </Table>
+    </>
+  ),
+};
+```
+
+##### 适配器注册表
+
+```typescript
+// 全局适配器注册表
+const CapabilityAdapterRegistry = {
+  // 按 [视图模式][能力] 注册适配器
+  adapters: {
+    'list.table': {
+      crud: TableCrudAdapter,
+      export: TableExportAdapter,
+      // ...
+    },
+    'list.card': {
+      crud: CardCrudAdapter,
+      export: CardExportAdapter,
+    },
+    'kanban.column': {
+      crud: KanbanCrudAdapter,
+    },
+    // ...
+  },
+  
+  // 获取适配器
+  getAdapter(viewMode: string, capability: string) {
+    return this.adapters[viewMode]?.[capability] || this.adapters['default']?.[capability];
+  },
+  
+  // 注册适配器
+  register(viewMode: string, capability: string, adapter: CapabilityAdapter) {
+    this.adapters[viewMode] = this.adapters[viewMode] || {};
+    this.adapters[viewMode][capability] = adapter;
+  },
+};
+```
+
+##### 视图渲染器集成能力
+
+```typescript
+// 通用视图渲染器基类
+const DisplayRenderer = ({ viewMode, capabilities, data, permissions }) => {
+  // 1. 获取基础视图组件
+  const ViewComponent = getViewComponent(viewMode);
+  
+  // 2. 为每个启用的能力获取适配器
+  const adapters = capabilities
+    .map(cap => CapabilityAdapterRegistry.getAdapter(viewMode, cap))
+    .filter(Boolean);
+  
+  // 3. 渲染视图 + 能力 UI
+  return (
+    <div className="display-renderer">
+      {/* 顶部能力工具栏（新增、导出等） */}
+      <CapabilityToolbar adapters={adapters} position="top" />
+      
+      {/* 视图主体 */}
+      <ViewComponent 
+        data={data} 
+        adapters={adapters}  // 传入适配器供视图使用
+        permissions={permissions}
+      />
+      
+      {/* 底部能力区域（批量操作等） */}
+      <CapabilityToolbar adapters={adapters} position="bottom" />
+    </div>
+  );
+};
+```
+
+##### 能力优先级与冲突处理
+
+某些能力可能有冲突或依赖关系：
+
+| 场景 | 处理策略 |
+|------|----------|
+| `crud` + `workflow` | 编辑操作触发状态流转检查 |
+| `crud` + `versioning` | 保存时自动创建版本 |
+| `export` + `permissions` | 导出内容受字段权限过滤 |
+| 视图不支持某能力 | 降级为默认 UI（如弹窗） |
+
+```yaml
+# 能力依赖与冲突配置
+capability_relations:
+  crud:
+    enhances: [versioning]      # 启用 crud 时自动增强 versioning
+    requires_check: [workflow]  # 操作前检查 workflow 状态
+    
+  workflow:
+    blocks: 
+      - capability: crud.delete
+        when: "status != 'draft'"  # 非草稿状态禁止删除
+```
+
 ##### 条目级 CRUD 操作
 
 | 操作 | 触发方式 | UI 形态 | 说明 |
