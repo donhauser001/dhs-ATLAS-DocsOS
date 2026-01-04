@@ -1,5 +1,21 @@
 # Phase 4.1 - 类型插件包与数据块资产池
 
+> 版本: 2.0.0  
+> 更新日期: 2026-01-05  
+> 状态: ✅ 核心功能已实现
+
+## 实现进度
+
+| 功能模块 | 状态 | 说明 |
+|----------|------|------|
+| 类型包核心结构 | ✅ 已完成 | manifest.yaml, template.md, blocks/ |
+| contact 类型包 | ✅ 已完成 | 联系人/用户管理类型包 |
+| 新建文档对话框 | ✅ 已完成 | 支持类型选择、数据块选择、保存位置 |
+| 插件设置界面 | ✅ 已完成 | 数据块字段配置、启用/禁用 |
+| 文档结构复制 | ✅ 已完成 | 一键复制文档结构到剪贴板 |
+| 组件注册系统 | ✅ 已完成 | 22种内置组件 |
+| 数据块资产池 | 🚧 规划中 | 个人/系统/全球资产池 |
+
 ## 背景
 
 在 Phase 4.0 完成文档属性体系重构后，我们识别出一个核心架构问题：
@@ -290,82 +306,190 @@ constraints:
     "webhook": ["api"]
 ```
 
-### 1.6 template.md 文档模板
+### 1.6 template.md 文档模板（新规范）
+
+> ⚠️ **重要更新**：文档模板现采用 `_components` + `_bindings` 架构，实现文档自包含。
 
 ```markdown
 ---
-# ====== 以下属性由类型包自动填充 ======
-document_type: {{type_id}}
+doc-type: contact
 title: "{{title}}"
-created_at: "{{created_at}}"
-updated_at: "{{updated_at}}"
+created: "{{created_at}}"
+updated: "{{updated_at}}"
 author: "{{author}}"
 
 atlas:
-  function: {{default_function}}
-  display: {{default_displays}}
-  capabilities: {{default_capabilities}}
+  function: entity_detail
+  display:
+    - detail.tab
+    - detail.card
+  capabilities:
+    - editable
+    - searchable
+    - linkable
+    - exportable
+
+# 组件定义（文档自包含，无需外部依赖）
+_components:
+  comp_avatar:
+    type: avatar
+    id: comp_avatar
+    label: 头像
+    aspectRatio: 1
+    maxSize: 2048
+    directory: /联系人/用户头像
+  comp_gender:
+    type: select
+    id: comp_gender
+    label: 性别
+    options:
+      - value: 男
+      - value: 女
+      - value: 保密
+  comp_phone:
+    type: phone
+    id: comp_phone
+    label: 手机
+    placeholder: 请输入手机号
+  comp_email:
+    type: email
+    id: comp_email
+    label: 邮箱
+    placeholder: 请输入邮箱地址
+  comp_tags:
+    type: tags
+    id: comp_tags
+    label: 标签
+    allowCreate: true
+  # ... 更多组件定义
 ---
 
 # {{title}}
 
-{{#each blocks}}
-## {{this.title}}
+## 个人信息
 
 ```atlas-data
-{{this.content}}
+type: contact_personal_info
+data:
+  avatar: ""
+  name: "{{title}}"
+  gender: ""
+  mobile: ""
+  email: ""
+  tags: ""
+_bindings:
+  avatar: comp_avatar
+  gender: comp_gender
+  mobile: comp_phone
+  email: comp_email
+  tags: comp_tags
 ```
 
-{{/each}}
+## 账户认证
+
+```atlas-data
+type: account_auth
+data:
+  can_login: false
+  identity: ""
+  username: ""
+  password: ""
+  role: "客户"
+_bindings:
+  can_login: comp_toggle
+  identity: comp_identity
+  role: comp_role
+```
 ```
 
-### 1.7 预置数据块示例
+#### 文档结构说明
+
+| 部分 | 说明 |
+|------|------|
+| `_components` | 在 frontmatter 中集中定义所有组件配置，文档自包含 |
+| `_bindings` | 在每个 `atlas-data` 块中声明字段到组件的绑定关系 |
+| `data` | 只包含字段键值对，不含 schema 定义（已移除冗余） |
+
+#### 组件复用
+
+同一组件可绑定到多个字段，无需重复定义：
 
 ```yaml
-# blocks/basic_info.yaml
-# 客户基本信息数据块
+_components:
+  comp_select:
+    type: select
+    id: comp_select
+    label: 通用选择
+    options:
+      - value: 选项A
+      - value: 选项B
 
-id: "client_basic_info"
-name: "基本信息"
-description: "客户的基本信息，包含名称、等级、来源等"
-required: true                            # 是否必选
-
-template: |
-  type: basic_info
-  schema:
-    - key: name
-      label: 客户名称
-      type: text
-      required: true
-    - key: level
-      label: 客户等级
-      type: select
-      options:
-        - value: vip
-          label: VIP
-          color: "#EF4444"
-        - value: important
-          label: 重要
-          color: "#F59E0B"
-        - value: normal
-          label: 普通
-          color: "#3B82F6"
-        - value: potential
-          label: 潜在
-          color: "#6B7280"
-    - key: source
-      label: 客户来源
-      type: select
-      options: [官网, 推荐, 广告, 展会, 其他]
-    - key: created_date
-      label: 建档日期
-      type: date
-  data:
-    name: ""
-    level: "normal"
-    source: ""
-    created_date: "{{today}}"
+# 在数据块中复用
+_bindings:
+  field1: comp_select
+  field2: comp_select  # 复用同一组件
 ```
+
+### 1.7 预置数据块示例（新规范）
+
+> ⚠️ **重要更新**：数据块定义已简化，移除 `schema` 和 `template`，改为 `fields` + `component` 引用。
+
+```yaml
+# blocks/contact_personal_info.yaml
+# 联系人个人信息数据块
+
+id: contact_personal_info
+name: 个人信息
+description: 联系人的基本信息，包括姓名、头像、联系方式等
+icon: user
+order: 1                                  # 插入顺序
+enabled: true                             # 是否启用
+
+fields:
+  - key: avatar
+    label: 头像
+    component: comp_avatar                # 引用模板中的组件
+    defaultValue: ""
+  - key: name
+    label: 姓名
+    defaultValue: ""
+  - key: gender
+    label: 性别
+    component: comp_gender
+    defaultValue: ""
+  - key: birthday
+    label: 生日
+    component: comp_birthday
+    defaultValue: ""
+  - key: mobile
+    label: 手机
+    component: comp_phone
+    defaultValue: ""
+  - key: email
+    label: 邮箱
+    component: comp_email
+    defaultValue: ""
+  - key: tags
+    label: 标签
+    component: comp_tags
+    defaultValue: ""
+  - key: notes
+    label: 备注
+    component: comp_notes
+    defaultValue: ""
+```
+
+#### 数据块定义说明
+
+| 字段 | 说明 |
+|------|------|
+| `id` | 数据块唯一标识，用于 `atlas-data` 的 `type` 字段 |
+| `name` | 显示名称 |
+| `icon` | Lucide 图标名 |
+| `order` | 新建文档时的插入顺序 |
+| `enabled` | 是否默认启用（可在插件设置中修改） |
+| `fields` | 字段列表，每个字段可引用组件或使用默认文本输入 |
+| `component` | 引用 `_components` 中定义的组件 ID |
 
 ---
 
@@ -756,7 +880,35 @@ cache:
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 3.3 数据块发布流程
+### 3.3 文档结构复制功能 ✅ 已实现
+
+在阅读模式下，点击"配置"按钮可以：
+
+1. **查看完整配置信息**：
+   - 类型包 (doc-type)
+   - 文档类型 (document_type)
+   - 功能类型 (function)
+   - 显现模式 (display)
+   - 能力列表 (capabilities)
+   - 组件配置 (_components)
+   - 数据块结构 (atlas-data 块的类型和字段)
+
+2. **一键复制文档结构**：
+   - 点击复制按钮，将文档模板复制到剪贴板
+   - 模板包含完整的 frontmatter（含 `_components`）和空数据块
+   - 粘贴到新文件即可创建同结构文档
+   - 无需配置，直接填写数据
+
+#### 使用场景
+
+| 场景 | 说明 |
+|------|------|
+| 快速复制 | 基于现有文档创建同类型新文档 |
+| 结构分享 | 将设计好的文档结构分享给同事 |
+| 模板备份 | 备份自己定制的文档结构 |
+| 跨系统迁移 | 在不同 ATLAS 实例间迁移文档结构 |
+
+### 3.4 数据块发布流程
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -1388,39 +1540,64 @@ export interface AssetPool {
 
 ### A. 内置类型包清单
 
-| 类型包 ID | 名称 | 分类 | 预置数据块 |
-|-----------|------|------|-----------|
-| client | 客户管理 | 业务 | 基本信息、联系方式、公司信息、跟进记录 |
-| product | 产品管理 | 业务 | 产品信息、规格参数、价格配置、库存状态 |
-| order | 订单管理 | 业务 | 订单信息、商品明细、收货地址、物流状态 |
-| supplier | 供应商管理 | 业务 | 供应商信息、联系方式、合作记录 |
-| project | 项目管理 | 业务 | 项目信息、里程碑、任务列表、成员 |
-| employee | 员工管理 | 业务 | 员工信息、部门、职位、联系方式 |
-| article | 文章 | 内容 | 摘要、正文、标签、封面 |
-| note | 笔记 | 内容 | 内容、标签 |
-| document | 文档 | 内容 | 目录、章节 |
-| media | 媒体 | 内容 | 媒体信息、文件、缩略图 |
+| 类型包 ID | 名称 | 分类 | 状态 | 预置数据块 |
+|-----------|------|------|------|-----------|
+| **contact** | 联系人管理 | 业务 | ✅ 已实现 | 个人信息、账户认证 |
+| client | 客户管理 | 业务 | 🚧 规划中 | 基本信息、联系方式、公司信息、跟进记录 |
+| product | 产品管理 | 业务 | 🚧 规划中 | 产品信息、规格参数、价格配置、库存状态 |
+| order | 订单管理 | 业务 | 🚧 规划中 | 订单信息、商品明细、收货地址、物流状态 |
+| supplier | 供应商管理 | 业务 | 🚧 规划中 | 供应商信息、联系方式、合作记录 |
+| project | 项目管理 | 业务 | 🚧 规划中 | 项目信息、里程碑、任务列表、成员 |
+| task | 任务管理 | 业务 | 🚧 规划中 | 任务信息、状态、负责人 |
+| article | 文章 | 内容 | 🚧 规划中 | 摘要、正文、标签、封面 |
+| note | 笔记 | 内容 | 🚧 规划中 | 内容、标签 |
 
 ### B. 内置数据块清单
 
-| 数据块 ID | 名称 | 兼容模式 | 适用类型 |
-|-----------|------|----------|----------|
-| basic_info | 基本信息 | 通用 | 所有 |
-| contact_info | 联系方式 | 白名单 | client, supplier, employee |
-| company_info | 公司信息 | 白名单 | client, supplier |
-| follow_up | 跟进记录 | 白名单 | client, supplier, project |
-| timestamp | 时间戳 | 通用 | 所有 |
-| file_attachment | 文件附件 | 通用 | 所有 |
-| tag_group | 标签组 | 通用 | 所有 |
-| status_badge | 状态标记 | 通用 | 所有 |
-| price_config | 价格配置 | 白名单 | product, order |
-| address | 地址信息 | 白名单 | client, supplier, order |
-| milestone | 里程碑 | 白名单 | project |
-| task_list | 任务列表 | 白名单 | project, note |
+| 数据块 ID | 名称 | 状态 | 兼容模式 | 适用类型 |
+|-----------|------|------|----------|----------|
+| **contact_personal_info** | 个人信息 | ✅ 已实现 | 白名单 | contact |
+| **account_auth** | 账户认证 | ✅ 已实现 | 白名单 | contact |
+| basic_info | 基本信息 | 🚧 规划中 | 通用 | 所有 |
+| contact_info | 联系方式 | 🚧 规划中 | 白名单 | client, supplier, employee |
+| company_info | 公司信息 | 🚧 规划中 | 白名单 | client, supplier |
+| follow_up | 跟进记录 | 🚧 规划中 | 白名单 | client, supplier, project |
+| timestamp | 时间戳 | 🚧 规划中 | 通用 | 所有 |
+| file_attachment | 文件附件 | 🚧 规划中 | 通用 | 所有 |
+| tag_group | 标签组 | 🚧 规划中 | 通用 | 所有 |
+| status_badge | 状态标记 | 🚧 规划中 | 通用 | 所有 |
+
+### C. 内置组件清单
+
+| 组件类型 | 名称 | 状态 | 说明 |
+|----------|------|------|------|
+| `select` | 下拉选择 | ✅ | 单选下拉菜单 |
+| `multi-select` | 多选下拉 | ✅ | 多选下拉菜单 |
+| `radio` | 单选按钮 | ✅ | 单选按钮组 |
+| `checkbox` | 复选框 | ✅ | 复选框组 |
+| `rating` | 评分 | ✅ | 星级评分 |
+| `number` | 数字输入 | ✅ | 数字输入框 |
+| `date` | 日期选择 | ✅ | 日期选择器 |
+| `text` | 单行文本 | ✅ | 单行文本输入 |
+| `textarea` | 多行文本 | ✅ | 多行文本输入 |
+| `file` | 单文件 | ✅ | 单文件选择 |
+| `files` | 多文件 | ✅ | 多文件选择 |
+| `image` | 单图片 | ✅ | 单图片选择 |
+| `images` | 多图片 | ✅ | 多图片选择 |
+| `phone` | 手机号 | ✅ | 手机号输入（带格式化） |
+| `email` | 邮箱 | ✅ | 邮箱输入（带验证） |
+| `id-card` | 身份证 | ✅ | 身份证号输入（带掩码） |
+| `toggle` | 开关 | ✅ | 布尔值切换开关 |
+| `folder-picker` | 目录选择 | ✅ | 选择文件系统目录 |
+| `avatar` | 头像 | ✅ | 头像上传（带裁剪） |
+| `file-list` | 文件列表 | ✅ | 只读文件列表展示 |
+| `tags` | 标签 | ✅ | 标签输入（支持自定义） |
+| `id-generator` | ID生成器 | ✅ | 自动生成唯一标识 |
 
 ---
 
-*文档版本: 1.0*
+*文档版本: 2.0*
 *创建日期: 2026-01-04*
+*更新日期: 2026-01-05*
 *作者: ATLAS Team*
 
