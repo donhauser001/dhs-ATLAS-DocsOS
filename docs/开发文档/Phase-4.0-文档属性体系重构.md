@@ -1125,6 +1125,164 @@ _values: { ... }
   - [ ] 配置每页数量
   - [ ] 分页器组件
 
+#### 4.0.3.5 条目操作与权限控制（待实现）
+
+> **核心原则**：列表不仅是展示，更是数据操作的入口。但所有写操作必须经过权限校验。
+
+##### 条目级 CRUD 操作
+
+| 操作 | 触发方式 | UI 形态 | 说明 |
+|------|----------|---------|------|
+| **查看详情** | 点击行/卡片 | 跳转或弹窗 | 默认开放 |
+| **行内编辑** | 双击单元格 | 单元格变为输入框 | 需 `edit` 权限 |
+| **快速编辑** | 点击编辑图标 | 弹出编辑表单 | 需 `edit` 权限 |
+| **保存** | 编辑后自动/手动 | 保存按钮/自动保存 | 需 `edit` 权限 |
+| **删除** | 点击删除图标 | 确认弹窗 | 需 `delete` 权限 |
+| **批量删除** | 勾选多项后操作 | 确认弹窗 | 需 `delete` 权限 |
+| **新增** | 点击新增按钮 | 弹出表单或新增行 | 需 `create` 权限 |
+
+##### 权限控制架构
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      列表操作权限控制流程                          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐         │
+│   │  用户操作    │───▶│  权限检查    │───▶│  执行/拒绝   │         │
+│   └─────────────┘    └──────┬──────┘    └─────────────┘         │
+│                              │                                   │
+│                              ▼                                   │
+│   ┌─────────────────────────────────────────────────────┐       │
+│   │                    权限来源                          │       │
+│   ├─────────────────────────────────────────────────────┤       │
+│   │  1. API 层权限（后端校验，必须）                     │       │
+│   │     - /api/documents/:id [GET/POST/PUT/DELETE]      │       │
+│   │     - 基于 Principal 身份和 Sandbox 配置            │       │
+│   │                                                      │       │
+│   │  2. 文档能力声明（capabilities）                     │       │
+│   │     - atlas.capabilities: [crud, export, ...]       │       │
+│   │     - 控制 UI 是否渲染操作按钮                       │       │
+│   │                                                      │       │
+│   │  3. 字段级权限（field_permissions）                  │       │
+│   │     - 某些字段只读，某些字段可编辑                   │       │
+│   │     - 基于状态的条件权限                             │       │
+│   └─────────────────────────────────────────────────────┘       │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+##### 权限配置示例
+
+```yaml
+# 文档 frontmatter 中的权限配置
+---
+atlas:
+  capabilities:
+    - crud           # 开启增删改查能力
+    - export
+    
+  # 细粒度权限控制
+  permissions:
+    create: [admin, editor]           # 可新增的角色
+    read: [authenticated]             # 可查看的角色
+    edit: [admin, editor, author]     # 可编辑的角色（author = 文档作者）
+    delete: [admin]                   # 可删除的角色
+    
+  # 字段级权限
+  field_permissions:
+    status:
+      edit: [admin]                   # 只有 admin 能改状态
+    price:
+      edit: [admin, finance]          # 只有 admin 和 finance 能改价格
+      
+  # 基于状态的条件权限
+  conditional_permissions:
+    - when: "status == 'completed'"
+      deny: [edit, delete]            # 已完成的条目不可编辑/删除
+    - when: "status == 'pending'"
+      allow: [edit]                   # 待处理的条目可编辑
+---
+```
+
+##### 前端权限感知
+
+```typescript
+// 列表组件接收权限上下文
+interface ListPermissions {
+  canCreate: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  canExport: boolean;
+  
+  // 字段级权限
+  fieldPermissions: {
+    [fieldName: string]: {
+      canEdit: boolean;
+      canView: boolean;
+    };
+  };
+  
+  // 条目级权限（可能因条目状态而异）
+  getItemPermissions: (item: any) => {
+    canEdit: boolean;
+    canDelete: boolean;
+  };
+}
+
+// UI 渲染逻辑
+const ListRenderer = ({ data, permissions }) => {
+  return (
+    <div>
+      {/* 新增按钮：仅当有 create 权限时显示 */}
+      {permissions.canCreate && <AddButton />}
+      
+      {data.map(item => (
+        <ListItem key={item.id}>
+          {/* 编辑按钮：检查条目级权限 */}
+          {permissions.getItemPermissions(item).canEdit && <EditButton />}
+          
+          {/* 删除按钮：检查条目级权限 */}
+          {permissions.getItemPermissions(item).canDelete && <DeleteButton />}
+        </ListItem>
+      ))}
+    </div>
+  );
+};
+```
+
+##### 安全原则
+
+| 原则 | 说明 |
+|------|------|
+| **后端优先** | 前端权限检查仅用于 UI 控制，真正的安全校验在后端 API |
+| **最小权限** | 默认无权限，必须显式声明才开放 |
+| **无权限 = 不渲染** | 没有权限的操作按钮根本不显示，而非显示后禁用 |
+| **双重确认** | 删除等危险操作必须弹窗确认 |
+| **操作日志** | 所有写操作记录到 Git commit 历史 |
+
+##### 实现任务清单
+
+- [ ] 权限 API 设计
+  - [ ] `GET /api/permissions/:documentPath` - 获取当前用户对文档的权限
+  - [ ] 权限结果缓存策略
+- [ ] 前端权限 Hook
+  - [ ] `useListPermissions(documentPath)` - 获取列表操作权限
+  - [ ] `useItemPermissions(item)` - 获取条目级权限
+- [ ] 列表操作组件
+  - [ ] `InlineEditCell` - 行内编辑单元格
+  - [ ] `QuickEditModal` - 快速编辑弹窗
+  - [ ] `DeleteConfirmDialog` - 删除确认弹窗
+  - [ ] `BatchOperationBar` - 批量操作栏
+- [ ] 操作 API 集成
+  - [ ] `POST /api/documents` - 新增条目
+  - [ ] `PUT /api/documents/:id` - 更新条目
+  - [ ] `DELETE /api/documents/:id` - 删除条目
+  - [ ] `POST /api/documents/batch` - 批量操作
+- [ ] 权限错误处理
+  - [ ] 403 错误友好提示
+  - [ ] 权限变更实时刷新
+
 ---
 
 ### Phase 4.0.4 - 看板与时间视图 ✅ 已完成
