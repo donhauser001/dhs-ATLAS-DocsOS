@@ -253,6 +253,97 @@ title: Test
   });
 
   // ============================================================
+  // atlas-data 格式测试 (Phase 4.2)
+  // ============================================================
+
+  describe('atlas-data 格式', () => {
+    it('应该正确解析 atlas-data 代码块', () => {
+      const content = `## 用户认证 {#user-auth}
+
+\`\`\`atlas-data
+type: __atlas_user_auth__
+version: "1.0"
+id: U20260106001
+status: active
+title: 张三
+data:
+  user_id: "U20260106001"
+  username: "zhangsan"
+  email: "zhangsan@example.com"
+  role: "staff"
+\`\`\`
+`;
+
+      const blocks = parseBlocks(content);
+
+      expect(blocks).toHaveLength(1);
+      expect(blocks[0].anchor).toBe('user-auth');
+      expect(blocks[0].machine.type).toBe('__atlas_user_auth__');
+      expect(blocks[0].machine.data?.username).toBe('zhangsan');
+    });
+
+    it('atlas-data 和 yaml 格式应该产生相同的解析结果', () => {
+      const yamlContent = `## Test YAML {#test-yaml}
+
+\`\`\`yaml
+type: service
+id: S-001
+status: active
+title: Test Service
+\`\`\`
+`;
+
+      const atlasDataContent = `## Test Atlas {#test-atlas}
+
+\`\`\`atlas-data
+type: service
+id: S-001
+status: active
+title: Test Service
+\`\`\`
+`;
+
+      const yamlBlocks = parseBlocks(yamlContent);
+      const atlasBlocks = parseBlocks(atlasDataContent);
+
+      expect(yamlBlocks[0].machine.type).toBe(atlasBlocks[0].machine.type);
+      expect(yamlBlocks[0].machine.id).toBe(atlasBlocks[0].machine.id);
+      expect(yamlBlocks[0].machine.status).toBe(atlasBlocks[0].machine.status);
+    });
+
+    it('应该在文档中同时支持 yaml 和 atlas-data 格式', () => {
+      const content = `---
+version: "1.0"
+---
+
+## YAML Block {#yaml-block}
+
+\`\`\`yaml
+type: note
+id: N-001
+status: active
+title: YAML Note
+\`\`\`
+
+## Atlas Data Block {#atlas-block}
+
+\`\`\`atlas-data
+type: __atlas_user_auth__
+id: U-001
+status: active
+title: User Auth
+\`\`\`
+`;
+
+      const result = parseADL(content, 'mixed.md');
+
+      expect(result.blocks).toHaveLength(2);
+      expect(result.blocks[0].machine.type).toBe('note');
+      expect(result.blocks[1].machine.type).toBe('__atlas_user_auth__');
+    });
+  });
+
+  // ============================================================
   // 边界情况测试
   // ============================================================
   

@@ -1,0 +1,54 @@
+{
+  "_meta": {
+    "index_name": "auth-users",
+    "version": "2.0",
+    "identifier": "__atlas_user_auth__",
+    "last_full_scan": "2026-01-05T21:19:29.041Z",
+    "last_update": "2026-01-05T21:26:29.085Z",
+    "stats": {
+      "total_users": 1,
+      "total_documents": 1,
+      "by_status": {
+        "active": 1,
+        "pending": 0,
+        "disabled": 0,
+        "locked": 0,
+        "expired": 0
+      },
+      "by_role": {
+        "admin": 1
+      }
+    }
+  },
+  "credentials": {
+    "admin": {
+      "type": "username",
+      "user_id": "U20260105005"
+    },
+    "admin@atlas.local": {
+      "type": "email",
+      "user_id": "U20260105005"
+    }
+  },
+  "users": {
+    "U20260105005": {
+      "user_id": "U20260105005",
+      "username": "admin",
+      "email": "admin@atlas.local",
+      "phone": null,
+      "password_hash": "$2b$10$iQk8ct1.0Abi6fdKZX2lKuLAV0Nq/ldRzIYS7lHlmqPTdEnRzo7Om",
+      "role": "admin",
+      "role_name": "管理员",
+      "status": "active",
+      "last_login": "2026-01-05T21:25:25.194Z",
+      "expired_at": null,
+      "created_at": "2026-01-05T21:19:29.041Z",
+      "updated_at": "2026-01-05T21:26:29.084Z",
+      "_doc_path": "_users/admin.md",
+      "_component_id": null,
+      "failed_attempts": 0,
+      "locked_until": null,
+      "last_failed_at": null
+    }
+  }
+}

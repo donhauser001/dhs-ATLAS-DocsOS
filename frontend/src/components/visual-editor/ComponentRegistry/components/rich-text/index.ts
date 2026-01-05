@@ -16,3 +16,4 @@ const RichTextComponent: RegisteredComponent = {
 
 export default RichTextComponent;
 
+

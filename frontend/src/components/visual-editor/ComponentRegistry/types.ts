@@ -57,7 +57,9 @@ export type ComponentType =
     | 'rich-text'
     | 'json'
     | 'login-stats'
-    | 'audit-log';
+    | 'audit-log'
+    // Phase 4.2: 用户认证组件
+    | 'user-auth';
 
 // ============================================================
 // 组件定义类型
@@ -511,6 +513,54 @@ export interface AuditLogComponentDefinition extends BaseComponentDefinition {
     excludeFields?: string[];
 }
 
+// ============================================================
+// Phase 4.2: 用户认证组件定义
+// ============================================================
+
+/** 账户状态类型 */
+export type UserAuthStatus = 'active' | 'pending' | 'disabled' | 'locked' | 'expired';
+
+/** 用户认证数据值 */
+export interface UserAuthValue {
+    /** 用户唯一ID */
+    user_id: string;
+    /** 用户名（登录用） */
+    username: string;
+    /** 邮箱 */
+    email?: string;
+    /** 手机号 */
+    phone?: string;
+    /** 密码哈希值 */
+    password_hash?: string;
+    /** 角色 */
+    role: string;
+    /** 账户状态 */
+    status: UserAuthStatus;
+    /** 最后登录时间 */
+    last_login?: string;
+    /** 过期时间 */
+    expired_at?: string;
+}
+
+/** 用户认证组件定义（字段组复合组件） */
+export interface UserAuthComponentDefinition extends BaseComponentDefinition {
+    type: 'user-auth';
+    /** 是否字段组（固定为 true） */
+    isFieldGroup: true;
+    /** 数据块类型标识（固定） */
+    dataBlockType: '__atlas_user_auth__';
+    /** 用户名是否必填 */
+    requireUsername?: boolean;
+    /** 邮箱是否必填 */
+    requireEmail?: boolean;
+    /** 手机号是否必填 */
+    requirePhone?: boolean;
+    /** 是否启用账户过期 */
+    enableExpiration?: boolean;
+    /** 默认状态 */
+    defaultStatus?: UserAuthStatus;
+}
+
 /** 文档组件定义联合类型 */
 export type DocumentComponentDefinition =
     | SelectComponentDefinition
@@ -550,7 +600,9 @@ export type DocumentComponentDefinition =
     | RichTextComponentDefinition
     | JsonComponentDefinition
     | LoginStatsComponentDefinition
-    | AuditLogComponentDefinition;
+    | AuditLogComponentDefinition
+    // Phase 4.2: 用户认证组件
+    | UserAuthComponentDefinition;
 
 // ============================================================
 // 组件控件 Props
@@ -560,10 +612,10 @@ export type DocumentComponentDefinition =
 export interface ControlProps {
     /** 组件定义 */
     component: DocumentComponentDefinition;
-    /** 当前值 */
-    value: string | string[] | number | null | undefined;
-    /** 值变更回调 */
-    onChange: (value: string | string[] | number | null) => void;
+    /** 当前值（支持对象类型，用于字段组组件） */
+    value: string | string[] | number | object | null | undefined;
+    /** 值变更回调（支持对象类型，用于字段组组件） */
+    onChange: (value: string | string[] | number | object | null) => void;
     /** 是否禁用 */
     disabled?: boolean;
 }
@@ -583,7 +635,7 @@ export interface ConfiguratorProps {
 // ============================================================
 
 /** 组件分类 */
-export type ComponentCategory = 'input' | 'smart' | 'display' | 'relation';
+export type ComponentCategory = 'input' | 'smart' | 'display' | 'relation' | 'security';
 
 /** 组件分类元数据 */
 export interface CategoryMeta {

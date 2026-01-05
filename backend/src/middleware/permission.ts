@@ -1,13 +1,11 @@
 /**
  * Permission Middleware - 权限中间件
  * 
- * Phase 1: 实现路径权限检查
- * Phase 3.3: 支持 Principal 文档认证
+ * Phase 4.2: 基于新的认证索引系统
  */
 
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import {
-  getUserByIdSync,
   getUserById,
   toPublicUser,
   checkPathPermission,
@@ -41,59 +39,43 @@ declare global {
 declare module 'express-session' {
   interface SessionData {
     userId?: string;
-    authSource?: 'principal' | 'legacy';
+    authSource?: 'index' | 'legacy';
   }
 }
 
 /**
  * 认证中间件 - 检查用户是否已登录
- * 
- * Phase 3.3: 支持异步获取 Principal 用户
  */
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   const userId = req.session?.userId;
-  const authSource = req.session?.authSource || 'legacy';
 
   if (!userId) {
     res.status(401).json({ error: 'Authentication required' });
     return;
   }
 
-  // 根据认证来源选择获取方式
-  let user = null;
-  if (authSource === 'principal') {
-    user = await getUserById(userId);
-  } else {
-    user = getUserByIdSync(userId);
-  }
+  // 从新索引系统获取用户
+  const user = await getUserById(userId);
 
   if (!user) {
     res.status(401).json({ error: 'User not found' });
     return;
   }
 
-  req.user = toPublicUser(user, authSource);
+  req.user = toPublicUser(user, 'index');
   next();
 }
 
 /**
  * 可选认证中间件 - 如果有 session 则加载用户
- * 
- * Phase 3.3: 支持异步获取 Principal 用户
  */
 export async function optionalAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   const userId = req.session?.userId;
-  const authSource = req.session?.authSource || 'legacy';
 
   if (userId) {
-    let user = null;
-    if (authSource === 'principal') {
-      user = await getUserById(userId);
-    } else {
-      user = getUserByIdSync(userId);
-    }
+    const user = await getUserById(userId);
     if (user) {
-      req.user = toPublicUser(user, authSource);
+      req.user = toPublicUser(user, 'index');
     }
   }
 
@@ -159,3 +141,20 @@ export function requireProposalExecute(req: Request, res: Response, next: NextFu
   next();
 }
 
+/**
+ * 管理员权限中间件
+ * Phase 4.2: 用于限制仅管理员可访问的功能
+ */
+export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
+  if (!req.user) {
+    res.status(401).json({ error: 'Authentication required' });
+    return;
+  }
+
+  if (req.user.role !== 'admin') {
+    res.status(403).json({ error: 'Administrator access required' });
+    return;
+  }
+
+  next();
+}

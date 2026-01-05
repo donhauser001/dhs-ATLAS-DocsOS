@@ -1,9 +1,16 @@
 /**
  * Auth Store - 认证状态管理
+ * Phase 4.2: 支持多凭证类型登录
  */
 
 import { create } from 'zustand';
-import { login as apiLogin, logout as apiLogout, getCurrentUser, type User } from '@/api/auth';
+import { 
+  login as apiLogin, 
+  logout as apiLogout, 
+  getCurrentUser, 
+  type User,
+  type CredentialType 
+} from '@/api/auth';
 import { minimatch } from 'minimatch';
 
 interface AuthState {
@@ -12,15 +19,19 @@ interface AuthState {
   error: string | null;
   
   // Actions
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (credential: string, password: string, credentialType?: CredentialType) => Promise<boolean>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   clearError: () => void;
+  setUser: (user: User | null) => void;
   
   // Computed
   isAuthenticated: boolean;
   canCreateProposal: boolean;
   canExecuteProposal: boolean;
+  canManageUsers: boolean;
+  canManageRoles: boolean;
+  canViewAudit: boolean;
   canAccess: (path: string) => boolean;
 }
 
@@ -29,15 +40,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loading: true,
   error: null,
   
-  login: async (username: string, password: string) => {
+  login: async (credential: string, password: string, credentialType: CredentialType = 'username') => {
     set({ loading: true, error: null });
     
     try {
-      const response = await apiLogin(username, password);
+      const response = await apiLogin(credential, password, credentialType);
       set({ user: response.user, loading: false });
       return true;
     } catch (e) {
-      set({ error: String(e), loading: false });
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      set({ error: errorMessage, loading: false });
       return false;
     }
   },
@@ -68,6 +80,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   clearError: () => {
     set({ error: null });
   },
+
+  setUser: (user: User | null) => {
+    set({ user });
+  },
   
   get isAuthenticated() {
     return get().user !== null;
@@ -82,6 +98,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const user = get().user;
     return user?.permissions.can_execute_proposal ?? false;
   },
+
+  get canManageUsers() {
+    const user = get().user;
+    return user?.permissions.can_manage_users ?? false;
+  },
+
+  get canManageRoles() {
+    const user = get().user;
+    return user?.permissions.can_manage_roles ?? false;
+  },
+
+  get canViewAudit() {
+    const user = get().user;
+    return user?.permissions.can_view_audit ?? false;
+  },
   
   canAccess: (path: string) => {
     const user = get().user;
@@ -92,4 +123,3 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     return user.permissions.paths.some(pattern => minimatch(path, pattern));
   },
 }));
-

@@ -43,3 +43,4 @@ rating: 5.0
 is_core: true
 uninstall_warning: "Person 插件包是系统核心，卸载后所有人员相关功能将不可用，包括：人员列表、登录、邀请、审核等。"
 
+

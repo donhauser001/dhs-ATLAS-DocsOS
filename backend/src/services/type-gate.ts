@@ -355,3 +355,4 @@ export function canEnterIndexPipeline(docType: string): boolean {
     return isTypePackageInstalled(docType);
 }
 
+

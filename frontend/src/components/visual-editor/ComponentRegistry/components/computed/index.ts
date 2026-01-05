@@ -16,3 +16,4 @@ const ComputedComponent: RegisteredComponent = {
 
 export default ComputedComponent;
 
+

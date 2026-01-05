@@ -12,7 +12,7 @@ import { useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowLeft, Tag, Database, FileType, Workflow, Layout, Zap, Package, Users } from 'lucide-react';
+import { ArrowLeft, Tag, Database, FileType, Workflow, Layout, Zap, Package, Users, ShieldCheck, UserPlus, LogIn, KeyRound, Mail, FileText } from 'lucide-react';
 import { LabelSettings } from './LabelSettings';
 import { DataTemplateSettings } from './DataTemplateSettings';
 import { DocTypeSettings } from './DocTypeSettings';
@@ -21,6 +21,12 @@ import { DisplayModeSettings } from './DisplayModeSettings';
 import { CapabilitySettings } from './CapabilitySettings';
 import { PluginMarketSettings } from './PluginMarketSettings';
 import { AITalentMarketSettings } from './AITalentMarketSettings';
+import { RoleManagementSettings } from './RoleManagementSettings';
+import { RegistrationSettings } from './RegistrationSettings';
+import { LoginSettings } from './LoginSettings';
+import { PasswordPolicySettings } from './PasswordPolicySettings';
+import { EmailSettings } from './EmailSettings';
+import { AuditLogSettings } from './AuditLogSettings';
 
 // ============================================================
 // 设置菜单项
@@ -48,6 +54,48 @@ const MENU_ITEMS: MenuItem[] = [
     icon: <Users className="h-4 w-4" />,
     description: '雇佣和管理 AI 员工',
     component: <AITalentMarketSettings />,
+  },
+  {
+    id: 'registration',
+    label: '注册设置',
+    icon: <UserPlus className="h-4 w-4" />,
+    description: '新用户注册配置',
+    component: <RegistrationSettings />,
+  },
+  {
+    id: 'login',
+    label: '登录设置',
+    icon: <LogIn className="h-4 w-4" />,
+    description: '登录方式和安全配置',
+    component: <LoginSettings />,
+  },
+  {
+    id: 'password-policy',
+    label: '密码策略',
+    icon: <KeyRound className="h-4 w-4" />,
+    description: '密码复杂度和有效期',
+    component: <PasswordPolicySettings />,
+  },
+  {
+    id: 'roles',
+    label: '角色管理',
+    icon: <ShieldCheck className="h-4 w-4" />,
+    description: '配置用户角色和权限',
+    component: <RoleManagementSettings />,
+  },
+  {
+    id: 'email',
+    label: '邮件服务',
+    icon: <Mail className="h-4 w-4" />,
+    description: 'SMTP 邮件配置',
+    component: <EmailSettings />,
+  },
+  {
+    id: 'audit-logs',
+    label: '审计日志',
+    icon: <FileText className="h-4 w-4" />,
+    description: '查看操作日志',
+    component: <AuditLogSettings />,
   },
   {
     id: 'labels',

@@ -232,7 +232,7 @@ router.get('/info', (req: Request, res: Response) => {
  * 删除文件
  * Query: path
  */
-router.delete('/file', (req: Request, res: Response) => {
+router.delete('/file', async (req: Request, res: Response) => {
     const filePath = req.query.path as string;
 
     if (!filePath) {
@@ -241,6 +241,13 @@ router.delete('/file', (req: Request, res: Response) => {
 
     const result = fileService.deleteFile(filePath);
     if (result.success) {
+        // Phase 4.2: 从用户认证索引中移除文档
+        try {
+            const { removeDocumentFromIndex } = await import('../services/auth-credential-indexer.js');
+            await removeDocumentFromIndex(filePath);
+        } catch (indexError) {
+            console.warn('[Files] Auth index removal failed (continuing anyway):', indexError);
+        }
         res.json({ success: true });
     } else {
         res.status(400).json({ success: false, error: result.error });
@@ -252,7 +259,7 @@ router.delete('/file', (req: Request, res: Response) => {
  * 重命名文件或文件夹
  * Body: { path: string, newName: string }
  */
-router.post('/rename', (req: Request, res: Response) => {
+router.post('/rename', async (req: Request, res: Response) => {
     const { path, newName } = req.body;
 
     if (!path || !newName) {
@@ -260,7 +267,14 @@ router.post('/rename', (req: Request, res: Response) => {
     }
 
     const result = fileService.rename(path, newName);
-    if (result.success) {
+    if (result.success && result.newPath) {
+        // Phase 4.2: 更新用户认证索引中的文档路径
+        try {
+            const { updateDocumentPath } = await import('../services/auth-credential-indexer.js');
+            await updateDocumentPath(path, result.newPath);
+        } catch (indexError) {
+            console.warn('[Files] Auth index path update failed (continuing anyway):', indexError);
+        }
         res.json({ success: true, data: { newPath: result.newPath } });
     } else {
         res.status(400).json({ success: false, error: result.error });

@@ -16,3 +16,4 @@ const BarcodeComponent: RegisteredComponent = {
 
 export default BarcodeComponent;
 
+

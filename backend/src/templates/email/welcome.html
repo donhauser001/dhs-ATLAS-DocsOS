@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>欢迎使用 - ATLAS</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      padding: 40px;
+      text-align: center;
+    }
+    
+    .logo {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+    
+    .brand {
+      color: white;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 4px;
+    }
+    
+    .celebration {
+      text-align: center;
+      padding: 30px;
+      background: linear-gradient(135deg, #f0fff4 0%, #dcfce7 100%);
+    }
+    
+    .celebration-icon {
+      font-size: 60px;
+      margin-bottom: 16px;
+    }
+    
+    .celebration-text {
+      color: #166534;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    
+    .content {
+      padding: 40px;
+    }
+    
+    h1 {
+      color: #1a1a2e;
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    
+    .greeting {
+      color: #4a5568;
+      font-size: 16px;
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+    
+    .highlight {
+      color: #059669;
+      font-weight: 600;
+    }
+    
+    .features {
+      background: #f7fafc;
+      border-radius: 12px;
+      padding: 24px;
+      margin: 24px 0;
+    }
+    
+    .features-title {
+      color: #1a1a2e;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    
+    .feature-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .feature-item:last-child {
+      border-bottom: none;
+    }
+    
+    .feature-icon {
+      font-size: 24px;
+      margin-right: 16px;
+      width: 32px;
+      text-align: center;
+    }
+    
+    .feature-text {
+      color: #4a5568;
+      font-size: 14px;
+    }
+    
+    .button-container {
+      text-align: center;
+      margin: 36px 0;
+    }
+    
+    .button {
+      display: inline-block;
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      color: white !important;
+      padding: 16px 48px;
+      text-decoration: none;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(17, 153, 142, 0.4);
+    }
+    
+    .tips {
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      border-left: 4px solid #3b82f6;
+      padding: 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    
+    .tips strong {
+      color: #1e40af;
+      display: block;
+      margin-bottom: 8px;
+    }
+    
+    .tips span {
+      color: #1e3a8a;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    .footer {
+      background: #f7fafc;
+      padding: 30px 40px;
+      text-align: center;
+    }
+    
+    .footer p {
+      color: #a0aec0;
+      font-size: 13px;
+      line-height: 1.8;
+      margin-bottom: 8px;
+    }
+    
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, #e2e8f0 50%, transparent 100%);
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">🔐</div>
+      <div class="brand">ATLAS</div>
+    </div>
+    
+    <div class="celebration">
+      <div class="celebration-icon">🎉</div>
+      <div class="celebration-text">账户激活成功！</div>
+    </div>
+    
+    <div class="content">
+      <h1>欢迎使用 ATLAS</h1>
+      
+      <p class="greeting">
+        您好 <span class="highlight">{{ username }}</span>，
+      </p>
+      
+      <p class="greeting">
+        恭喜您成功注册并激活 ATLAS 账户！现在您可以开始使用我们的文档原生协作系统了。
+      </p>
+      
+      <div class="features">
+        <p class="features-title">🚀 快速开始</p>
+        
+        <div class="feature-item">
+          <span class="feature-icon">📝</span>
+          <span class="feature-text">使用 Markdown 创建和编辑文档</span>
+        </div>
+        
+        <div class="feature-item">
+          <span class="feature-icon">🔗</span>
+          <span class="feature-text">建立文档之间的智能关联</span>
+        </div>
+        
+        <div class="feature-item">
+          <span class="feature-icon">📊</span>
+          <span class="feature-text">多种视图模式展示数据</span>
+        </div>
+        
+        <div class="feature-item">
+          <span class="feature-icon">🤝</span>
+          <span class="feature-text">与团队成员实时协作</span>
+        </div>
+      </div>
+      
+      <div class="button-container">
+        <a href="{{ loginUrl }}" class="button">立即登录</a>
+      </div>
+      
+      <div class="tips">
+        <strong>💡 小提示</strong>
+        <span>首次登录后，建议您先浏览系统设置，了解各项功能配置。如有任何问题，请联系系统管理员获取帮助。</span>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <div class="divider"></div>
+      <p>感谢您选择 ATLAS！</p>
+      <p>此邮件由 ATLAS 系统自动发送，请勿直接回复。</p>
+      <p>© 2026 ATLAS Document Native System</p>
+    </div>
+  </div>
+</body>
+</html>
+

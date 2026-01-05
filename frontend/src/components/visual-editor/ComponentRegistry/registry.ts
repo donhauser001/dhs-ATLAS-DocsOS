@@ -47,6 +47,12 @@ export const CATEGORY_METAS: CategoryMeta[] = [
         description: '文件和数据关联',
         icon: 'link',
     },
+    {
+        id: 'security',
+        name: '安全型',
+        description: '用户认证和权限管理',
+        icon: 'shield-check',
+    },
 ];
 
 // ============================================================

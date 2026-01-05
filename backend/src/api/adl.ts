@@ -118,6 +118,14 @@ router.put('/document', requireAuth, requirePathAccess, async (req: Request, res
     const { updateDocumentIndex } = await import('../services/workspace-service.js');
     await updateDocumentIndex(docPath);
 
+    // Phase 4.2: 更新用户认证索引
+    try {
+      const { updateSingleDocument } = await import('../services/auth-credential-indexer.js');
+      await updateSingleDocument(docPath);
+    } catch (indexError) {
+      console.warn('[ADL] Auth index update failed (continuing anyway):', indexError);
+    }
+
     // Git commit（可选，根据配置）
     try {
       const { default: simpleGit } = await import('simple-git');

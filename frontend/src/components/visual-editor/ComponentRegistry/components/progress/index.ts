@@ -16,3 +16,4 @@ const ProgressComponent: RegisteredComponent = {
 
 export default ProgressComponent;
 
+

@@ -3,8 +3,15 @@ import { Routes, Route, Link, Navigate } from 'react-router-dom'
 import { GenesisPage } from './pages/genesis'
 import { WorkspacePage, DocumentPage } from './pages/workspace'
 import { LoginPage } from './pages/LoginPage'
+import { RegisterPage } from './pages/RegisterPage'
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
+import { ResetPasswordPage } from './pages/ResetPasswordPage'
+import { PendingActivationPage } from './pages/PendingActivationPage'
+import { ActivatePage } from './pages/ActivatePage'
+import { AccountStatusPage } from './pages/AccountStatusPage'
 import { SettingsPage } from './pages/settings/SettingsPage'
 import { PersonsPage, StagingPoolPage, PersonDetailPage } from './pages/persons'
+import { UserManagementPage } from './pages/users'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { TokenProvider } from '@/components/tokens/TokenProvider'
 import { LabelProvider } from '@/providers/LabelProvider'
@@ -74,7 +81,14 @@ function App() {
         <TooltipProvider>
           <Routes>
             <Route path="/" element={<Home />} />
+            {/* 认证相关路由 */}
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+            <Route path="/pending-activation" element={<PendingActivationPage />} />
+            <Route path="/activate/:token" element={<ActivatePage />} />
+            <Route path="/account-status/:status" element={<AccountStatusPage />} />
             <Route path="/genesis" element={<GenesisPage />} />
             <Route path="/workspace" element={
               <ProtectedRoute>
@@ -102,7 +116,13 @@ function App() {
                 <PersonDetailPage />
               </ProtectedRoute>
             } />
-            {/* Phase 3.3: 用户管理重定向到 Person 列表 */}
+            {/* Phase 4.2: 用户管理 */}
+            <Route path="/users/management" element={
+              <ProtectedRoute>
+                <UserManagementPage />
+              </ProtectedRoute>
+            } />
+            {/* Phase 3.3: 用户列表重定向到 Person 列表 */}
             <Route path="/users" element={
               <Navigate to="/persons" replace />
             } />

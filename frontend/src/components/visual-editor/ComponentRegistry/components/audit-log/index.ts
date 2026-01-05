@@ -16,3 +16,4 @@ const AuditLogComponent: RegisteredComponent = {
 
 export default AuditLogComponent;
 
+

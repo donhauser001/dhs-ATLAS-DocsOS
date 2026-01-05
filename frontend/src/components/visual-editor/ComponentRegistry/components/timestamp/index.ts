@@ -16,3 +16,4 @@ const TimestampComponent: RegisteredComponent = {
 
 export default TimestampComponent;
 
+

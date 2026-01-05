@@ -16,3 +16,4 @@ const UserPickerComponent: RegisteredComponent = {
 
 export default UserPickerComponent;
 
+

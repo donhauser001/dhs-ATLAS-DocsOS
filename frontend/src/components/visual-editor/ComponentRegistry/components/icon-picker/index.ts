@@ -16,3 +16,4 @@ const IconPickerComponent: RegisteredComponent = {
 
 export default IconPickerComponent;
 
+

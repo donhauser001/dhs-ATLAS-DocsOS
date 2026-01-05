@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>账户激活 - ATLAS</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      padding: 40px;
+      text-align: center;
+    }
+    
+    .logo {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+    
+    .brand {
+      color: white;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 4px;
+    }
+    
+    .content {
+      padding: 40px;
+    }
+    
+    h1 {
+      color: #1a1a2e;
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    
+    .greeting {
+      color: #4a5568;
+      font-size: 16px;
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+    
+    .highlight {
+      color: #667eea;
+      font-weight: 600;
+    }
+    
+    .button-container {
+      text-align: center;
+      margin: 36px 0;
+    }
+    
+    .button {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white !important;
+      padding: 16px 48px;
+      text-decoration: none;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+    
+    .link-section {
+      background: #f7fafc;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 24px 0;
+    }
+    
+    .link-label {
+      color: #718096;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    
+    .link {
+      color: #667eea;
+      word-break: break-all;
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .expiry-notice {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-left: 4px solid #f59e0b;
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    
+    .expiry-notice strong {
+      color: #92400e;
+    }
+    
+    .expiry-notice span {
+      color: #78350f;
+    }
+    
+    .footer {
+      background: #f7fafc;
+      padding: 30px 40px;
+      text-align: center;
+    }
+    
+    .footer p {
+      color: #a0aec0;
+      font-size: 13px;
+      line-height: 1.8;
+      margin-bottom: 8px;
+    }
+    
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, #e2e8f0 50%, transparent 100%);
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">🔐</div>
+      <div class="brand">ATLAS</div>
+    </div>
+    
+    <div class="content">
+      <h1>激活您的账户</h1>
+      
+      <p class="greeting">
+        您好 <span class="highlight">{{ username }}</span>，
+      </p>
+      
+      <p class="greeting">
+        感谢您注册 ATLAS 系统！为了确保账户安全，请点击下方按钮完成账户激活。
+      </p>
+      
+      <div class="button-container">
+        <a href="{{ activationLink }}" class="button">立即激活</a>
+      </div>
+      
+      <div class="link-section">
+        <p class="link-label">如果按钮无法点击，请复制以下链接到浏览器打开：</p>
+        <p class="link">{{ activationLink }}</p>
+      </div>
+      
+      <div class="expiry-notice">
+        <strong>⏰ 提示：</strong>
+        <span>此链接将在 <strong>{{ expiresIn }}</strong> 后失效，请尽快完成激活。</span>
+      </div>
+      
+      <p class="greeting" style="color: #a0aec0; font-size: 14px;">
+        如果这不是您本人的操作，请忽略此邮件，您的账户不会有任何变化。
+      </p>
+    </div>
+    
+    <div class="footer">
+      <div class="divider"></div>
+      <p>此邮件由 ATLAS 系统自动发送，请勿直接回复。</p>
+      <p>© 2026 ATLAS Document Native System</p>
+    </div>
+  </div>
+</body>
+</html>
+

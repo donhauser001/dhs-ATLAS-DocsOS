@@ -16,3 +16,4 @@ const PasswordComponent: RegisteredComponent = {
 
 export default PasswordComponent;
 
+

@@ -1,7 +1,16 @@
 {
   "version": "1.0",
-  "generated_at": "2026-01-04T20:14:27.921Z",
+  "generated_at": "2026-01-05T21:26:29.076Z",
   "documents": [
+    {
+      "path": "132123123123.md",
+      "title": "132123123123",
+      "document_type": "unknown",
+      "block_count": 0,
+      "anchors": [],
+      "types": [],
+      "modified_at": "2026-01-05T04:22:51.005Z"
+    },
     {
       "path": "atlas-test-402.md",
       "title": "ATLAS 4.0.2 测试文档",
@@ -302,9 +311,27 @@
       "anchors": [],
       "types": [],
       "modified_at": "2026-01-04T19:44:20.596Z"
+    },
+    {
+      "path": "_users/admin.md",
+      "title": "系统管理员",
+      "document_type": "user",
+      "block_count": 1,
+      "anchors": [
+        "admin-user"
+      ],
+      "types": [
+        "__atlas_user_auth__"
+      ],
+      "modified_at": "2026-01-05T21:26:29.056Z"
     }
   ],
   "directories": [
+    {
+      "path": "_users",
+      "name": "_users",
+      "document_count": 1
+    },
     {
       "path": "genesis",
       "name": "genesis",
@@ -327,10 +354,10 @@
     }
   ],
   "stats": {
-    "total_documents": 18,
-    "total_blocks": 126,
-    "total_anchors": 126
+    "total_documents": 20,
+    "total_blocks": 127,
+    "total_anchors": 127
   },
-  "repo_head": "cacfbf7f538cdacc2c18b25fc3f119e10c2cad98",
+  "repo_head": "5e6507fe2b1db57f0ec345e5b520689d556de628",
   "stale": false
 }

@@ -16,3 +16,4 @@ const QrcodeComponent: RegisteredComponent = {
 
 export default QrcodeComponent;
 
+

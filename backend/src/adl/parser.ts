@@ -126,8 +126,8 @@ export function parseBlocks(lines: string[], startLine: number = 0): Block[] {
       continue;
     }
 
-    // 检测 YAML code block 开始
-    if (line.trim() === '```yaml' && currentBlock) {
+    // 检测 YAML code block 开始 (支持 ```yaml 和 ```atlas-data)
+    if ((line.trim() === '```yaml' || line.trim() === '```atlas-data') && currentBlock) {
       inYamlBlock = true;
       yamlContent = [];
       continue;

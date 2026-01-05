@@ -16,3 +16,4 @@ const ColorComponent: RegisteredComponent = {
 
 export default ColorComponent;
 
+

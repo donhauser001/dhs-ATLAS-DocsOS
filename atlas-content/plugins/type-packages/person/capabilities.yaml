@@ -157,3 +157,4 @@ uninstall_behavior:
     action: "disable"
     description: "所有 person 登录能力失效"
 
+

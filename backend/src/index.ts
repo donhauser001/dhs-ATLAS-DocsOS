@@ -5,8 +5,6 @@ import adlRouter from './api/adl.js';
 import workspaceRouter from './api/workspace.js';
 import authRouter from './api/auth.js';
 import tokensRouter from './api/tokens.js';
-import principalsRouter from './api/principals.js';
-import profilesRouter from './api/profiles.js';
 import functionsRouter from './api/functions.js';
 import lintRouter from './api/lint.js';
 import navigationRouter from './api/navigation.js';
@@ -22,6 +20,9 @@ import capabilitiesRouter from './api/capabilities.js';
 import typePackagesRouter from './api/type-packages.js';
 import pluginsRouter from './api/plugins.js';
 import passwordRouter from './api/password.js';
+import settingsRouter from './api/settings.js';
+import indexesRouter from './api/indexes.js';
+import auditRouter from './api/audit.js';
 // Phase 4.2: Person 管理
 import personStagingRouter from './api/person-staging.js';
 import personInviteRouter from './api/person-invite.js';
@@ -80,9 +81,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/adl', adlRouter);
 app.use('/api/workspace', workspaceRouter);
 app.use('/api/tokens', tokensRouter);
-// Phase 3.1: Principal + Profile 用户体系
-app.use('/api/principals', principalsRouter);
-app.use('/api/profiles', profilesRouter);
+// Phase 3.1: Principal + Profile 用户体系 (已废弃，迁移到 Phase 4.2 user-auth 系统)
 // Phase 3.3: 功能声明系统
 app.use('/api/functions', functionsRouter);
 app.use('/api/lint', lintRouter);
@@ -108,6 +107,12 @@ app.use('/api/type-packages', typePackagesRouter);
 app.use('/api/plugins', pluginsRouter);
 // Phase 4.3: 密码服务
 app.use('/api/password', passwordRouter);
+// Phase 4.2: 用户管理设置
+app.use('/api/settings', settingsRouter);
+// Phase 4.2: 索引管理
+app.use('/api/indexes', indexesRouter);
+// Phase 4.2: 审计日志
+app.use('/api/audit-logs', auditRouter);
 // Phase 4.2: Person 管理
 app.use('/api/person', personStagingRouter);
 app.use('/api/person', personInviteRouter);

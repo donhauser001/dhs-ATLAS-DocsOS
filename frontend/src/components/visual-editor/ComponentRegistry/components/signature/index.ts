@@ -16,3 +16,4 @@ const SignatureComponent: RegisteredComponent = {
 
 export default SignatureComponent;
 
+

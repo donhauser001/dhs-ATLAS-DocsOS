@@ -37,3 +37,4 @@ Object.defineProperty(navigator, 'clipboard', {
   writable: true,
 });
 
+
