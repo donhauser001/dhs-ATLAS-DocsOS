@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '多选下拉菜单',
     icon: 'list-checks',
     hasOptions: true,
+    category: 'input',
 };
 
 export function createDefault(id: string): SelectComponentDefinition {

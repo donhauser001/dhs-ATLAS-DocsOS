@@ -1,0 +1,68 @@
+# Person 身份信息数据块
+# 核心数据块，用于存储人员的基本身份信息
+
+id: "person_identity"
+name: "身份信息"
+description: "人员的基本身份信息，包括姓名、联系方式等核心字段"
+icon: "user"
+required: true
+enabled: true
+order: 1
+
+# 字段定义
+fields:
+  - key: "display_name"
+    label: "显示名称"
+    component: "text"
+    required: true
+    description: "人员的显示名称，用于列表和引用"
+    
+  - key: "avatar"
+    label: "头像"
+    component: "avatar"
+    description: "人员头像"
+    
+  - key: "email"
+    label: "邮箱"
+    component: "email"
+    description: "电子邮箱地址，可用于登录和通知"
+    
+  - key: "phone"
+    label: "手机号"
+    component: "phone"
+    description: "手机号码，可用于登录和通知"
+    
+  - key: "title"
+    label: "职位"
+    component: "text"
+    description: "职位或头衔"
+    
+  - key: "company"
+    label: "公司"
+    component: "text"
+    description: "所属公司或组织"
+    
+  - key: "department"
+    label: "部门"
+    component: "text"
+    description: "所属部门"
+    
+  - key: "tags"
+    label: "标签"
+    component: "tags"
+    description: "分类标签"
+
+# 显示配置
+display:
+  icon: "user"
+  color: "#8B5CF6"
+  default_expanded: true
+  
+# 验证规则
+validation:
+  # 至少需要一种联系方式
+  - name: "contact_required"
+    condition: "email || phone"
+    message: "请至少填写邮箱或手机号中的一项"
+    level: "warning"
+

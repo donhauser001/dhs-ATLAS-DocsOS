@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '身份证号码输入，支持格式验证和隐私保护',
     icon: 'credit-card',
     hasOptions: false,
+    category: 'input',
 };
 
 export function createDefault(id: string): IdCardComponentDefinition {

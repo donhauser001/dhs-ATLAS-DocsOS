@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '邮箱地址输入，支持格式验证',
     icon: 'mail',
     hasOptions: false,
+    category: 'input',
 };
 
 export function createDefault(id: string): EmailComponentDefinition {

@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '单行文本输入',
     icon: 'type',
     hasOptions: false,
+    category: 'input',
 };
 
 export function createDefault(id: string): TextComponentDefinition {

@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '头像上传，支持图片裁切',
     icon: 'user-circle',
     hasOptions: false,
+    category: 'display',
 };
 
 export function createDefault(id: string): AvatarComponentDefinition {

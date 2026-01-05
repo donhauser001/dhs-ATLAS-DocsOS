@@ -21,6 +21,10 @@ import displayModesRouter from './api/display-modes.js';
 import capabilitiesRouter from './api/capabilities.js';
 import typePackagesRouter from './api/type-packages.js';
 import pluginsRouter from './api/plugins.js';
+import passwordRouter from './api/password.js';
+// Phase 4.2: Person 管理
+import personStagingRouter from './api/person-staging.js';
+import personInviteRouter from './api/person-invite.js';
 import { config, validateConfig, ensureDirectories } from './config.js';
 import { optionalAuth } from './middleware/permission.js';
 
@@ -102,6 +106,11 @@ app.use('/api/capabilities', capabilitiesRouter);
 app.use('/api/type-packages', typePackagesRouter);
 // Phase 4.1: 插件市场
 app.use('/api/plugins', pluginsRouter);
+// Phase 4.3: 密码服务
+app.use('/api/password', passwordRouter);
+// Phase 4.2: Person 管理
+app.use('/api/person', personStagingRouter);
+app.use('/api/person', personInviteRouter);
 
 app.listen(config.port, () => {
   console.log(`ATLAS Runtime listening on port ${config.port}`);

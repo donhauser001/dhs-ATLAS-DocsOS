@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '数字输入框',
     icon: 'hash',
     hasOptions: false,
+    category: 'input',
 };
 
 export function createDefault(id: string): NumberComponentDefinition {

@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '布尔值开关，用于是/否选择',
     icon: 'toggle-left',
     hasOptions: false,
+    category: 'input',
 };
 
 export function createDefault(id: string): ToggleComponentDefinition {

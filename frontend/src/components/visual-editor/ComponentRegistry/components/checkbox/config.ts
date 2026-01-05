@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '多选复选框组',
     icon: 'check-square',
     hasOptions: true,
+    category: 'input',
 };
 
 export function createDefault(id: string): SelectComponentDefinition {

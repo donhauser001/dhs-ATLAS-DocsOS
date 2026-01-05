@@ -11,6 +11,7 @@ export const meta: ComponentMeta = {
     description: '选择单张图片',
     icon: 'image',
     hasOptions: false,
+    category: 'relation',
 };
 
 export function createDefault(id: string): ImageComponentDefinition {

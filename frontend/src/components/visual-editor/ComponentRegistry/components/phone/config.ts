@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '手机号码输入，支持格式验证',
     icon: 'phone',
     hasOptions: false,
+    category: 'input',
 };
 
 export function createDefault(id: string): PhoneComponentDefinition {

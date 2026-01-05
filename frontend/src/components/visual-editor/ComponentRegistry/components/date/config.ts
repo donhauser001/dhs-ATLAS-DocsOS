@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '日期选择器',
     icon: 'calendar',
     hasOptions: false,
+    category: 'input',
 };
 
 export function createDefault(id: string): DateComponentDefinition {

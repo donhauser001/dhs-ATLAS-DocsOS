@@ -8,12 +8,46 @@
 import {
     ComponentType,
     ComponentMeta,
+    ComponentCategory,
+    CategoryMeta,
     RegisteredComponent,
     ComponentRegistry,
     DocumentComponentDefinition,
     ControlProps,
     ConfiguratorProps,
 } from './types';
+
+// ============================================================
+// 分类定义
+// ============================================================
+
+/** 分类元数据配置 */
+export const CATEGORY_METAS: CategoryMeta[] = [
+    {
+        id: 'input',
+        name: '输入型',
+        description: '基础数据输入组件',
+        icon: 'text-cursor-input',
+    },
+    {
+        id: 'smart',
+        name: '智能型',
+        description: '自动计算和生成',
+        icon: 'sparkles',
+    },
+    {
+        id: 'display',
+        name: '展示型',
+        description: '数据展示和可视化',
+        icon: 'eye',
+    },
+    {
+        id: 'relation',
+        name: '关联型',
+        description: '文件和数据关联',
+        icon: 'link',
+    },
+];
 
 // ============================================================
 // 组件注册表（单例）
@@ -132,4 +166,41 @@ export function unregisterComponent(type: ComponentType): boolean {
 
 // 导出注册表大小（用于调试）
 export const registrySize = () => registry.size;
+
+/**
+ * 获取所有分类元数据
+ */
+export function getCategoryMetas(): CategoryMeta[] {
+    return CATEGORY_METAS;
+}
+
+/**
+ * 获取指定分类的组件元数据
+ */
+export function getComponentsByCategory(category: ComponentCategory): ComponentMeta[] {
+    return Array.from(registry.values())
+        .filter(c => c.meta.category === category)
+        .map(c => c.meta);
+}
+
+/**
+ * 获取按分类分组的组件元数据
+ */
+export function getComponentsGroupedByCategory(): Map<ComponentCategory, ComponentMeta[]> {
+    const grouped = new Map<ComponentCategory, ComponentMeta[]>();
+    
+    for (const category of CATEGORY_METAS.map(c => c.id)) {
+        grouped.set(category, []);
+    }
+    
+    for (const component of registry.values()) {
+        const category = component.meta.category;
+        const list = grouped.get(category);
+        if (list) {
+            list.push(component.meta);
+        }
+    }
+    
+    return grouped;
+}
 

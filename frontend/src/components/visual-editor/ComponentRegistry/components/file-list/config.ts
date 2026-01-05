@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '展示文件列表，支持下载和删除',
     icon: 'files',
     hasOptions: false,
+    category: 'display',
 };
 
 export function createDefault(id: string): FileListComponentDefinition {

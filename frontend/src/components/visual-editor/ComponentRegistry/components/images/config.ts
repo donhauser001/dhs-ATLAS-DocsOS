@@ -11,6 +11,7 @@ export const meta: ComponentMeta = {
     description: '选择多张图片',
     icon: 'gallery-horizontal',
     hasOptions: false,
+    category: 'relation',
 };
 
 export function createDefault(id: string): ImagesComponentDefinition {

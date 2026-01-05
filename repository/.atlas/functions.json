@@ -1,7 +1,7 @@
 {
   "version": "1.0",
-  "generated_at": "2026-01-04T18:33:16.793Z",
-  "repo_head": "81bd8d8a2fe5a36b6eab999302b70ea366a7811d",
+  "generated_at": "2026-01-04T20:14:27.926Z",
+  "repo_head": "cacfbf7f538cdacc2c18b25fc3f119e10c2cad98",
   "functions": {
     "article": {
       "documents": [
@@ -23,7 +23,7 @@
       "documents": [
         {
           "path": "个方法更何况.md",
-          "title": "个方法更何况",
+          "title": "{{标题}}",
           "capabilities": [
             "editable",
             "searchable",
@@ -55,6 +55,17 @@
           "indexed_fields": {}
         },
         {
+          "path": "联系人/123123123.md",
+          "title": "123123123",
+          "capabilities": [
+            "editable",
+            "searchable",
+            "linkable",
+            "exportable"
+          ],
+          "indexed_fields": {}
+        },
+        {
           "path": "联系人/安宁.md",
           "title": "安宁",
           "capabilities": [
@@ -66,7 +77,7 @@
           "indexed_fields": {}
         }
       ],
-      "count": 4
+      "count": 5
     },
     "entity_list": {
       "documents": [

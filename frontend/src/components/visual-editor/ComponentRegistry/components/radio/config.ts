@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '单选按钮组',
     icon: 'circle-dot',
     hasOptions: true,
+    category: 'input',
 };
 
 export function createDefault(id: string): SelectComponentDefinition {

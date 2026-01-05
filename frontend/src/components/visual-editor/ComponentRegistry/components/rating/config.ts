@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '星级评分',
     icon: 'star',
     hasOptions: false,
+    category: 'input',
 };
 
 export function createDefault(id: string): RatingComponentDefinition {

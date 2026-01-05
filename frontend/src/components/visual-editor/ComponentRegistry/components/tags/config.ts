@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '多标签输入，支持预设选项和自定义',
     icon: 'tags',
     hasOptions: false,
+    category: 'input',
 };
 
 export function createDefault(id: string): TagsComponentDefinition {

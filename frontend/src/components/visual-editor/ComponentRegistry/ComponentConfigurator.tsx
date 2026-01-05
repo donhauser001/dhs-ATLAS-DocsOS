@@ -1,24 +1,27 @@
 /**
  * ComponentConfigurator - 基于注册系统的组件配置器
  * 
- * 左侧：组件类型列表（从注册中心获取）
+ * 左侧：组件类型列表（从注册中心获取，按分类分组显示）
  * 右侧：配置表单（自动渲染对应类型的配置器）
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Check, AlertCircle } from 'lucide-react';
+import { X, Check, AlertCircle, ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
     DocumentComponentDefinition,
     ComponentType,
     SelectComponentDefinition,
+    ComponentCategory,
     getComponentMetas,
     getConfigurator,
     createDefaultComponent,
     isRegistered,
     getLucideIcon,
     generateComponentId,
+    getCategoryMetas,
+    getComponentsGroupedByCategory,
 } from './index';
 
 export interface ComponentConfiguratorProps {
@@ -42,6 +45,11 @@ export function ComponentConfigurator({
 
     // 获取所有已注册组件的元数据
     const componentMetas = getComponentMetas();
+    const categoryMetas = getCategoryMetas();
+    const componentsByCategory = useMemo(() => getComponentsGroupedByCategory(), []);
+
+    // 分类折叠状态 - 默认全部展开
+    const [collapsedCategories, setCollapsedCategories] = useState<Set<ComponentCategory>>(new Set());
 
     // 表单状态
     const [formData, setFormData] = useState<DocumentComponentDefinition>(() => {
@@ -52,6 +60,19 @@ export function ComponentConfigurator({
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    // 切换分类折叠
+    const toggleCategory = useCallback((category: ComponentCategory) => {
+        setCollapsedCategories(prev => {
+            const next = new Set(prev);
+            if (next.has(category)) {
+                next.delete(category);
+            } else {
+                next.add(category);
+            }
+            return next;
+        });
+    }, []);
 
     // 类型切换
     const handleTypeChange = useCallback(
@@ -143,8 +164,8 @@ export function ComponentConfigurator({
                 onClick={onClose}
             />
 
-            {/* 弹窗 */}
-            <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-[800px] max-h-[85vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
+            {/* 弹窗 - 增加宽度 */}
+            <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-[1000px] max-h-[85vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
                 {/* 头部 */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-white">
                     <h2 className="text-lg font-semibold text-slate-800">
@@ -161,44 +182,94 @@ export function ComponentConfigurator({
 
                 {/* 内容区 - 左右分栏 */}
                 <div className="flex-1 flex overflow-hidden">
-                    {/* 左侧 - 组件类型列表 */}
-                    <div className="w-[240px] border-r border-slate-200 bg-slate-50 overflow-y-auto">
-                        <div className="p-3">
-                            <div className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2 px-2">
+                    {/* 左侧 - 组件类型列表（增加宽度，支持分类和两列布局） */}
+                    <div className="w-[440px] border-r border-slate-200 bg-slate-50 overflow-y-auto">
+                        <div className="p-4">
+                            <div className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3 px-1">
                                 选择组件类型
                             </div>
-                            <div className="space-y-1">
-                                {componentMetas.map((meta) => {
-                                    const TypeIcon = getLucideIcon(meta.icon);
-                                    const isSelected = formData.type === meta.type;
+
+                            {/* 按分类显示 */}
+                            <div className="space-y-3">
+                                {categoryMetas.map((category) => {
+                                    const components = componentsByCategory.get(category.id) || [];
+                                    const isCollapsed = collapsedCategories.has(category.id);
+                                    const CategoryIcon = getLucideIcon(category.icon);
+                                    const hasSelectedInCategory = components.some(c => c.type === formData.type);
+
                                     return (
-                                        <button
-                                            key={meta.type}
-                                            type="button"
-                                            onClick={() => handleTypeChange(meta.type)}
-                                            disabled={isEditing}
-                                            className={cn(
-                                                'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-left',
-                                                isSelected
-                                                    ? 'bg-purple-100 text-purple-700 shadow-sm'
-                                                    : 'hover:bg-white text-slate-600 hover:text-slate-800',
-                                                isEditing && !isSelected && 'opacity-50 cursor-not-allowed'
+                                        <div key={category.id} className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+                                            {/* 分类标题 */}
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleCategory(category.id)}
+                                                className={cn(
+                                                    'w-full flex items-center gap-2 px-3 py-2.5 text-left transition-colors',
+                                                    hasSelectedInCategory ? 'bg-purple-50' : 'bg-slate-50 hover:bg-slate-100'
+                                                )}
+                                            >
+                                                {isCollapsed ? (
+                                                    <ChevronRight size={16} className="text-slate-400" />
+                                                ) : (
+                                                    <ChevronDown size={16} className="text-slate-400" />
+                                                )}
+                                                <div className={cn(
+                                                    'w-6 h-6 rounded flex items-center justify-center',
+                                                    hasSelectedInCategory ? 'bg-purple-200 text-purple-600' : 'bg-slate-200 text-slate-500'
+                                                )}>
+                                                    {CategoryIcon && <CategoryIcon size={14} />}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <span className={cn(
+                                                        'text-sm font-medium',
+                                                        hasSelectedInCategory ? 'text-purple-700' : 'text-slate-700'
+                                                    )}>
+                                                        {category.name}
+                                                    </span>
+                                                    <span className="text-xs text-slate-400 ml-2">
+                                                        {components.length} 个
+                                                    </span>
+                                                </div>
+                                            </button>
+
+                                            {/* 组件列表 - 两列网格 */}
+                                            {!isCollapsed && components.length > 0 && (
+                                                <div className="p-2 grid grid-cols-2 gap-1.5">
+                                                    {components.map((meta) => {
+                                                        const TypeIcon = getLucideIcon(meta.icon);
+                                                        const isSelected = formData.type === meta.type;
+                                                        return (
+                                                            <button
+                                                                key={meta.type}
+                                                                type="button"
+                                                                onClick={() => handleTypeChange(meta.type)}
+                                                                disabled={isEditing}
+                                                                className={cn(
+                                                                    'flex items-center gap-2 px-2.5 py-2 rounded-md transition-all text-left',
+                                                                    isSelected
+                                                                        ? 'bg-purple-100 text-purple-700 ring-1 ring-purple-300'
+                                                                        : 'hover:bg-slate-100 text-slate-600 hover:text-slate-800',
+                                                                    isEditing && !isSelected && 'opacity-50 cursor-not-allowed'
+                                                                )}
+                                                            >
+                                                                <div className={cn(
+                                                                    'w-7 h-7 rounded flex items-center justify-center flex-shrink-0',
+                                                                    isSelected ? 'bg-purple-200' : 'bg-slate-200'
+                                                                )}>
+                                                                    {TypeIcon && <TypeIcon size={15} />}
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="text-sm font-medium truncate">{meta.name}</div>
+                                                                </div>
+                                                                {isSelected && (
+                                                                    <Check size={14} className="text-purple-600 flex-shrink-0" />
+                                                                )}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
                                             )}
-                                        >
-                                            <div className={cn(
-                                                'w-8 h-8 rounded-lg flex items-center justify-center',
-                                                isSelected ? 'bg-purple-200' : 'bg-slate-200'
-                                            )}>
-                                                {TypeIcon && <TypeIcon size={18} />}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="text-sm font-medium truncate">{meta.name}</div>
-                                                <div className="text-xs text-slate-400 truncate">{meta.description}</div>
-                                            </div>
-                                            {isSelected && (
-                                                <Check size={16} className="text-purple-600 flex-shrink-0" />
-                                            )}
-                                        </button>
+                                        </div>
                                     );
                                 })}
                             </div>

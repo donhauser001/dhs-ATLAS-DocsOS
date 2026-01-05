@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '选择一个或多个目录路径，支持多选',
     icon: 'folder-tree',
     hasOptions: false,
+    category: 'relation',
 };
 
 export function createDefault(id: string): FolderPickerComponentDefinition {

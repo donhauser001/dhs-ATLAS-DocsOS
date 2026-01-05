@@ -38,7 +38,26 @@ export type ComponentType =
     | 'avatar'
     | 'file-list'
     | 'tags'
-    | 'id-generator';
+    | 'id-generator'
+    // Phase 4.3 新增组件
+    | 'password'
+    | 'timestamp'
+    | 'url'
+    | 'color'
+    | 'icon-picker'
+    | 'progress'
+    | 'qrcode'
+    | 'barcode'
+    | 'document-link'
+    | 'relation-picker'
+    | 'user-picker'
+    | 'computed'
+    | 'formula'
+    | 'signature'
+    | 'rich-text'
+    | 'json'
+    | 'login-stats'
+    | 'audit-log';
 
 // ============================================================
 // 组件定义类型
@@ -231,6 +250,267 @@ export interface IdGeneratorComponentDefinition extends BaseComponentDefinition 
     uppercase?: boolean;
 }
 
+// ============================================================
+// Phase 4.3 新增组件定义
+// ============================================================
+
+/** 安全密码组件定义 */
+export interface PasswordComponentDefinition extends BaseComponentDefinition {
+    type: 'password';
+    /** 最小长度 */
+    minLength?: number;
+    /** 要求大写字母 */
+    requireUppercase?: boolean;
+    /** 要求小写字母 */
+    requireLowercase?: boolean;
+    /** 要求数字 */
+    requireNumber?: boolean;
+    /** 要求特殊字符 */
+    requireSpecial?: boolean;
+    /** 显示强度指示器 */
+    showStrengthMeter?: boolean;
+    /** 允许自动生成 */
+    allowGenerate?: boolean;
+    /** 生成密码长度 */
+    generatedLength?: number;
+}
+
+/** 时间戳组件定义 */
+export interface TimestampComponentDefinition extends BaseComponentDefinition {
+    type: 'timestamp';
+    /** 类型: created=创建时间, updated=更新时间, custom=自定义 */
+    timestampType?: 'created' | 'updated' | 'custom';
+    /** 显示格式 */
+    format?: string;
+    /** 显示相对时间 */
+    showRelative?: boolean;
+    /** 自动更新（仅 updated 类型） */
+    autoUpdate?: boolean;
+}
+
+/** URL链接组件定义 */
+export interface UrlComponentDefinition extends BaseComponentDefinition {
+    type: 'url';
+    placeholder?: string;
+    /** 显示预览 */
+    showPreview?: boolean;
+    /** 新标签页打开 */
+    openInNewTab?: boolean;
+    /** 允许的协议 */
+    allowedProtocols?: string[];
+}
+
+/** 颜色选择组件定义 */
+export interface ColorComponentDefinition extends BaseComponentDefinition {
+    type: 'color';
+    /** 输出格式 */
+    format?: 'hex' | 'rgb' | 'hsl';
+    /** 预设颜色 */
+    presets?: string[];
+    /** 允许透明度 */
+    allowAlpha?: boolean;
+    /** 显示输入框 */
+    showInput?: boolean;
+}
+
+/** 图标选择组件定义 */
+export interface IconPickerComponentDefinition extends BaseComponentDefinition {
+    type: 'icon-picker';
+    /** 显示的图标分类 */
+    categories?: string[];
+    /** 启用搜索 */
+    searchable?: boolean;
+    /** 显示图标名称 */
+    showLabel?: boolean;
+}
+
+/** 进度条组件定义 */
+export interface ProgressComponentDefinition extends BaseComponentDefinition {
+    type: 'progress';
+    /** 是否可编辑 */
+    editable?: boolean;
+    /** 显示百分比 */
+    showLabel?: boolean;
+    /** 进度条颜色 */
+    color?: string;
+    /** 轨道颜色 */
+    trackColor?: string;
+    /** 高度 */
+    height?: number;
+}
+
+/** 二维码组件定义 */
+export interface QrcodeComponentDefinition extends BaseComponentDefinition {
+    type: 'qrcode';
+    /** 尺寸 */
+    size?: number;
+    /** 容错级别 */
+    errorCorrectionLevel?: 'L' | 'M' | 'Q' | 'H';
+    /** 前景色 */
+    fgColor?: string;
+    /** 背景色 */
+    bgColor?: string;
+    /** 允许下载 */
+    allowDownload?: boolean;
+}
+
+/** 条形码组件定义 */
+export interface BarcodeComponentDefinition extends BaseComponentDefinition {
+    type: 'barcode';
+    /** 格式 */
+    barcodeFormat?: 'CODE128' | 'EAN13' | 'UPC' | 'CODE39' | 'ITF14' | 'MSI' | 'pharmacode';
+    /** 线条宽度 */
+    width?: number;
+    /** 高度 */
+    height?: number;
+    /** 显示文字 */
+    displayValue?: boolean;
+    /** 允许下载 */
+    allowDownload?: boolean;
+}
+
+/** 文档链接组件定义 */
+export interface DocumentLinkComponentDefinition extends BaseComponentDefinition {
+    type: 'document-link';
+    placeholder?: string;
+    /** 允许多选 */
+    allowMultiple?: boolean;
+    /** 文档类型过滤 */
+    filter?: string;
+    /** 显示文档路径 */
+    showPath?: boolean;
+}
+
+/** 关联选择组件定义 */
+export interface RelationPickerComponentDefinition extends BaseComponentDefinition {
+    type: 'relation-picker';
+    /** 关联索引 */
+    index?: string;
+    /** 显示字段 */
+    displayField?: string;
+    /** 搜索字段 */
+    searchFields?: string[];
+    /** 允许多选 */
+    multiple?: boolean;
+    /** 过滤条件 */
+    filterCondition?: string;
+    /** 显示详情 */
+    showDetails?: boolean;
+}
+
+/** 用户选择组件定义 */
+export interface UserPickerComponentDefinition extends BaseComponentDefinition {
+    type: 'user-picker';
+    /** 允许多选 */
+    multiple?: boolean;
+    /** 显示头像 */
+    showAvatar?: boolean;
+    /** 角色过滤 */
+    roleFilter?: string;
+    /** 状态过滤 */
+    statusFilter?: string;
+}
+
+/** 计算字段组件定义 */
+export interface ComputedComponentDefinition extends BaseComponentDefinition {
+    type: 'computed';
+    /** 计算表达式 */
+    expression?: string;
+    /** 依赖字段列表 */
+    dependencies?: string[];
+    /** 结果格式化 */
+    resultFormat?: string;
+    /** 小数位数 */
+    decimals?: number;
+}
+
+/** 公式字段组件定义 */
+export interface FormulaComponentDefinition extends BaseComponentDefinition {
+    type: 'formula';
+    /** 公式字符串 */
+    formula?: string;
+    /** 变量映射 */
+    variables?: Record<string, string>;
+    /** 结果格式 */
+    resultFormat?: string;
+    /** 错误时的默认值 */
+    errorValue?: string | number;
+}
+
+/** 手写签名组件定义 */
+export interface SignatureComponentDefinition extends BaseComponentDefinition {
+    type: 'signature';
+    /** 宽度 */
+    canvasWidth?: number;
+    /** 高度 */
+    canvasHeight?: number;
+    /** 笔触颜色 */
+    strokeColor?: string;
+    /** 笔触粗细 */
+    strokeWidth?: number;
+    /** 背景色 */
+    backgroundColor?: string;
+}
+
+/** 富文本组件定义 */
+export interface RichTextComponentDefinition extends BaseComponentDefinition {
+    type: 'rich-text';
+    /** 工具栏配置 */
+    toolbar?: string[];
+    placeholder?: string;
+    /** 最小高度 */
+    minHeight?: number;
+    /** 最大高度 */
+    maxHeight?: number;
+}
+
+/** JSON编辑组件定义 */
+export interface JsonComponentDefinition extends BaseComponentDefinition {
+    type: 'json';
+    /** JSON Schema */
+    schema?: object;
+    /** 最小高度 */
+    minHeight?: number;
+    /** 最大高度 */
+    maxHeight?: number;
+    /** 只读模式 */
+    readOnly?: boolean;
+}
+
+/** 登录统计组件定义 */
+export interface LoginStatsComponentDefinition extends BaseComponentDefinition {
+    type: 'login-stats';
+    /** 关联用户ID字段 */
+    userIdField?: string;
+    /** 显示最后登录 */
+    showLastLogin?: boolean;
+    /** 显示登录次数 */
+    showLoginCount?: boolean;
+    /** 显示设备信息 */
+    showDevice?: boolean;
+    /** 显示IP地址 */
+    showIp?: boolean;
+    /** 显示历史记录 */
+    showHistory?: boolean;
+    /** 历史记录数量 */
+    historyLimit?: number;
+}
+
+/** 审计日志组件定义 */
+export interface AuditLogComponentDefinition extends BaseComponentDefinition {
+    type: 'audit-log';
+    /** 显示数量 */
+    limit?: number;
+    /** 显示操作用户 */
+    showUser?: boolean;
+    /** 显示差异 */
+    showDiff?: boolean;
+    /** 追踪字段列表 */
+    trackFields?: string[];
+    /** 排除字段列表 */
+    excludeFields?: string[];
+}
+
 /** 文档组件定义联合类型 */
 export type DocumentComponentDefinition =
     | SelectComponentDefinition
@@ -251,7 +531,26 @@ export type DocumentComponentDefinition =
     | AvatarComponentDefinition
     | FileListComponentDefinition
     | TagsComponentDefinition
-    | IdGeneratorComponentDefinition;
+    | IdGeneratorComponentDefinition
+    // Phase 4.3 新增组件
+    | PasswordComponentDefinition
+    | TimestampComponentDefinition
+    | UrlComponentDefinition
+    | ColorComponentDefinition
+    | IconPickerComponentDefinition
+    | ProgressComponentDefinition
+    | QrcodeComponentDefinition
+    | BarcodeComponentDefinition
+    | DocumentLinkComponentDefinition
+    | RelationPickerComponentDefinition
+    | UserPickerComponentDefinition
+    | ComputedComponentDefinition
+    | FormulaComponentDefinition
+    | SignatureComponentDefinition
+    | RichTextComponentDefinition
+    | JsonComponentDefinition
+    | LoginStatsComponentDefinition
+    | AuditLogComponentDefinition;
 
 // ============================================================
 // 组件控件 Props
@@ -283,6 +582,17 @@ export interface ConfiguratorProps {
 // 组件注册类型
 // ============================================================
 
+/** 组件分类 */
+export type ComponentCategory = 'input' | 'smart' | 'display' | 'relation';
+
+/** 组件分类元数据 */
+export interface CategoryMeta {
+    id: ComponentCategory;
+    name: string;
+    description: string;
+    icon: string;
+}
+
 /** 组件元数据配置 */
 export interface ComponentMeta {
     /** 组件类型 */
@@ -295,6 +605,8 @@ export interface ComponentMeta {
     icon: string;
     /** 是否有选项 */
     hasOptions: boolean;
+    /** 组件分类 */
+    category: ComponentCategory;
 }
 
 /** 组件注册定义 */

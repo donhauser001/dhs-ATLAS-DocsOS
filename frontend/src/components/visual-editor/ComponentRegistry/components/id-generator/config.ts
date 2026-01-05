@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '自动生成唯一ID，支持多种格式',
     icon: 'hash',
     hasOptions: false,
+    category: 'smart',
 };
 
 export function createDefault(id: string): IdGeneratorComponentDefinition {

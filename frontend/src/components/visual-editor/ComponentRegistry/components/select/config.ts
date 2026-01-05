@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '单选下拉菜单',
     icon: 'chevron-down',
     hasOptions: true,
+    category: 'input',
 };
 
 export function createDefault(id: string): SelectComponentDefinition {

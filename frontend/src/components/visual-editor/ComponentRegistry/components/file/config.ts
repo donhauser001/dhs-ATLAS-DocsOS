@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '选择单个文件',
     icon: 'file',
     hasOptions: false,
+    category: 'relation',
 };
 
 export function createDefault(id: string): FileComponentDefinition {

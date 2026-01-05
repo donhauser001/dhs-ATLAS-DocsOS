@@ -39,6 +39,11 @@ export {
     registerComponent,
     unregisterComponent,
     registrySize,
+    // 分类相关
+    CATEGORY_METAS,
+    getCategoryMetas,
+    getComponentsByCategory,
+    getComponentsGroupedByCategory,
 } from './registry';
 
 // 共享工具

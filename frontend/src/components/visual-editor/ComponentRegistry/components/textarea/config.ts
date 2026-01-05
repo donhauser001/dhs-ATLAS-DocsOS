@@ -10,6 +10,7 @@ export const meta: ComponentMeta = {
     description: '多行文本输入',
     icon: 'align-left',
     hasOptions: false,
+    category: 'input',
 };
 
 export function createDefault(id: string): TextareaComponentDefinition {

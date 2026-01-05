@@ -1,0 +1,127 @@
+# Person 类型定义
+# 定义文档类型的基本属性
+
+document_type: "person"
+
+# 类型元数据
+metadata:
+  singular: "人员"
+  plural: "人员"
+  description: "系统中一切可行动主体（Principal）的基准定义"
+  role: "reference_plugin"  # 样板插件包
+  
+# 标识字段配置
+identity:
+  # 主标题字段
+  title_field: "display_name"
+  # 副标题字段（可选）
+  subtitle_field: "title"
+  # 头像字段
+  avatar_field: "avatar"
+  # 唯一标识字段
+  id_field: "id"
+
+# 索引配置
+indexing:
+  # 启用双索引
+  dual_index: true
+  staging_path: ".atlas/indexes/person/staging.json"
+  verified_path: ".atlas/indexes/person/verified.json"
+  
+  # 可搜索字段
+  searchable:
+    - display_name
+    - email
+    - phone
+    - company
+    - department
+    - tags
+    
+  # 可排序字段
+  sortable:
+    - display_name
+    - created_at
+    - updated_at
+    - status
+    
+  # 可分组字段
+  groupable:
+    - status
+    - department
+    - company
+    - tags
+    - access_status
+
+# 状态配置
+status:
+  # 索引状态
+  index_status:
+    - id: "staging"
+      name: "待审核"
+      color: "#F59E0B"
+      icon: "clock"
+    - id: "verified"
+      name: "已验证"
+      color: "#10B981"
+      icon: "check-circle"
+      
+  # 登录状态
+  access_status:
+    - id: "none"
+      name: "无登录资格"
+      color: "#6B7280"
+      icon: "x-circle"
+    - id: "eligible"
+      name: "可邀请"
+      color: "#3B82F6"
+      icon: "user-check"
+    - id: "invited"
+      name: "已邀请"
+      color: "#8B5CF6"
+      icon: "mail"
+    - id: "active"
+      name: "已激活"
+      color: "#10B981"
+      icon: "check-circle"
+    - id: "suspended"
+      name: "已禁用"
+      color: "#EF4444"
+      icon: "ban"
+
+# 显现方式配置
+presentation:
+  # 列表页
+  list:
+    - id: "verified_list"
+      name: "人员列表"
+      description: "显示所有已验证的 Person"
+      filter: { status: "verified" }
+      
+    - id: "staging_pool"
+      name: "审核池"
+      description: "显示待审核的 Person"
+      filter: { status: "staging" }
+      
+  # 详情页
+  detail:
+    - id: "person_detail"
+      name: "人员详情"
+      description: "显示 Person 完整信息"
+      
+  # 操作入口
+  actions:
+    - id: "invite_action"
+      name: "邀请登录"
+      description: "发送登录邀请"
+      requires: { status: "verified", access_status: "eligible" }
+      
+    - id: "enable_action"
+      name: "启用登录"
+      description: "启用登录权限"
+      requires: { access_status: ["invited", "suspended"] }
+      
+    - id: "suspend_action"
+      name: "禁用登录"
+      description: "禁用登录权限"
+      requires: { access_status: "active" }
+

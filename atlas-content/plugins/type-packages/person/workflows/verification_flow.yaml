@@ -1,0 +1,219 @@
+# Person 验证状态工作流
+# 定义 staging → verified → login eligible 的状态流转
+
+version: "1.0"
+name: "人员验证流程"
+description: "管理人员从待审核到已验证再到可登录的完整流程"
+
+# ============================================================
+# 索引状态定义（staging/verified）
+# ============================================================
+
+index_states:
+  - id: "staging"
+    name: "待审核"
+    color: "#F59E0B"
+    icon: "clock"
+    description: "已声明 doc-type: person，但未满足核心字段合同"
+    
+  - id: "verified"
+    name: "已验证"
+    color: "#10B981"
+    icon: "check-circle"
+    description: "满足核心字段合同，进入正式索引"
+
+# 初始索引状态
+initial_index_state: "staging"
+
+# 索引状态转换规则
+index_transitions:
+  # staging → verified（满足合同自动升级）
+  - from: "staging"
+    to: "verified"
+    name: "验证通过"
+    trigger: "auto"
+    condition: "meetsVerifiedContract()"
+    audit_required: true
+    
+  # staging → verified（手动审核升级）
+  - from: "staging"
+    to: "verified"
+    name: "手动验证"
+    trigger: "manual"
+    action: "verify"
+    requires_permission: "admin"
+    audit_required: true
+    
+  # verified → staging（降级，发现问题时）
+  - from: "verified"
+    to: "staging"
+    name: "降级待审"
+    trigger: "manual"
+    action: "demote"
+    requires_permission: "admin"
+    requires_confirmation: true
+    audit_required: true
+
+# ============================================================
+# 登录状态定义（5态状态机）
+# ============================================================
+
+access_states:
+  - id: "none"
+    name: "无登录资格"
+    color: "#6B7280"
+    icon: "x-circle"
+    description: "尚未满足登录资格条件"
+    
+  - id: "eligible"
+    name: "可邀请"
+    color: "#3B82F6"
+    icon: "user-check"
+    description: "满足字段合同，可发送邀请"
+    
+  - id: "invited"
+    name: "已邀请"
+    color: "#8B5CF6"
+    icon: "mail"
+    description: "已发送邀请，等待认领"
+    
+  - id: "active"
+    name: "已激活"
+    color: "#10B981"
+    icon: "check-circle"
+    description: "可正常登录"
+    
+  - id: "suspended"
+    name: "已禁用"
+    color: "#EF4444"
+    icon: "ban"
+    description: "登录权限已被禁用"
+
+# 初始登录状态
+initial_access_state: "none"
+
+# 登录状态转换规则
+access_transitions:
+  # none → eligible（满足 verified 合同后自动转换）
+  - from: "none"
+    to: "eligible"
+    name: "获得邀请资格"
+    trigger: "auto"
+    condition: "indexStatus === 'verified' && hasVerifiableContact()"
+    
+  # eligible → invited（发送邀请）
+  - from: "eligible"
+    to: "invited"
+    name: "发送邀请"
+    trigger: "manual"
+    action: "send_invite"
+    requires_permission: "admin"
+    side_effects:
+      - "generateInviteToken()"
+      - "sendInviteEmail() || sendInviteSMS()"
+      - "setInvitedAt(now())"
+    audit_required: true
+    
+  # invited → active（完成认领）
+  - from: "invited"
+    to: "active"
+    name: "完成认领"
+    trigger: "external"
+    action: "claim"
+    condition: "validInviteToken()"
+    side_effects:
+      - "setPassword()"
+      - "setClaimedAt(now())"
+      - "setAccessEnabled(true)"
+      - "clearInviteToken()"
+    audit_required: true
+    
+  # eligible → active（管理员直接启用）
+  - from: "eligible"
+    to: "active"
+    name: "直接启用"
+    trigger: "manual"
+    action: "enable_direct"
+    requires_permission: "super_admin"
+    requires_confirmation: true
+    audit_required: true
+    
+  # active → suspended（禁用）
+  - from: "active"
+    to: "suspended"
+    name: "禁用登录"
+    trigger: "manual"
+    action: "suspend"
+    requires_permission: "admin"
+    side_effects:
+      - "setAccessEnabled(false)"
+      - "invalidateSessions()"
+    audit_required: true
+    
+  # suspended → active（恢复）
+  - from: "suspended"
+    to: "active"
+    name: "恢复登录"
+    trigger: "manual"
+    action: "reactivate"
+    requires_permission: "admin"
+    side_effects:
+      - "setAccessEnabled(true)"
+    audit_required: true
+    
+  # invited → eligible（取消邀请）
+  - from: "invited"
+    to: "eligible"
+    name: "取消邀请"
+    trigger: "manual"
+    action: "cancel_invite"
+    requires_permission: "admin"
+    side_effects:
+      - "clearInviteToken()"
+      - "clearInvitedAt()"
+    audit_required: true
+
+# ============================================================
+# 审计配置
+# ============================================================
+
+audit:
+  enabled: true
+  
+  # 记录的字段
+  tracked_fields:
+    - "index_status"
+    - "access_status"
+    - "access_enabled"
+    - "contact_verified"
+    
+  # 审计记录格式
+  record_format:
+    - "operator"        # 操作人
+    - "timestamp"       # 时间
+    - "action"          # 动作
+    - "from_state"      # 原状态
+    - "to_state"        # 新状态
+    - "field_changes"   # 字段变更摘要
+    - "reason"          # 原因（可选）
+
+# ============================================================
+# 自动化规则
+# ============================================================
+
+automation:
+  # 邀请过期自动清理
+  - name: "邀请过期清理"
+    condition: "access_status === 'invited' && invitedAt < now() - 7 days"
+    action: "transition_to: eligible"
+    side_effects:
+      - "clearInviteToken()"
+    enabled: true
+    
+  # 长期不活跃自动提醒
+  - name: "不活跃提醒"
+    condition: "access_status === 'active' && lastLogin < now() - 90 days"
+    action: "send_notification"
+    notification_type: "inactivity_warning"
+    enabled: false
+

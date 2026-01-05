@@ -4,6 +4,7 @@ import { GenesisPage } from './pages/genesis'
 import { WorkspacePage, DocumentPage } from './pages/workspace'
 import { LoginPage } from './pages/LoginPage'
 import { SettingsPage } from './pages/settings/SettingsPage'
+import { PersonsPage, StagingPoolPage, PersonDetailPage } from './pages/persons'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { TokenProvider } from '@/components/tokens/TokenProvider'
 import { LabelProvider } from '@/providers/LabelProvider'
@@ -85,9 +86,25 @@ function App() {
                 <DocumentPage />
               </ProtectedRoute>
             } />
-            {/* Phase 3.3: 用户管理重定向到文档（位置由文档声明决定） */}
+            {/* Phase 4.2: Person 管理 */}
+            <Route path="/persons" element={
+              <ProtectedRoute>
+                <PersonsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/persons/staging" element={
+              <ProtectedRoute>
+                <StagingPoolPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/persons/:id" element={
+              <ProtectedRoute>
+                <PersonDetailPage />
+              </ProtectedRoute>
+            } />
+            {/* Phase 3.3: 用户管理重定向到 Person 列表 */}
             <Route path="/users" element={
-              <Navigate to="/workspace/用户列表.md" replace />
+              <Navigate to="/persons" replace />
             } />
             {/* 系统设置 - 支持 URL 定位 */}
             <Route path="/settings" element={
