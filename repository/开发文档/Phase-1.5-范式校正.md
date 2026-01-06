@@ -2,7 +2,11 @@
 atlas:
   capabilities:
     - share
+    - export
+    - comment
 ---
+
+
 
 
 # Phase 1.5 - 范式校正
