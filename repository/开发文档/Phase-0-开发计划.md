@@ -3,6 +3,8 @@
 ---
 
 
+
+
 # Phase 0 / Genesis 开发计划
 
 **目标**：让一份 ADL 文档完成「读取 → 显现 → 修改 → Proposal → 校验 → Commit」闭环。
