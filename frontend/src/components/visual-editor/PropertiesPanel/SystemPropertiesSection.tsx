@@ -35,6 +35,7 @@ export interface SystemPropertyValues {
     'atlas.function': string;
     'atlas.display': string[];   // 支持多选，用于视图切换
     'atlas.capabilities': string[];
+    slug: string;                // URL 短链接
 }
 
 export interface SystemPropertiesSectionProps {
@@ -125,6 +126,7 @@ export function SystemPropertiesSection({
             'atlas.display': '显现模式',
             'atlas.capabilities': '能力',
             'version': '版本',
+            'slug': '短链接',
         };
         return defaultLabels[key] || key;
     }
@@ -134,7 +136,6 @@ export function SystemPropertiesSection({
             <div className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
                 <Lock className="w-3 h-3" />
                 系统属性
-                {!disabled && <span className="text-slate-300 font-normal ml-1">(可拖拽排序)</span>}
             </div>
 
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>

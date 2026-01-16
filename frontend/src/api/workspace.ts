@@ -42,6 +42,7 @@ export interface TreeNode {
   name: string;
   type: 'directory' | 'document';
   path?: string;
+  slug?: string;
   children?: TreeNode[];
 }
 

@@ -117,11 +117,23 @@ export function BlockItem({
         }
     }, [isSelected]);
 
-    // 自动调整高度
+    // 自动调整高度 - 根据块类型设置不同的最小高度
     const adjustHeight = (el: HTMLTextAreaElement | null) => {
         if (!el) return;
+        
+        // 根据块类型设置最小高度（标题需要更高）
+        const minHeights: Record<string, number> = {
+            heading1: 40,  // 2xl 字体
+            heading2: 36,  // xl 字体
+            heading3: 32,  // lg 字体
+            paragraph: 24,
+            code: 24,
+            quote: 24,
+        };
+        const minHeight = minHeights[block.type] || 24;
+        
         el.style.height = '0';
-        el.style.height = Math.max(el.scrollHeight, 24) + 'px';
+        el.style.height = Math.max(el.scrollHeight, minHeight) + 'px';
     };
 
     // 初始化高度
@@ -315,11 +327,11 @@ export function BlockItem({
             );
         }
 
-        // 标题
+        // 标题 - 添加适当的垂直内边距以适应更大的字体
         const headingStyles: Record<string, string> = {
-            heading1: 'text-2xl font-bold text-slate-900',
-            heading2: 'text-xl font-semibold text-slate-800',
-            heading3: 'text-lg font-medium text-slate-700',
+            heading1: 'text-2xl font-bold text-slate-900 py-1',
+            heading2: 'text-xl font-semibold text-slate-800 py-0.5',
+            heading3: 'text-lg font-medium text-slate-700 py-0.5',
         };
 
         if (block.type.startsWith('heading')) {

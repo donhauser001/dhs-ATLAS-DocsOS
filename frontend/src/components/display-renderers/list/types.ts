@@ -8,7 +8,11 @@
 export interface FieldSchema {
     key: string;
     label: string;
-    type: 'text' | 'number' | 'date' | 'datetime' | 'select' | 'tags' | 'textarea' | 'url' | 'email' | 'phone' | 'boolean' | 'currency' | 'image' | 'link' | 'user' | 'reference';
+    type: 
+        | 'text' | 'number' | 'date' | 'datetime' | 'select' | 'tags' | 'textarea' 
+        | 'url' | 'email' | 'phone' | 'boolean' | 'currency' | 'image' | 'link' 
+        | 'user' | 'reference' | 'avatar' | 'toggle' | 'file' | 'files' | 'rating' 
+        | 'user-auth' | 'password' | 'object';
     options?: SelectOption[];
     unit?: string;
     currency?: string;

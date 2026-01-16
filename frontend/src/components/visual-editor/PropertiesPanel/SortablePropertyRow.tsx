@@ -4,6 +4,7 @@
  * 支持多种属性类型：文本、日期、标签、文档类型、功能类型、显现模式、能力
  */
 
+import { useState, useEffect } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { X, Lock, GripVertical } from 'lucide-react';
@@ -11,10 +12,10 @@ import { cn } from '@/lib/utils';
 import { useLabels } from '@/providers/LabelProvider';
 import type { SortablePropertyRowProps } from './types';
 import { formatDateDisplay, getColorClasses, getDefaultTagColor } from './utils';
-import { DocTypeSelector } from '@/components/ui/doc-type-selector';
 import { FunctionTypeSelector } from '@/components/ui/function-type-selector';
 import { DisplayModeMultiSelect } from '@/components/ui/display-mode-multi-select';
 import { CapabilityMultiSelect } from '@/components/ui/capability-multi-select';
+import { TypePackageDisplay } from './TypePackageDisplay';
 
 export function SortablePropertyRow({
     id,
@@ -79,16 +80,9 @@ export function SortablePropertyRow({
             );
         }
 
-        // 文档类型选择器
+        // 文档类型 - 静态显示类型包名称
         if (type === 'doc-type') {
-            return (
-                <DocTypeSelector
-                    value={String(value || '')}
-                    onChange={(v) => onChange(v)}
-                    disabled={readonly || disabled}
-                    compact
-                />
-            );
+            return <TypePackageDisplay value={String(value || '')} />;
         }
 
         // 功能类型选择器
@@ -127,17 +121,15 @@ export function SortablePropertyRow({
             );
         }
 
-        // 默认文本类型
+        // 默认文本类型 - 使用 TextInput 组件，失去焦点时才提交
         if (readonly) {
             return <span className="text-xs text-slate-600">{String(value || '—')}</span>;
         }
 
         return (
-            <input
-                type="text"
+            <TextInput
                 value={String(value || '')}
-                onChange={(e) => onChange(e.target.value)}
-                className="w-full text-xs bg-transparent border-none outline-none placeholder:text-slate-300 text-slate-800"
+                onChange={onChange}
             />
         );
     };
@@ -259,3 +251,47 @@ function TagsRenderer({ tags, readonly, onChange }: TagsRendererProps) {
 
 export default SortablePropertyRow;
 
+/**
+ * 文本输入组件 - 只在失去焦点或按回车时提交更改
+ * 避免每次输入都触发父组件更新（例如重命名文件）
+ */
+interface TextInputProps {
+    value: string;
+    onChange: (value: unknown) => void;
+}
+
+function TextInput({ value, onChange }: TextInputProps) {
+    const [localValue, setLocalValue] = useState(value);
+
+    // 当外部 value 变化时同步本地状态
+    useEffect(() => {
+        setLocalValue(value);
+    }, [value]);
+
+    const handleBlur = () => {
+        if (localValue !== value) {
+            onChange(localValue);
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (localValue !== value) {
+                onChange(localValue);
+            }
+            e.currentTarget.blur();
+        }
+    };
+
+    return (
+        <input
+            type="text"
+            value={localValue}
+            onChange={(e) => setLocalValue(e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            className="w-full text-xs bg-transparent border-none outline-none placeholder:text-slate-300 text-slate-800"
+        />
+    );
+}

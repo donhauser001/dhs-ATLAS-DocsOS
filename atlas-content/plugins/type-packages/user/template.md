@@ -1,10 +1,9 @@
 ---
-doc-type: user
 title: "{{title}}"
+document_type: user
 created: "{{created_at}}"
 updated: "{{updated_at}}"
 author: "{{author}}"
-
 atlas:
   function: entity_detail
   display:
@@ -14,11 +13,8 @@ atlas:
     - editable
     - searchable
     - linkable
-    - indexable
     - exportable
-
 _components:
-  # ===== 档案组件 =====
   comp_avatar:
     type: avatar
     id: comp_avatar
@@ -47,33 +43,26 @@ _components:
     label: 生日
     format: YYYY-MM-DD
     includeTime: false
-  comp_email:
-    type: email
-    id: comp_email
-    label: 邮箱
-    placeholder: 请输入邮箱地址
-  comp_phone:
-    type: phone
-    id: comp_phone
-    label: 手机
-    placeholder: 请输入手机号
-  comp_title:
-    type: text
-    id: comp_title
-    label: 职位
   comp_company:
-    type: text
+    type: file
     id: comp_company
-    label: 公司
+    label: 单位
+    accept:
+      - .md
+    directory: /客户
   comp_department:
     type: text
     id: comp_department
     label: 部门
+  comp_position:
+    type: text
+    id: comp_position
+    label: 职位
   comp_address:
     type: textarea
     id: comp_address
-    label: 地址
-    rows: 2
+    label: 快递信息
+    rows: 3
   comp_tags:
     type: tags
     id: comp_tags
@@ -85,7 +74,6 @@ _components:
     id: comp_notes
     label: 备注
     rows: 3
-  # ===== 认证组件 =====
   comp_auth:
     type: user-auth
     id: comp_auth
@@ -131,25 +119,20 @@ data:
   name: "{{title}}"
   gender: ""
   birthday: ""
-  email: ""
-  phone: ""
-  mobile: ""
-  title: ""
   company: ""
   department: ""
+  position: ""
   address: ""
-  tags: []
+  tags: ""
   notes: ""
 _bindings:
   avatar: comp_avatar
   name: comp_name
   gender: comp_gender
   birthday: comp_birthday
-  email: comp_email
-  phone: comp_phone
-  title: comp_title
   company: comp_company
   department: comp_department
+  position: comp_position
   address: comp_address
   tags: comp_tags
   notes: comp_notes
@@ -166,8 +149,8 @@ data:
     email: ""
     phone: ""
     password_hash: ""
-    role: "customer"
-    status: "active"
+    role: guest
+    status: active
 _bindings:
   auth: comp_auth
 ```

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "updatedAt": "2026-01-16T16:08:16.459Z",
+  "updatedAt": "2026-01-16T18:56:49.308Z",
   "categories": [
     {
       "id": "core",
@@ -92,6 +92,12 @@
           "key": "author",
           "label": "作者",
           "icon": "user",
+          "isSystem": true
+        },
+        {
+          "key": "slug",
+          "label": "短链接",
+          "icon": "link",
           "isSystem": true
         }
       ]
@@ -371,6 +377,12 @@
           "label": "权限备注",
           "icon": "file-text",
           "isSystem": true
+        },
+        {
+          "key": "user",
+          "label": "用户",
+          "icon": "user",
+          "isSystem": false
         }
       ]
     },

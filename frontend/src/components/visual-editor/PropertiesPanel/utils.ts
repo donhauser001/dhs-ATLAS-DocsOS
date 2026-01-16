@@ -52,6 +52,8 @@ export const DEFAULT_SYSTEM_ORDER = [
     'atlas.display',
     // 能力配置
     'atlas.capabilities',
+    // URL Slug
+    'slug',
 ];
 
 /**

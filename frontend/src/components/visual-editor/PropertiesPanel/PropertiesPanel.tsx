@@ -14,123 +14,24 @@
  */
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import YAML from 'yaml';
 import { arrayMove } from '@dnd-kit/sortable';
 import type { DragEndEvent } from '@dnd-kit/core';
-import {
-    ChevronDown, ChevronRight, Plus, User, Calendar, Tag,
-    FileType, Workflow, Info, X, Copy, Check
-} from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
-import { cn } from '@/lib/utils';
-import type { PropertyDefinition, PropertyValues, DocumentPropertyFields, PropertyComponentConfig } from '@/types/property';
-import { AddPropertyDialog } from './AddPropertyDialog';
-import { SystemPropertiesSection, type SystemPropertyValues } from './SystemPropertiesSection';
-import { CustomPropertiesSection } from './CustomPropertiesSection';
-import { ViewSwitcher } from './ViewSwitcher';
+import type { PropertyDefinition, DocumentPropertyFields, PropertyComponentConfig } from '@/types/property';
+import { SystemPropertyValues } from './SystemPropertiesSection';
+import { ReadModePanel } from './ReadModePanel';
+import { EditModePanel } from './EditModePanel';
 import type { PropertiesPanelProps, PropertiesPanelMode } from './types';
-import { DEFAULT_SYSTEM_ORDER, formatRelativeTime, formatDateDisplay, COLOR_CLASSES, getDefaultTagColor } from './utils';
+import type { DocTypeDisplay, FunctionDisplay, DataBlockStructure } from './TechInfoPanel';
+import { DEFAULT_SYSTEM_ORDER } from './utils';
 import { fetchDocTypeConfig, type DocTypeConfig, type DocTypeItem } from '@/api/doc-types';
 import { fetchFunctionTypeConfig, type FunctionTypeConfig } from '@/api/function-types';
-import { useLabels } from '@/providers/LabelProvider';
-// 导入能力组件注册表
-import { CapabilityActions } from '@/components/capabilities';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type IconComponent = React.ComponentType<any>;
-
-/**
- * 获取 Lucide 图标组件
- */
-function getIcon(iconName?: string): IconComponent | null {
-    if (!iconName) return null;
-    const pascalCase = iconName
-        .split('-')
-        .map(s => s.charAt(0).toUpperCase() + s.slice(1))
-        .join('');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (LucideIcons as any)[pascalCase] || null;
-}
-
-/**
- * 元信息行组件 - 显示作者、时间和标签
- */
-function MetaInfoRow({ frontmatter }: { frontmatter: Record<string, unknown> }) {
-    const { getColor } = useLabels();
-
-    const author = frontmatter.author as string || '';
-    const created = (frontmatter.created_at || frontmatter.created) as string || '';
-    const updated = (frontmatter.updated_at || frontmatter.updated) as string || '';
-    const tags = Array.isArray(frontmatter.tags) ? frontmatter.tags : [];
-
-    // 时间显示：优先显示更新时间
-    const timeDisplay = updated ? formatRelativeTime(updated) : (created ? formatRelativeTime(created) : null);
-    const timeTitle = updated ? `更新于 ${formatDateDisplay(updated)}` : (created ? `创建于 ${formatDateDisplay(created)}` : '');
-
-    const hasMetaInfo = author || timeDisplay || tags.length > 0;
-
-    if (!hasMetaInfo) return null;
-
-    return (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            {/* 作者 */}
-            {author && (
-                <span className="flex items-center gap-1.5 text-sm text-slate-500">
-                    <User size={13} className="text-slate-400" />
-                    {author}
-                </span>
-            )}
-
-            {/* 分隔点 */}
-            {author && timeDisplay && <span className="text-slate-300 text-sm">·</span>}
-
-            {/* 时间 */}
-            {timeDisplay && (
-                <span className="flex items-center gap-1.5 text-sm text-slate-500" title={timeTitle}>
-                    <Calendar size={13} className="text-slate-400" />
-                    {timeDisplay}
-                </span>
-            )}
-
-            {/* 分隔点 */}
-            {(author || timeDisplay) && tags.length > 0 && <span className="text-slate-300 text-sm">·</span>}
-
-            {/* 标签 */}
-            {tags.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1.5">
-                    {tags.map((tag, idx) => {
-                        const tagStr = String(tag);
-                        const systemColor = getColor(tagStr);
-                        const colorClasses = systemColor
-                            ? COLOR_CLASSES[systemColor] || COLOR_CLASSES.slate
-                            : getDefaultTagColor(idx);
-
-                        return (
-                            <span
-                                key={tagStr}
-                                className={cn(
-                                    "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
-                                    colorClasses.bg,
-                                    colorClasses.text,
-                                )}
-                            >
-                                <Tag size={10} />
-                                {tagStr}
-                            </span>
-                        );
-                    })}
-                </div>
-            )}
-        </div>
-    );
-}
 
 /** 解析 atlas-data 块结构（不含数据值） */
-function parseDataBlockStructure(content: string): Array<{ type: string; fields: string[] }> {
-    const blocks: Array<{ type: string; fields: string[] }> = [];
+function parseDataBlockStructure(content: string): DataBlockStructure[] {
+    const blocks: DataBlockStructure[] = [];
     const blockRegex = /```atlas-data\s*([\s\S]*?)```/g;
     let match;
-    
+
     while ((match = blockRegex.exec(content)) !== null) {
         try {
             const blockContent = match[1];
@@ -138,7 +39,7 @@ function parseDataBlockStructure(content: string): Array<{ type: string; fields:
             let type = '';
             const fields: string[] = [];
             let inData = false;
-            
+
             for (const line of lines) {
                 const trimmed = line.trim();
                 if (trimmed.startsWith('type:')) {
@@ -154,7 +55,7 @@ function parseDataBlockStructure(content: string): Array<{ type: string; fields:
                     }
                 }
             }
-            
+
             if (type) {
                 blocks.push({ type, fields });
             }
@@ -162,119 +63,8 @@ function parseDataBlockStructure(content: string): Array<{ type: string; fields:
             // 解析失败跳过
         }
     }
-    
-    return blocks;
-}
 
-/** 生成可复制的文档模板 */
-function generateDocumentTemplate(
-    frontmatter: Record<string, unknown>,
-    content: string
-): string {
-    // 1. 构建 frontmatter（移除数据相关字段，保留结构）
-    const templateFrontmatter: Record<string, unknown> = {};
-    
-    // 保留结构性字段
-    if (frontmatter['doc-type']) templateFrontmatter['doc-type'] = frontmatter['doc-type'];
-    if (frontmatter.document_type) templateFrontmatter.document_type = frontmatter.document_type;
-    
-    // 设置占位符
-    templateFrontmatter.title = '{{标题}}';
-    templateFrontmatter.created = '{{创建时间}}';
-    templateFrontmatter.updated = '{{更新时间}}';
-    templateFrontmatter.author = '{{作者}}';
-    
-    // 保留 atlas 配置
-    if (frontmatter.atlas) {
-        templateFrontmatter.atlas = frontmatter.atlas;
-    }
-    
-    // 保留 _components 定义
-    if (frontmatter._components) {
-        templateFrontmatter._components = frontmatter._components;
-    }
-    
-    // 2. 使用 yaml 库生成 frontmatter
-    const yamlContent = YAML.stringify(templateFrontmatter, {
-        indent: 2,
-        lineWidth: 0, // 不自动换行
-    });
-    const frontmatterBlock = `---\n${yamlContent}---`;
-    
-    // 3. 解析并重建数据块（清空数据值）
-    const bodyLines: string[] = [];
-    const blockRegex = /```atlas-data\s*([\s\S]*?)```/g;
-    let lastIndex = 0;
-    let match;
-    
-    // 查找标题行
-    const titleMatch = content.match(/^#\s+.+$/m);
-    if (titleMatch) {
-        bodyLines.push('\n# {{标题}}\n');
-    }
-    
-    while ((match = blockRegex.exec(content)) !== null) {
-        // 查找这个块之前的标题（## 开头的行）
-        const beforeBlock = content.slice(lastIndex, match.index);
-        const sectionTitle = beforeBlock.match(/##\s+(.+)\s*$/m);
-        if (sectionTitle) {
-            bodyLines.push(`\n## ${sectionTitle[1]}\n`);
-        }
-        
-        // 解析数据块
-        const blockContent = match[1];
-        const lines = blockContent.split('\n');
-        let type = '';
-        const fields: Array<{ key: string; defaultValue: string }> = [];
-        const bindings: Array<{ key: string; comp: string }> = [];
-        let inData = false;
-        let inBindings = false;
-        
-        for (const line of lines) {
-            const trimmed = line.trim();
-            if (trimmed.startsWith('type:')) {
-                type = trimmed.replace('type:', '').trim();
-            } else if (trimmed === 'data:') {
-                inData = true;
-                inBindings = false;
-            } else if (trimmed === '_bindings:') {
-                inData = false;
-                inBindings = true;
-            } else if (inData && trimmed.includes(':')) {
-                const colonIdx = trimmed.indexOf(':');
-                const key = trimmed.slice(0, colonIdx).trim();
-                if (key && !key.startsWith('-')) {
-                    // 清空值，保持结构
-                    fields.push({ key, defaultValue: '""' });
-                }
-            } else if (inBindings && trimmed.includes(':')) {
-                const colonIdx = trimmed.indexOf(':');
-                const key = trimmed.slice(0, colonIdx).trim();
-                const comp = trimmed.slice(colonIdx + 1).trim();
-                if (key && comp) {
-                    bindings.push({ key, comp });
-                }
-            }
-        }
-        
-        // 重建数据块
-        const blockLines = ['```atlas-data', `type: ${type}`, 'data:'];
-        for (const field of fields) {
-            blockLines.push(`  ${field.key}: ${field.defaultValue}`);
-        }
-        if (bindings.length > 0) {
-            blockLines.push('_bindings:');
-            for (const b of bindings) {
-                blockLines.push(`  ${b.key}: ${b.comp}`);
-            }
-        }
-        blockLines.push('```');
-        
-        bodyLines.push(blockLines.join('\n'));
-        lastIndex = match.index + match[0].length;
-    }
-    
-    return frontmatterBlock + bodyLines.join('\n') + '\n';
+    return blocks;
 }
 
 export function PropertiesPanel({
@@ -284,24 +74,16 @@ export function PropertiesPanel({
     disabled = false,
     defaultExpanded = true,
     mode: controlledMode,
-    onModeChange,
+    onModeChange: _onModeChange,
     documentPath,
     displayMode,
     onDisplayModeChange,
 }: PropertiesPanelProps) {
     // 内部模式状态（非受控模式时使用）
-    const [internalMode, setInternalMode] = useState<PropertiesPanelMode>('edit');
+    const [internalMode] = useState<PropertiesPanelMode>('edit');
 
     // 使用受控或非受控模式
     const mode = controlledMode !== undefined ? controlledMode : internalMode;
-
-    // 处理模式切换
-    const handleModeChange = useCallback((newMode: PropertiesPanelMode) => {
-        if (controlledMode === undefined) {
-            setInternalMode(newMode);
-        }
-        onModeChange?.(newMode);
-    }, [controlledMode, onModeChange]);
 
     // 获取显现模式数组（用于视图切换器）
     const displayModes = useMemo(() => {
@@ -314,47 +96,8 @@ export function PropertiesPanel({
         }
         return [];
     }, [frontmatter]);
-    const [expanded, setExpanded] = useState(defaultExpanded);
-    const [showAddDialog, setShowAddDialog] = useState(false);
+
     const [editingConfig, setEditingConfig] = useState<string | null>(null);
-    const [showTechInfo, setShowTechInfo] = useState(false); // 技术信息浮动面板
-    const [copied, setCopied] = useState(false); // 复制成功状态
-    const techInfoRef = useRef<HTMLDivElement>(null); // 弹窗 ref，用于检测点击外部关闭
-
-    // 复制文档结构到剪贴板
-    const handleCopyTemplate = useCallback(async () => {
-        if (!content) return;
-        
-        try {
-            const template = generateDocumentTemplate(frontmatter, content);
-            await navigator.clipboard.writeText(template);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch (err) {
-            console.error('复制失败:', err);
-        }
-    }, [frontmatter, content]);
-
-    // 点击外部关闭配置弹窗
-    useEffect(() => {
-        if (!showTechInfo) return;
-
-        const handleClickOutside = (event: MouseEvent) => {
-            if (techInfoRef.current && !techInfoRef.current.contains(event.target as Node)) {
-                setShowTechInfo(false);
-            }
-        };
-
-        // 延迟添加监听，避免触发按钮本身的点击
-        const timer = setTimeout(() => {
-            document.addEventListener('click', handleClickOutside);
-        }, 0);
-
-        return () => {
-            clearTimeout(timer);
-            document.removeEventListener('click', handleClickOutside);
-        };
-    }, [showTechInfo]);
 
     // 配置缓存
     const docTypeConfigRef = useRef<DocTypeConfig | null>(null);
@@ -378,7 +121,8 @@ export function PropertiesPanel({
 
     // 解析 Atlas 配置
     const atlas = useMemo(() => (frontmatter.atlas as Record<string, unknown>) || {}, [frontmatter]);
-    const documentType = frontmatter.document_type as string || '';
+    // 兼容新旧字段名：document_type 和 doc-type
+    const documentType = (frontmatter.document_type || frontmatter['doc-type']) as string || '';
     const functionType = atlas.function as string || '';
     const capabilities = useMemo(() => {
         return Array.isArray(atlas.capabilities) ? atlas.capabilities as string[] : [];
@@ -391,7 +135,7 @@ export function PropertiesPanel({
     }, [content]);
 
     // 获取文档类型的语义化显示
-    const docTypeDisplay = useMemo(() => {
+    const docTypeDisplay = useMemo<DocTypeDisplay | null>(() => {
         if (!docTypeConfig || !documentType) return null;
 
         for (const group of docTypeConfig.groups) {
@@ -413,7 +157,7 @@ export function PropertiesPanel({
     }, [docTypeConfig, documentType]);
 
     // 获取功能类型的语义化显示
-    const functionDisplay = useMemo(() => {
+    const functionDisplay = useMemo<FunctionDisplay | null>(() => {
         if (!functionTypeConfig || !functionType) return null;
 
         for (const group of functionTypeConfig.groups) {
@@ -436,7 +180,7 @@ export function PropertiesPanel({
                     return item.label;
                 }
             }
-            return modeId; // 如果找不到，返回原始 ID
+            return modeId;
         });
     }, [displayModeConfig, displayModes]);
 
@@ -444,13 +188,12 @@ export function PropertiesPanel({
     const systemValues = useMemo<SystemPropertyValues>(() => {
         const atlas = (frontmatter.atlas as Record<string, unknown>) || {};
 
-        // 处理 atlas.display 的向后兼容性：旧文档可能是字符串，需要转换为数组
         const rawDisplay = atlas.display;
-        let displayModes: string[] = [];
+        let displayModesArray: string[] = [];
         if (Array.isArray(rawDisplay)) {
-            displayModes = rawDisplay as string[];
+            displayModesArray = rawDisplay as string[];
         } else if (typeof rawDisplay === 'string' && rawDisplay) {
-            displayModes = [rawDisplay];
+            displayModesArray = [rawDisplay];
         }
 
         return {
@@ -459,15 +202,15 @@ export function PropertiesPanel({
             created: frontmatter.created as string || new Date().toISOString(),
             updated: frontmatter.updated as string || new Date().toISOString(),
             version: frontmatter.version as string || '1.0',
-            document_type: frontmatter.document_type as string || '',
+            document_type: (frontmatter.document_type || frontmatter['doc-type']) as string || '',
             'atlas.function': atlas.function as string || '',
-            'atlas.display': displayModes,
+            'atlas.display': displayModesArray,
             'atlas.capabilities': (atlas.capabilities as string[]) || [],
+            slug: frontmatter.slug as string || '',
         };
     }, [frontmatter]);
 
     // 系统属性顺序
-    // 确保新添加的系统属性按照默认顺序插入到正确位置
     const systemOrder = useMemo(() => {
         const savedOrder = frontmatter._systemOrder as string[] | undefined;
 
@@ -475,20 +218,15 @@ export function PropertiesPanel({
             return DEFAULT_SYSTEM_ORDER;
         }
 
-        // 检查是否有新的系统属性需要添加
         const missingKeys = DEFAULT_SYSTEM_ORDER.filter(key => !savedOrder.includes(key));
 
         if (missingKeys.length === 0) {
             return savedOrder;
         }
 
-        // 将缺失的属性按默认顺序插入到正确位置
         const result = [...savedOrder];
         for (const missingKey of missingKeys) {
-            // 找到该属性在默认顺序中的位置
             const defaultIndex = DEFAULT_SYSTEM_ORDER.indexOf(missingKey);
-
-            // 找到在默认顺序中它之前的属性，看看在 result 中的位置
             let insertIndex = 0;
             for (let i = defaultIndex - 1; i >= 0; i--) {
                 const prevKey = DEFAULT_SYSTEM_ORDER[i];
@@ -498,7 +236,6 @@ export function PropertiesPanel({
                     break;
                 }
             }
-
             result.splice(insertIndex, 0, missingKey);
         }
 
@@ -515,7 +252,7 @@ export function PropertiesPanel({
     }, [frontmatter]);
 
     // 自定义属性值
-    const customValues = useMemo<PropertyValues>(() => {
+    const customValues = useMemo(() => {
         return (frontmatter as DocumentPropertyFields)._values || {};
     }, [frontmatter]);
 
@@ -549,7 +286,6 @@ export function PropertiesPanel({
             if (docType) {
                 const currentAtlas = (newFrontmatter.atlas as Record<string, unknown>) || {};
 
-                // 如果默认功能存在且当前功能为空，则自动填充
                 if (docType.defaultFunction && !currentAtlas.function) {
                     newFrontmatter.atlas = {
                         ...currentAtlas,
@@ -557,7 +293,6 @@ export function PropertiesPanel({
                     };
                 }
 
-                // 如果默认显现模式存在且当前显现模式为空，则自动填充（转换为数组）
                 const currentDisplay = currentAtlas.display;
                 const isDisplayEmpty = !currentDisplay ||
                     (Array.isArray(currentDisplay) && currentDisplay.length === 0);
@@ -565,7 +300,7 @@ export function PropertiesPanel({
                 if (docType.defaultDisplay && isDisplayEmpty) {
                     newFrontmatter.atlas = {
                         ...(newFrontmatter.atlas as Record<string, unknown>),
-                        display: [docType.defaultDisplay], // 转换为数组
+                        display: [docType.defaultDisplay],
                     };
                 }
             }
@@ -601,7 +336,6 @@ export function PropertiesPanel({
             _properties: { ...props, [key]: rest },
             _customOrder: [...currentOrder, key],
         });
-        setShowAddDialog(false);
     }, [frontmatter, onFrontmatterChange]);
 
     // 删除自定义属性
@@ -651,302 +385,44 @@ export function PropertiesPanel({
         setEditingConfig(prev => prev === key ? null : key);
     }, []);
 
-    // 阅读模式：显示文档信息卡片
+    // 阅读模式
     if (mode === 'read') {
         return (
-            <div className="bg-white border-b border-slate-100">
-                <div className="px-6 py-3">
-                    {/* 操作按钮 + 视图切换器（标题已在顶部标签栏显示，这里不重复） */}
-                    <div className="flex items-center justify-between gap-4">
-                        {/* 元信息行：作者 · 时间 · 标签 · 评论数 · 属性按钮 */}
-                        <div className="flex items-center gap-4">
-                            <MetaInfoRow frontmatter={frontmatter} />
-                            {/* inline 类型能力（如评论数） */}
-                            {capabilities.length > 0 && documentPath && (
-                                <CapabilityActions
-                                    capabilities={capabilities}
-                                    documentPath={documentPath}
-                                    frontmatter={frontmatter}
-                                    renderMode="inline"
-                                />
-                            )}
-                            {/* 配置按钮（技术信息） */}
-                            {(docTypeDisplay || functionDisplay) && (
-                                <div className="relative" ref={techInfoRef}>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowTechInfo(!showTechInfo)}
-                                        className={cn(
-                                            "inline-flex items-center gap-1.5 text-sm rounded-md px-2 py-1 transition-colors",
-                                            showTechInfo
-                                                ? "text-purple-600 bg-purple-50"
-                                                : "text-slate-500 hover:text-purple-600 hover:bg-purple-50"
-                                        )}
-                                        title="查看文档配置"
-                                    >
-                                        <Info size={14} />
-                                        配置
-                                    </button>
-
-                                    {/* 属性信息浮动面板 */}
-                                    {showTechInfo && (
-                                        <div className="absolute left-0 top-full mt-2 z-50 w-80 bg-white rounded-lg shadow-lg border border-slate-200 overflow-hidden">
-                                            <div className="flex items-center justify-between px-3 py-2 bg-slate-50 border-b border-slate-100">
-                                                <span className="text-xs font-medium text-slate-600">文档配置信息</span>
-                                                <div className="flex items-center gap-1">
-                                                    <button
-                                                        type="button"
-                                                        onClick={handleCopyTemplate}
-                                                        className={cn(
-                                                            "p-1 rounded transition-colors",
-                                                            copied
-                                                                ? "text-green-500 bg-green-50"
-                                                                : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
-                                                        )}
-                                                        title="复制文档结构"
-                                                    >
-                                                        {copied ? <Check size={12} /> : <Copy size={12} />}
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowTechInfo(false)}
-                                                        className="p-0.5 text-slate-400 hover:text-slate-600 rounded"
-                                                    >
-                                                        <X size={12} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div className="max-h-80 overflow-y-auto">
-                                                <div className="p-3 space-y-3 text-sm">
-                                                    {/* doc-type */}
-                                                    {frontmatter['doc-type'] && (
-                                                        <div className="flex items-start gap-2">
-                                                            <Tag size={14} className="text-amber-500 mt-0.5 flex-shrink-0" />
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="text-xs text-slate-400">类型包</div>
-                                                                <div className="text-slate-700 font-medium">{frontmatter['doc-type'] as string}</div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {/* 文档类型 */}
-                                                    {docTypeDisplay && (
-                                                        <div className="flex items-start gap-2">
-                                                            {docTypeDisplay.icon ? (
-                                                                (() => {
-                                                                    const Icon = getIcon(docTypeDisplay.icon);
-                                                                    return Icon ? <Icon size={14} className="text-purple-500 mt-0.5 flex-shrink-0" /> : <FileType size={14} className="text-purple-500 mt-0.5 flex-shrink-0" />;
-                                                                })()
-                                                            ) : (
-                                                                <FileType size={14} className="text-purple-500 mt-0.5 flex-shrink-0" />
-                                                            )}
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="text-xs text-slate-400">文档类型</div>
-                                                                <div className="text-slate-700 font-medium">{docTypeDisplay.label}</div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {/* 功能类型 */}
-                                                    {functionDisplay && (
-                                                        <div className="flex items-start gap-2">
-                                                            {functionDisplay.icon ? (
-                                                                (() => {
-                                                                    const Icon = getIcon(functionDisplay.icon);
-                                                                    return Icon ? <Icon size={14} className="text-blue-500 mt-0.5 flex-shrink-0" /> : <Workflow size={14} className="text-blue-500 mt-0.5 flex-shrink-0" />;
-                                                                })()
-                                                            ) : (
-                                                                <Workflow size={14} className="text-blue-500 mt-0.5 flex-shrink-0" />
-                                                            )}
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="text-xs text-slate-400">功能类型</div>
-                                                                <div className="text-slate-700 font-medium">{functionDisplay.label}</div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {/* 显现模式 */}
-                                                    {displayModeLabels.length > 0 && (
-                                                        <div className="flex items-start gap-2">
-                                                            <Workflow size={14} className="text-green-500 mt-0.5 flex-shrink-0" />
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="text-xs text-slate-400">显现模式</div>
-                                                                <div className="text-slate-700">{displayModeLabels.join('、')}</div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {/* 能力列表 */}
-                                                    {capabilities.length > 0 && (
-                                                        <div className="flex items-start gap-2 pt-2 border-t border-slate-100">
-                                                            <Workflow size={14} className="text-cyan-500 mt-0.5 flex-shrink-0" />
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="text-xs text-slate-400 mb-1">能力 ({capabilities.length})</div>
-                                                                <div className="flex flex-wrap gap-1">
-                                                                    {capabilities.map((cap: string) => (
-                                                                        <span key={cap} className="inline-block px-1.5 py-0.5 text-xs bg-cyan-50 text-cyan-700 rounded">
-                                                                            {cap}
-                                                                        </span>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {/* 组件配置 */}
-                                                    {frontmatter._components && typeof frontmatter._components === 'object' && (
-                                                        <div className="flex items-start gap-2 pt-2 border-t border-slate-100">
-                                                            <Workflow size={14} className="text-orange-500 mt-0.5 flex-shrink-0" />
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="text-xs text-slate-400 mb-1">
-                                                                    组件配置 ({Object.keys(frontmatter._components as object).length})
-                                                                </div>
-                                                                <div className="space-y-1">
-                                                                    {Object.entries(frontmatter._components as Record<string, { type?: string; label?: string }>).map(([id, comp]) => (
-                                                                        <div key={id} className="flex items-center gap-1.5 text-xs">
-                                                                            <span className="text-slate-400 font-mono truncate max-w-[80px]" title={id}>{id.slice(-8)}</span>
-                                                                            <span className="text-slate-300">→</span>
-                                                                            <span className="text-purple-600">{comp.type || 'unknown'}</span>
-                                                                            {comp.label && <span className="text-slate-500">({comp.label})</span>}
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {/* 数据块结构 */}
-                                                    {dataBlockStructure.length > 0 && (
-                                                        <div className="flex items-start gap-2 pt-2 border-t border-slate-100">
-                                                            <LucideIcons.Database size={14} className="text-indigo-500 mt-0.5 flex-shrink-0" />
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="text-xs text-slate-400 mb-1">
-                                                                    数据块结构 ({dataBlockStructure.length})
-                                                                </div>
-                                                                <div className="space-y-2">
-                                                                    {dataBlockStructure.map((block, idx) => (
-                                                                        <div key={idx} className="bg-slate-50 rounded p-1.5">
-                                                                            <div className="text-xs font-medium text-indigo-600 mb-1">{block.type}</div>
-                                                                            <div className="flex flex-wrap gap-1">
-                                                                                {block.fields.map((field) => (
-                                                                                    <span key={field} className="inline-block px-1.5 py-0.5 text-xs bg-white text-slate-600 rounded border border-slate-200">
-                                                                                        {field}
-                                                                                    </span>
-                                                                                ))}
-                                                                            </div>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* 右侧：能力操作按钮 + 视图切换器 */}
-                        <div className="flex items-center gap-3 flex-shrink-0">
-                            {/* 能力操作按钮（仅 button 类型） */}
-                            {capabilities.length > 0 && documentPath && (
-                                <CapabilityActions
-                                    capabilities={capabilities}
-                                    documentPath={documentPath}
-                                    frontmatter={frontmatter}
-                                    renderMode="button"
-                                />
-                            )}
-
-                            {/* 视图切换器（如果有多个显现模式） */}
-                            {displayModes.length > 1 && documentPath && (
-                                <ViewSwitcher
-                                    documentPath={documentPath}
-                                    availableModes={displayModes}
-                                    activeMode={displayMode}
-                                    onModeChange={onDisplayModeChange}
-                                    compact
-                                />
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <ReadModePanel
+                frontmatter={frontmatter}
+                content={content}
+                documentPath={documentPath}
+                displayMode={displayMode}
+                displayModes={displayModes}
+                onDisplayModeChange={onDisplayModeChange}
+                docTypeDisplay={docTypeDisplay}
+                functionDisplay={functionDisplay}
+                displayModeLabels={displayModeLabels}
+                capabilities={capabilities}
+                dataBlockStructure={dataBlockStructure}
+            />
         );
     }
 
-    // 编辑模式：显示可编辑的属性表单
+    // 编辑模式
     return (
-        <div className="bg-white border-b border-slate-100">
-            {/* 标题栏 */}
-            <button
-                type="button"
-                onClick={() => setExpanded(!expanded)}
-                className="w-full flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-            >
-                {expanded ? <ChevronDown className="w-4 h-4 text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-400" />}
-                <span>文档属性</span>
-                <span className="text-xs text-slate-400 ml-2">{systemOrder.length + customDefinitions.length} 个属性</span>
-                <span className="text-xs text-slate-300 ml-auto">描述文档本身的元数据</span>
-            </button>
-
-            {/* 属性网格 */}
-            {expanded && (
-                <div className="px-6 pb-4">
-                    {/* 系统属性区 */}
-                    <SystemPropertiesSection
-                        systemValues={systemValues}
-                        systemOrder={systemOrder}
-                        disabled={disabled}
-                        onSystemChange={handleSystemChange}
-                        onDragEnd={handleSystemDragEnd}
-                    />
-
-                    {/* 分隔线 */}
-                    {customDefinitions.length > 0 && <div className="h-px bg-slate-100 my-3" />}
-
-                    {/* 自定义属性区 */}
-                    <CustomPropertiesSection
-                        customDefinitions={customDefinitions}
-                        customValues={customValues}
-                        editingConfig={editingConfig}
-                        disabled={disabled}
-                        onValueChange={handleValueChange}
-                        onToggleConfig={handleToggleConfig}
-                        onDeleteProperty={handleDeleteProperty}
-                        onConfigChange={handleConfigChange}
-                        onDragEnd={handleCustomDragEnd}
-                    />
-
-                    {/* 添加属性按钮 */}
-                    {!disabled && (
-                        <button
-                            type="button"
-                            onClick={() => setShowAddDialog(true)}
-                            className="flex items-center justify-center gap-2 mt-3 px-3 py-2 text-xs text-slate-500 
-                         hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors w-full 
-                         border border-dashed border-slate-200 hover:border-purple-300"
-                            title="为文档添加自定义元数据属性"
-                        >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>添加文档属性</span>
-                        </button>
-                    )}
-                </div>
-            )}
-
-            {/* 添加属性对话框 */}
-            {showAddDialog && (
-                <AddPropertyDialog
-                    open={showAddDialog}
-                    onAdd={handleAddProperty}
-                    onClose={() => setShowAddDialog(false)}
-                    existingKeys={customDefinitions.map(d => d.key)}
-                />
-            )}
-        </div>
+        <EditModePanel
+            systemValues={systemValues}
+            systemOrder={systemOrder}
+            customDefinitions={customDefinitions}
+            customValues={customValues}
+            editingConfig={editingConfig}
+            disabled={disabled}
+            onSystemChange={handleSystemChange}
+            onSystemDragEnd={handleSystemDragEnd}
+            onValueChange={handleValueChange}
+            onToggleConfig={handleToggleConfig}
+            onDeleteProperty={handleDeleteProperty}
+            onConfigChange={handleConfigChange}
+            onCustomDragEnd={handleCustomDragEnd}
+            onAddProperty={handleAddProperty}
+            defaultExpanded={defaultExpanded}
+        />
     );
 }
 

@@ -9,6 +9,7 @@
  */
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -29,6 +30,8 @@ import {
     Save,
 } from 'lucide-react';
 import yaml from 'js-yaml';
+import { rename as renameFile } from '@/api/files';
+import { getDocumentSlug } from '@/api/adl';
 
 import { PropertiesPanel } from './PropertiesPanel';
 // RichTextEditor 保留用于未来扩展
@@ -117,6 +120,8 @@ export function VisualDocEditor({
     initialMode = 'edit',
     hideHeader = false,
 }: VisualDocEditorProps) {
+    const navigate = useNavigate();
+
     // 状态
     const [viewMode, setViewMode] = useState<ViewMode>(initialMode);
     const [frontmatter, setFrontmatter] = useState(initialFrontmatter);
@@ -125,6 +130,14 @@ export function VisualDocEditor({
     const [isDirty, setIsDirty] = useState(false);
     const [_showPropertySelector, setShowPropertySelector] = useState(false); // 保留：用于富文本编辑器的属性选择器
     const [showComponentPanel, setShowComponentPanel] = useState(true);
+    const [documentSlug, setDocumentSlug] = useState<string | null>(null);
+
+    // 获取文档 slug（用于显示简洁 URL）
+    useEffect(() => {
+        getDocumentSlug(documentPath)
+            .then(({ slug }) => setDocumentSlug(slug))
+            .catch(() => setDocumentSlug(null));
+    }, [documentPath]);
 
     // 显现模式状态
     const availableDisplayModes = useMemo(() => getAvailableDisplayModes(frontmatter), [frontmatter]);
@@ -288,10 +301,8 @@ export function VisualDocEditor({
         ],
         content: bodyContent,
         editable: viewMode === 'edit',
-        onUpdate: ({ editor }) => {
-            setBodyContent(editor.getHTML());
-            setIsDirty(true);
-        },
+        // 注意：不在 onUpdate 中设置 bodyContent，因为实际编辑使用的是 BlockEditor
+        // TipTap 编辑器仅用于 PropertyView 扩展的上下文支持
     });
 
     // 设置 PropertyView 上下文
@@ -388,12 +399,38 @@ export function VisualDocEditor({
             const content = buildFullContent();
             await onSave(content);
             setIsDirty(false);
+
+            // 保存成功后，检查标题是否与文件名不一致，需要重命名
+            const newTitle = (frontmatter.title as string)?.trim();
+            const currentFileName = documentPath.split('/').pop()?.replace('.md', '') || '';
+
+            if (newTitle && newTitle !== currentFileName) {
+                try {
+                    // 调用重命名 API
+                    const newPath = await renameFile(documentPath, `${newTitle}.md`);
+                    // 移除路径开头的 /（API 返回的路径以 / 开头）
+                    const finalPath = newPath.startsWith('/') ? newPath.slice(1) : newPath;
+                    // 导航到新路径
+                    navigate(`/workspace/${encodeURIComponent(finalPath)}`, { replace: true });
+                } catch (renameError) {
+                    console.error('文件重命名失败:', renameError);
+                    alert(`文档已保存，但文件重命名失败: ${renameError instanceof Error ? renameError.message : '未知错误'}`);
+                }
+            }
+
+            // 刷新 slug（保存后后端会自动生成）
+            try {
+                const { slug } = await getDocumentSlug(documentPath);
+                setDocumentSlug(slug);
+            } catch {
+                // 忽略 slug 获取失败
+            }
         } catch (error) {
             console.error('Save failed:', error);
         } finally {
             setIsSaving(false);
         }
-    }, [isSaving, buildFullContent, onSave]);
+    }, [isSaving, buildFullContent, onSave, frontmatter.title, documentPath, navigate]);
 
     // 源码内容（用于源码模式）- 仅在切换到源码模式时计算
     const [sourceContent, setSourceContent] = useState(() => buildFullContent());
@@ -422,18 +459,12 @@ export function VisualDocEditor({
                     setFrontmatter(newFrontmatter);
                     const newBody = sourceContent.slice(frontmatterMatch[0].length);
                     setBodyContent(newBody);
-                    // 同步到 Tiptap 编辑器
-                    if (editor && newBody !== editor.getHTML()) {
-                        editor.commands.setContent(newBody);
-                    }
+                    // 注意：不再同步到 TipTap 编辑器，因为实际编辑使用的是 BlockEditor
                 } catch (e) {
                     console.warn('Failed to parse frontmatter:', e);
                 }
             } else {
                 setBodyContent(sourceContent);
-                if (editor && sourceContent !== editor.getHTML()) {
-                    editor.commands.setContent(sourceContent);
-                }
             }
         }
     }, [viewMode]); // 只在离开源码模式时同步
@@ -465,7 +496,30 @@ export function VisualDocEditor({
             {!hideHeader && (
                 <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-3 border-b border-slate-200 bg-slate-50">
                     <div className="flex items-center gap-3">
-                        <h1 className="text-lg font-semibold text-slate-800">{docTitle}</h1>
+                        <div className="flex flex-col">
+                            <h1 className="text-lg font-semibold text-slate-800">{docTitle}</h1>
+                            {documentSlug && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const url = `${window.location.origin}/d/${documentSlug}`;
+                                        navigator.clipboard.writeText(url);
+                                        // 简单的复制提示
+                                        const btn = document.getElementById('slug-copy-btn');
+                                        if (btn) {
+                                            const original = btn.textContent;
+                                            btn.textContent = '已复制!';
+                                            setTimeout(() => { btn.textContent = original; }, 1500);
+                                        }
+                                    }}
+                                    id="slug-copy-btn"
+                                    className="text-xs text-slate-400 hover:text-purple-600 transition-colors text-left"
+                                    title="点击复制 URL"
+                                >
+                                    /d/{documentSlug}
+                                </button>
+                            )}
+                        </div>
                         {isDirty && (
                             <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
                                 未保存

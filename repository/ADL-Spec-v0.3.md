@@ -1,3 +1,6 @@
+---
+slug: doc-t6ev2p
+---
 # ADL Spec v0.3
 
 **Atlas Document Language 规范 · 第三版（收敛版）**

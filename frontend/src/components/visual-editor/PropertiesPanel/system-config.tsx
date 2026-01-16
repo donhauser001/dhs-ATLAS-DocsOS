@@ -68,7 +68,8 @@ export const systemPropertyStaticConfig: Record<string, SystemPropertyStaticConf
     // ========== 文档分类配置 ==========
     'document_type': {
         type: 'doc-type',
-        defaultIcon: 'file-type',
+        defaultIcon: 'package',
+        readonly: true,  // 文档类型由类型包决定，只读显示
     },
     'atlas.function': {
         type: 'function-type',
@@ -83,12 +84,19 @@ export const systemPropertyStaticConfig: Record<string, SystemPropertyStaticConf
     'atlas.capabilities': {
         type: 'capabilities',
         defaultIcon: 'zap',
+        wide: true,  // 能力是多选，需要更多空间
     },
 
     // ========== 版本信息（可选显示） ==========
     'version': {
         type: 'text',
         defaultIcon: 'git-branch',
+    },
+
+    // ========== URL Slug ==========
+    'slug': {
+        type: 'text',
+        defaultIcon: 'link',
     },
 };
 

@@ -8,6 +8,7 @@ import { Router, Request, Response } from 'express';
 import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { config } from '../config.js';
+import { requireAuth } from '../middleware/permission.js';
 import {
     getAllTypePackages,
     getTypePackage,
@@ -17,6 +18,7 @@ import {
     getTypePackageTemplate,
     renderTemplate,
     generateDocument,
+    ensureTypePackageDirectories,
 } from '../services/type-packages.js';
 
 const router = Router();
@@ -139,7 +141,7 @@ interface CreateDocumentRequest {
  * 
  * Phase 4.1: 使用动态生成，根据 JSON 配置生成数据块
  */
-router.post('/create-document', (req: Request, res: Response) => {
+router.post('/create-document', requireAuth, (req: Request, res: Response) => {
     try {
         const { typePackageId, title, path: targetPath, blocks } = req.body as CreateDocumentRequest;
 
@@ -167,10 +169,19 @@ router.post('/create-document', (req: Request, res: Response) => {
             });
         }
 
+        // 确保类型包所需的目录存在（如 /客户 目录）
+        const createdDirs = ensureTypePackageDirectories(typePackageId);
+        if (createdDirs.length > 0) {
+            console.log(`[TypePackages API] Created directories for ${typePackageId}:`, createdDirs);
+        }
+
+        // 获取当前登录用户的用户名作为作者
+        const authorName = req.user?.name || req.user?.username || 'user';
+
         // 使用动态生成文档内容（根据 JSON 配置）
         const content = generateDocument(typePackageId, {
             title: title.trim(),
-            author: 'user', // TODO: 从 session 获取当前用户
+            author: authorName,
             blocks: blocks
         });
 
@@ -181,7 +192,7 @@ router.post('/create-document', (req: Request, res: Response) => {
             .substring(0, 100);             // 限制长度
 
         // 目标目录
-        const targetDir = targetPath && targetPath !== '/' 
+        const targetDir = targetPath && targetPath !== '/'
             ? join(config.repositoryRoot, targetPath.replace(/^\//, ''))
             : config.repositoryRoot;
 
@@ -192,7 +203,7 @@ router.post('/create-document', (req: Request, res: Response) => {
 
         // 完整文件路径
         let filePath = join(targetDir, `${safeFilename}.md`);
-        
+
         // 如果文件已存在，添加时间戳
         if (existsSync(filePath)) {
             const timestamp = Date.now();

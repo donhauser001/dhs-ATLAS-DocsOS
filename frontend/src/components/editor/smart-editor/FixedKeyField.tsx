@@ -6,7 +6,7 @@
 import { Lock } from 'lucide-react';
 import type { FixedKeyItem } from './types';
 import { VersionSelector } from './VersionSelector';
-import { DocumentTypeSelector } from './DocumentTypeSelector';
+import { TypePackageDisplay } from '@/components/visual-editor/PropertiesPanel/TypePackageDisplay';
 import { FunctionSelector } from './FunctionSelector';
 import { CapabilitiesField } from './CapabilitiesField';
 
@@ -52,10 +52,8 @@ export function FixedKeyField({ item, onChange, getLabel, documentType, function
                     onChange={(v) => onChange(key, v)}
                 />
             ) : inputType === 'document_type' ? (
-                <DocumentTypeSelector
-                    value={String(value || 'facts')}
-                    onChange={(v) => onChange(key, v)}
-                />
+                // 文档类型由类型包决定，只读显示
+                <TypePackageDisplay value={String(value || '')} />
             ) : inputType === 'function' ? (
                 <FunctionSelector
                     value={String(value || '')}

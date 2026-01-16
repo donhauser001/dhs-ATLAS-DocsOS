@@ -14,7 +14,7 @@ import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { config, ensureDirectories } from '../config.js';
 import { parseADL } from '../adl/parser.js';
-import { rebuildWorkspaceIndex } from './workspace-service.js';
+import { rebuildWorkspaceIndex, ensureAllDocumentSlugs } from './workspace-service.js';
 import { rebuildLabelRegistry } from './label-registry.js';
 import type { AtlasFrontmatter, AtlasFunctionType, AtlasNavigationConfig, Block } from '../adl/types.js';
 
@@ -148,6 +148,10 @@ export async function rebuildFunctionRegistry(): Promise<FunctionRegistry> {
 
     const functions: Record<string, FunctionGroup> = {};
     const navItems: NavItem[] = [];
+
+    // Phase 3: 先确保所有文档都有 slug
+    const slugResult = ensureAllDocumentSlugs();
+    console.log(`[FunctionRegistry] Slugs ensured: ${slugResult.added} added, ${slugResult.total} total`);
 
     // 「双向奔赴」：先重建 WorkspaceIndex（同步刷新 Registry）
     // 这确保了文件移动后 Registry 能正确识别新路径

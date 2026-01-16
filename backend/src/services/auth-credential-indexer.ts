@@ -74,7 +74,7 @@ export interface UserRecord {
   _doc_path: string;
   /** 组件 ID */
   _component_id: string | null;
-  
+
   // Phase 4.2: 密码安全策略字段
   /** 密码历史（哈希数组） */
   password_history?: string[];
@@ -176,7 +176,7 @@ interface UserIdCounter {
  */
 function getUserIdCounter(): UserIdCounter {
   const path = USER_ID_COUNTER_PATH();
-  
+
   if (existsSync(path)) {
     try {
       return JSON.parse(readFileSync(path, 'utf-8'));
@@ -184,7 +184,7 @@ function getUserIdCounter(): UserIdCounter {
       // 文件损坏，重新创建
     }
   }
-  
+
   return {
     date: getTodayDateString(),
     sequence: 0,
@@ -214,16 +214,16 @@ function getTodayDateString(): string {
 export function generateUserId(): string {
   const counter = getUserIdCounter();
   const today = getTodayDateString();
-  
+
   // 如果是新的一天，重置序号
   if (counter.date !== today) {
     counter.date = today;
     counter.sequence = 0;
   }
-  
+
   counter.sequence++;
   saveUserIdCounter(counter);
-  
+
   return `U${today}${counter.sequence.toString().padStart(3, '0')}`;
 }
 
@@ -248,21 +248,21 @@ export function generateUserIds(count: number): string[] {
  */
 export function scanDocumentForAuthBlocks(content: string): ExtractedAuthData[] {
   const results: ExtractedAuthData[] = [];
-  
+
   // 匹配 ```yaml 或 ```atlas-data 代码块
   const codeBlockRegex = /```(?:yaml|atlas-data)\n([\s\S]*?)```/g;
-  
+
   let match;
   while ((match = codeBlockRegex.exec(content)) !== null) {
     const blockContent = match[1];
-    
+
     try {
       const parsed = yaml.load(blockContent) as Record<string, unknown>;
-      
+
       // 检查是否是用户认证数据块
       if (parsed && parsed.type === AUTH_BLOCK_TYPE) {
         const data = (parsed.data || parsed) as Record<string, unknown>;
-        
+
         // 提取用户数据
         const authData: ExtractedAuthData = {
           user_id: (data.user_id || parsed.user_id || '') as string,
@@ -276,7 +276,7 @@ export function scanDocumentForAuthBlocks(content: string): ExtractedAuthData[] 
           expired_at: (data.expired_at || parsed.expired_at) as string | undefined,
           _component: (parsed._component) as string | undefined,
         };
-        
+
         // 必须有 user_id 和 username
         if (authData.user_id && authData.username) {
           results.push(authData);
@@ -287,7 +287,7 @@ export function scanDocumentForAuthBlocks(content: string): ExtractedAuthData[] 
       console.warn('[AuthIndexer] Failed to parse YAML block:', e);
     }
   }
-  
+
   return results;
 }
 
@@ -300,43 +300,43 @@ export function scanDocumentForAuthBlocks(content: string): ExtractedAuthData[] 
  */
 export async function rebuildAuthUsersIndex(): Promise<AuthIndexRebuildResult> {
   const startTime = Date.now();
-  
+
   ensureDirectories();
   ensureAuthIndexDir();
-  
+
   console.log('[AuthIndexer] Starting index rebuild...');
-  
+
   // 获取角色列表
   const roles = await getRoles();
   const defaultRole = await getDefaultRole();
   const roleMap = new Map(roles.map(r => [r.id, r.name]));
-  
+
   // 初始化索引结构
   const credentials: Record<string, CredentialEntry> = {};
   const users: Record<string, UserRecord> = {};
   const documentSet = new Set<string>();
-  
+
   // 获取所有文档
   const wsIndex = await getWorkspaceIndex();
   const totalDocuments = wsIndex.documents.length;
   let scannedDocuments = 0;
-  
+
   // 扫描每个文档
   for (const doc of wsIndex.documents) {
     const docInfo = getDocument(doc.path);
     if (!docInfo) continue;
-    
+
     scannedDocuments++;
-    
+
     // 使用原始内容扫描
     const rawContent = docInfo.raw || '';
     const authBlocks = scanDocumentForAuthBlocks(rawContent);
-    
+
     // 处理每个认证数据块
     for (const authData of authBlocks) {
       const now = new Date().toISOString();
       const roleName = roleMap.get(authData.role || defaultRole) || authData.role || defaultRole;
-      
+
       // 创建用户记录
       const userRecord: UserRecord = {
         user_id: authData.user_id,
@@ -354,18 +354,18 @@ export async function rebuildAuthUsersIndex(): Promise<AuthIndexRebuildResult> {
         _doc_path: doc.path,
         _component_id: authData._component || null,
       };
-      
+
       // 添加到用户表
       users[authData.user_id] = userRecord;
       documentSet.add(doc.path);
-      
+
       // 构建凭证映射
       // 用户名
       credentials[authData.username.toLowerCase()] = {
         type: 'username',
         user_id: authData.user_id,
       };
-      
+
       // 邮箱
       if (authData.email) {
         credentials[authData.email.toLowerCase()] = {
@@ -373,7 +373,7 @@ export async function rebuildAuthUsersIndex(): Promise<AuthIndexRebuildResult> {
           user_id: authData.user_id,
         };
       }
-      
+
       // 手机
       if (authData.phone) {
         // 存储原始格式和纯数字格式
@@ -391,7 +391,7 @@ export async function rebuildAuthUsersIndex(): Promise<AuthIndexRebuildResult> {
       }
     }
   }
-  
+
   // 统计信息
   const byStatus: Record<AccountStatus, number> = {
     active: 0,
@@ -400,16 +400,16 @@ export async function rebuildAuthUsersIndex(): Promise<AuthIndexRebuildResult> {
     locked: 0,
     expired: 0,
   };
-  
+
   const byRole: Record<string, number> = {};
-  
+
   for (const user of Object.values(users)) {
     byStatus[user.status] = (byStatus[user.status] || 0) + 1;
     byRole[user.role] = (byRole[user.role] || 0) + 1;
   }
-  
+
   const now = new Date().toISOString();
-  
+
   // 构建索引
   const index: AuthUsersIndex = {
     _meta: {
@@ -428,18 +428,18 @@ export async function rebuildAuthUsersIndex(): Promise<AuthIndexRebuildResult> {
     credentials,
     users,
   };
-  
+
   // 写入文件
   writeFileSync(AUTH_INDEX_PATH(), JSON.stringify(index, null, 2), 'utf-8');
-  
+
   const rebuildTime = Date.now() - startTime;
-  
+
   console.log(`[AuthIndexer] Index rebuilt in ${rebuildTime}ms:`);
   console.log(`  - Total documents: ${totalDocuments}`);
   console.log(`  - Scanned documents: ${scannedDocuments}`);
   console.log(`  - Total users: ${Object.keys(users).length}`);
   console.log(`  - Credentials: ${Object.keys(credentials).length}`);
-  
+
   return {
     index,
     stats: {
@@ -460,13 +460,13 @@ export async function rebuildAuthUsersIndex(): Promise<AuthIndexRebuildResult> {
  */
 export async function getAuthUsersIndex(): Promise<AuthUsersIndex> {
   const path = AUTH_INDEX_PATH();
-  
+
   if (!existsSync(path)) {
     // 索引不存在，重建
     const result = await rebuildAuthUsersIndex();
     return result.index;
   }
-  
+
   try {
     return JSON.parse(readFileSync(path, 'utf-8'));
   } catch {
@@ -482,14 +482,14 @@ export async function getAuthUsersIndex(): Promise<AuthUsersIndex> {
  */
 export async function findUserByCredential(credential: string): Promise<UserRecord | null> {
   const index = await getAuthUsersIndex();
-  
+
   const credentialLower = credential.toLowerCase();
   const credentialEntry = index.credentials[credentialLower];
-  
+
   if (!credentialEntry) {
     return null;
   }
-  
+
   return index.users[credentialEntry.user_id] || null;
 }
 
@@ -506,14 +506,14 @@ export async function findUserById(userId: string): Promise<UserRecord | null> {
  */
 export async function findUserByEmail(email: string): Promise<UserRecord | null> {
   const index = await getAuthUsersIndex();
-  
+
   const emailLower = email.toLowerCase();
   const credentialEntry = index.credentials[emailLower];
-  
+
   if (!credentialEntry || credentialEntry.type !== 'email') {
     return null;
   }
-  
+
   return index.users[credentialEntry.user_id] || null;
 }
 
@@ -534,12 +534,12 @@ export async function getAllUsers(): Promise<UserRecord[]> {
  */
 export async function updateLastLogin(userId: string): Promise<void> {
   const index = await getAuthUsersIndex();
-  
+
   if (index.users[userId]) {
     index.users[userId].last_login = new Date().toISOString();
     index.users[userId].updated_at = new Date().toISOString();
     index._meta.last_update = new Date().toISOString();
-    
+
     writeFileSync(AUTH_INDEX_PATH(), JSON.stringify(index, null, 2), 'utf-8');
   }
 }
@@ -549,17 +549,17 @@ export async function updateLastLogin(userId: string): Promise<void> {
  */
 export async function updateUserStatus(userId: string, status: AccountStatus): Promise<void> {
   const index = await getAuthUsersIndex();
-  
+
   if (index.users[userId]) {
     const oldStatus = index.users[userId].status;
     index.users[userId].status = status;
     index.users[userId].updated_at = new Date().toISOString();
     index._meta.last_update = new Date().toISOString();
-    
+
     // 更新统计
     index._meta.stats.by_status[oldStatus]--;
     index._meta.stats.by_status[status]++;
-    
+
     writeFileSync(AUTH_INDEX_PATH(), JSON.stringify(index, null, 2), 'utf-8');
   }
 }
@@ -569,12 +569,12 @@ export async function updateUserStatus(userId: string, status: AccountStatus): P
  */
 export async function updateUserPasswordHash(userId: string, passwordHash: string): Promise<void> {
   const index = await getAuthUsersIndex();
-  
+
   if (index.users[userId]) {
     index.users[userId].password_hash = passwordHash;
     index.users[userId].updated_at = new Date().toISOString();
     index._meta.last_update = new Date().toISOString();
-    
+
     writeFileSync(AUTH_INDEX_PATH(), JSON.stringify(index, null, 2), 'utf-8');
   }
 }
@@ -584,29 +584,29 @@ export async function updateUserPasswordHash(userId: string, passwordHash: strin
  * Phase 4.2: 密码安全策略
  */
 export async function updateUserPasswordWithHistory(
-  userId: string, 
+  userId: string,
   newPasswordHash: string,
   maxHistoryCount: number = 5
 ): Promise<void> {
   const index = await getAuthUsersIndex();
-  
+
   if (index.users[userId]) {
     const user = index.users[userId];
     const now = new Date().toISOString();
-    
+
     // 将旧密码添加到历史
     const oldHash = user.password_hash;
     const currentHistory = user.password_history || [];
     const newHistory = [oldHash, ...currentHistory].slice(0, maxHistoryCount);
-    
+
     // 更新密码和历史
     user.password_hash = newPasswordHash;
     user.password_history = newHistory;
     user.password_changed_at = now;
     user.updated_at = now;
-    
+
     index._meta.last_update = now;
-    
+
     writeFileSync(AUTH_INDEX_PATH(), JSON.stringify(index, null, 2), 'utf-8');
   }
 }
@@ -620,25 +620,25 @@ export async function recordUserLoginFailure(userId: string): Promise<{
   lockedUntil: string | null;
 }> {
   const index = await getAuthUsersIndex();
-  
+
   if (index.users[userId]) {
     const user = index.users[userId];
     const now = new Date().toISOString();
-    
+
     user.failed_attempts = (user.failed_attempts || 0) + 1;
     user.last_failed_at = now;
     user.updated_at = now;
-    
+
     index._meta.last_update = now;
-    
+
     writeFileSync(AUTH_INDEX_PATH(), JSON.stringify(index, null, 2), 'utf-8');
-    
+
     return {
       failedAttempts: user.failed_attempts,
       lockedUntil: user.locked_until || null,
     };
   }
-  
+
   return { failedAttempts: 0, lockedUntil: null };
 }
 
@@ -648,24 +648,24 @@ export async function recordUserLoginFailure(userId: string): Promise<{
  */
 export async function lockUserAccount(userId: string, lockedUntil: string): Promise<void> {
   const index = await getAuthUsersIndex();
-  
+
   if (index.users[userId]) {
     const user = index.users[userId];
     const now = new Date().toISOString();
-    
+
     user.locked_until = lockedUntil;
     user.status = 'locked';
     user.updated_at = now;
-    
+
     // 更新统计
     const oldStatus = index.users[userId].status;
     if (oldStatus !== 'locked') {
       index._meta.stats.by_status[oldStatus]--;
       index._meta.stats.by_status['locked']++;
     }
-    
+
     index._meta.last_update = now;
-    
+
     writeFileSync(AUTH_INDEX_PATH(), JSON.stringify(index, null, 2), 'utf-8');
   }
 }
@@ -676,26 +676,26 @@ export async function lockUserAccount(userId: string, lockedUntil: string): Prom
  */
 export async function resetUserLoginFailures(userId: string): Promise<void> {
   const index = await getAuthUsersIndex();
-  
+
   if (index.users[userId]) {
     const user = index.users[userId];
     const now = new Date().toISOString();
-    
+
     user.failed_attempts = 0;
     user.last_failed_at = null;
     user.locked_until = null;
     user.last_login = now;
     user.updated_at = now;
-    
+
     // 如果之前是锁定状态，恢复为 active
     if (user.status === 'locked') {
       index._meta.stats.by_status['locked']--;
       index._meta.stats.by_status['active']++;
       user.status = 'active';
     }
-    
+
     index._meta.last_update = now;
-    
+
     writeFileSync(AUTH_INDEX_PATH(), JSON.stringify(index, null, 2), 'utf-8');
   }
 }
@@ -712,9 +712,9 @@ export async function getUserSecurityStatus(userId: string): Promise<{
 } | null> {
   const index = await getAuthUsersIndex();
   const user = index.users[userId];
-  
+
   if (!user) return null;
-  
+
   return {
     failedAttempts: user.failed_attempts || 0,
     lockedUntil: user.locked_until || null,
@@ -738,7 +738,7 @@ export async function validateCredentialUniqueness(
 ): Promise<{ valid: boolean; errors: string[] }> {
   const index = await getAuthUsersIndex();
   const errors: string[] = [];
-  
+
   // 检查用户名
   if (authData.username) {
     const existing = index.credentials[authData.username.toLowerCase()];
@@ -746,7 +746,7 @@ export async function validateCredentialUniqueness(
       errors.push(`用户名 "${authData.username}" 已被使用`);
     }
   }
-  
+
   // 检查邮箱
   if (authData.email) {
     const existing = index.credentials[authData.email.toLowerCase()];
@@ -754,7 +754,7 @@ export async function validateCredentialUniqueness(
       errors.push(`邮箱 "${authData.email}" 已被使用`);
     }
   }
-  
+
   // 检查手机
   if (authData.phone) {
     const phoneNormalized = authData.phone.replace(/\D/g, '');
@@ -763,7 +763,7 @@ export async function validateCredentialUniqueness(
       errors.push(`手机号 "${authData.phone}" 已被使用`);
     }
   }
-  
+
   return {
     valid: errors.length === 0,
     errors,
@@ -787,7 +787,7 @@ export async function checkUserIdExists(userId: string): Promise<boolean> {
  */
 export async function getAuthIndexStats(): Promise<IndexMeta['stats'] & { lastUpdate: string | null }> {
   const index = await getAuthUsersIndex();
-  
+
   return {
     ...index._meta.stats,
     lastUpdate: index._meta.last_update,
@@ -810,27 +810,27 @@ export async function updateSingleDocument(docPath: string): Promise<{
 }> {
   const index = await getAuthUsersIndex();
   const result = { added: 0, updated: 0, removed: 0 };
-  
+
   // 获取角色信息
   const roles = await getRoles();
   const defaultRole = await getDefaultRole();
   const roleMap = new Map(roles.map(r => [r.id, r.name]));
-  
+
   // 找到该文档之前关联的所有用户
   const previousUsers = Object.values(index.users).filter(u => u._doc_path === docPath);
   const previousUserIds = new Set(previousUsers.map(u => u.user_id));
-  
+
   // 读取文档内容并扫描认证数据块
   const docInfo = getDocument(docPath);
   const currentAuthBlocks = docInfo ? scanDocumentForAuthBlocks(docInfo.raw || '') : [];
   const currentUserIds = new Set(currentAuthBlocks.map(b => b.user_id));
-  
+
   // 处理当前文档中的认证数据块
   for (const authData of currentAuthBlocks) {
     const now = new Date().toISOString();
     const roleName = roleMap.get(authData.role || defaultRole) || authData.role || defaultRole;
     const existingUser = index.users[authData.user_id];
-    
+
     // 创建/更新用户记录
     const userRecord: UserRecord = {
       user_id: authData.user_id,
@@ -854,7 +854,7 @@ export async function updateSingleDocument(docPath: string): Promise<{
       locked_until: existingUser?.locked_until,
       last_failed_at: existingUser?.last_failed_at,
     };
-    
+
     // 如果是新用户
     if (!existingUser) {
       result.added++;
@@ -876,14 +876,14 @@ export async function updateSingleDocument(docPath: string): Promise<{
       // 清理旧凭证
       clearUserCredentials(index, existingUser);
     }
-    
+
     // 添加用户记录
     index.users[authData.user_id] = userRecord;
-    
+
     // 构建凭证映射
     addUserCredentials(index, userRecord);
   }
-  
+
   // 移除不再存在的用户
   for (const userId of previousUserIds) {
     if (!currentUserIds.has(userId)) {
@@ -893,27 +893,27 @@ export async function updateSingleDocument(docPath: string): Promise<{
         index._meta.stats.total_users--;
         index._meta.stats.by_status[user.status]--;
         index._meta.stats.by_role[user.role]--;
-        
+
         // 清理凭证
         clearUserCredentials(index, user);
-        
+
         // 移除用户
         delete index.users[userId];
         result.removed++;
       }
     }
   }
-  
+
   // 更新文档计数
   const docsWithUsers = new Set(Object.values(index.users).map(u => u._doc_path));
   index._meta.stats.total_documents = docsWithUsers.size;
-  
+
   // 保存索引
   index._meta.last_update = new Date().toISOString();
   writeFileSync(AUTH_INDEX_PATH(), JSON.stringify(index, null, 2), 'utf-8');
-  
+
   console.log(`[AuthIndexer] Updated document ${docPath}: +${result.added}, ~${result.updated}, -${result.removed}`);
-  
+
   return result;
 }
 
@@ -923,33 +923,33 @@ export async function updateSingleDocument(docPath: string): Promise<{
  */
 export async function removeDocumentFromIndex(docPath: string): Promise<number> {
   const index = await getAuthUsersIndex();
-  
+
   // 找到该文档关联的所有用户
   const usersToRemove = Object.values(index.users).filter(u => u._doc_path === docPath);
-  
+
   for (const user of usersToRemove) {
     // 更新统计
     index._meta.stats.total_users--;
     index._meta.stats.by_status[user.status]--;
     index._meta.stats.by_role[user.role]--;
-    
+
     // 清理凭证
     clearUserCredentials(index, user);
-    
+
     // 移除用户
     delete index.users[user.user_id];
   }
-  
+
   // 更新文档计数
   const docsWithUsers = new Set(Object.values(index.users).map(u => u._doc_path));
   index._meta.stats.total_documents = docsWithUsers.size;
-  
+
   // 保存索引
   index._meta.last_update = new Date().toISOString();
   writeFileSync(AUTH_INDEX_PATH(), JSON.stringify(index, null, 2), 'utf-8');
-  
+
   console.log(`[AuthIndexer] Removed document ${docPath}: ${usersToRemove.length} users removed`);
-  
+
   return usersToRemove.length;
 }
 
@@ -959,23 +959,29 @@ export async function removeDocumentFromIndex(docPath: string): Promise<number> 
  */
 export async function updateDocumentPath(oldPath: string, newPath: string): Promise<number> {
   const index = await getAuthUsersIndex();
-  
-  // 找到该文档关联的所有用户
-  const usersToUpdate = Object.values(index.users).filter(u => u._doc_path === oldPath);
-  
+
+  // 规范化路径：移除开头的 /，确保格式一致
+  const normalizedOldPath = oldPath.startsWith('/') ? oldPath.slice(1) : oldPath;
+  const normalizedNewPath = newPath.startsWith('/') ? newPath.slice(1) : newPath;
+
+  // 找到该文档关联的所有用户（尝试匹配两种格式）
+  const usersToUpdate = Object.values(index.users).filter(u =>
+    u._doc_path === normalizedOldPath || u._doc_path === `/${normalizedOldPath}`
+  );
+
   for (const user of usersToUpdate) {
-    user._doc_path = newPath;
+    user._doc_path = normalizedNewPath;
     user.updated_at = new Date().toISOString();
   }
-  
+
   // 保存索引
   if (usersToUpdate.length > 0) {
     index._meta.last_update = new Date().toISOString();
     writeFileSync(AUTH_INDEX_PATH(), JSON.stringify(index, null, 2), 'utf-8');
   }
-  
-  console.log(`[AuthIndexer] Updated path ${oldPath} -> ${newPath}: ${usersToUpdate.length} users updated`);
-  
+
+  console.log(`[AuthIndexer] Updated path ${normalizedOldPath} -> ${normalizedNewPath}: ${usersToUpdate.length} users updated`);
+
   return usersToUpdate.length;
 }
 
@@ -992,7 +998,7 @@ function clearUserCredentials(index: AuthUsersIndex, user: UserRecord): void {
   if (index.credentials[usernameKey]?.user_id === user.user_id) {
     delete index.credentials[usernameKey];
   }
-  
+
   // 清理邮箱
   if (user.email) {
     const emailKey = user.email.toLowerCase();
@@ -1000,7 +1006,7 @@ function clearUserCredentials(index: AuthUsersIndex, user: UserRecord): void {
       delete index.credentials[emailKey];
     }
   }
-  
+
   // 清理手机
   if (user.phone) {
     if (index.credentials[user.phone]?.user_id === user.user_id) {
@@ -1022,7 +1028,7 @@ function addUserCredentials(index: AuthUsersIndex, user: UserRecord): void {
     type: 'username',
     user_id: user.user_id,
   };
-  
+
   // 邮箱
   if (user.email) {
     index.credentials[user.email.toLowerCase()] = {
@@ -1030,7 +1036,7 @@ function addUserCredentials(index: AuthUsersIndex, user: UserRecord): void {
       user_id: user.user_id,
     };
   }
-  
+
   // 手机
   if (user.phone) {
     index.credentials[user.phone] = {

@@ -13,20 +13,20 @@ function findProjectRoot(): string {
   if (process.env.ATLAS_PROJECT_ROOT) {
     return resolve(process.env.ATLAS_PROJECT_ROOT);
   }
-  
+
   // 从当前工作目录推断
   // 如果 cwd 是 backend，则上一级是项目根目录
   const cwd = process.cwd();
-  
+
   if (cwd.endsWith('/backend') || cwd.endsWith('\\backend')) {
     return resolve(cwd, '..');
   }
-  
+
   // 如果 cwd 已经是项目根目录（包含 repository 目录）
   if (existsSync(join(cwd, 'repository'))) {
     return cwd;
   }
-  
+
   // 默认假设从 backend 运行
   return resolve(cwd, '..');
 }
@@ -36,40 +36,43 @@ const PROJECT_ROOT = findProjectRoot();
 export const config = {
   // 项目根目录
   projectRoot: PROJECT_ROOT,
-  
+
   // 文档仓库目录
   repositoryRoot: join(PROJECT_ROOT, 'repository'),
-  
+
   // Phase 4.1: atlas-content 内容目录
   atlasContentDir: join(PROJECT_ROOT, 'atlas-content'),
   typePackagesDir: join(PROJECT_ROOT, 'atlas-content', 'plugins', 'type-packages'),
-  
+
   // ATLAS 内部数据目录
   atlasDataDir: join(PROJECT_ROOT, 'repository', '.atlas'),
-  
+
   // Proposal 存储目录
   proposalsDir: join(PROJECT_ROOT, 'repository', '.atlas', 'proposals'),
-  
+
   // Workspace 索引文件路径
   workspaceIndexPath: join(PROJECT_ROOT, 'repository', '.atlas', 'workspace.json'),
-  
+
   // Blocks 索引目录
   indexDir: join(PROJECT_ROOT, 'repository', '.atlas', 'index'),
-  
+
   // Blocks 索引文件路径
   blocksIndexPath: join(PROJECT_ROOT, 'repository', '.atlas', 'index', 'blocks.json'),
-  
+
   // Phase 3.1: Principal/Profile 索引目录
   entitiesDir: join(PROJECT_ROOT, 'repository', '.atlas', 'entities'),
   edgesDir: join(PROJECT_ROOT, 'repository', '.atlas', 'edges'),
   searchDir: join(PROJECT_ROOT, 'repository', '.atlas', 'search'),
-  
+
+  // 缓存目录（用于 slug 索引等）
+  cacheDir: join(PROJECT_ROOT, 'repository', '.atlas', 'cache'),
+
   // 用户数据文件路径
   usersPath: join(PROJECT_ROOT, 'repository', '.atlas', 'users.json'),
-  
+
   // 服务端口
   port: parseInt(process.env.PORT || '3000', 10),
-  
+
   // YAML dump 配置（统一格式，避免漂移）
   yamlDumpOptions: {
     indent: 2,
@@ -93,8 +96,10 @@ export function ensureDirectories(): void {
     config.entitiesDir,
     config.edgesDir,
     config.searchDir,
+    // 缓存目录
+    config.cacheDir,
   ];
-  
+
   for (const dir of dirs) {
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true });
@@ -107,11 +112,11 @@ export function ensureDirectories(): void {
  */
 export function validateConfig(): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
-  
+
   if (!existsSync(config.repositoryRoot)) {
     errors.push(`Repository root not found: ${config.repositoryRoot}`);
   }
-  
+
   return {
     valid: errors.length === 0,
     errors,

@@ -18,7 +18,7 @@ import type { ADLDocument } from './types';
 import { useEditorState } from './useEditorState';
 import { createFixedKeyConfig } from './fixedKeyConfig';
 import { VersionSelector } from './VersionSelector';
-import { DocumentTypeSelector } from './DocumentTypeSelector';
+import { TypePackageDisplay } from '@/components/visual-editor/PropertiesPanel/TypePackageDisplay';
 import { FunctionSelector } from './FunctionSelector';
 import { CapabilitiesField } from './CapabilitiesField';
 
@@ -549,11 +549,9 @@ function ObsidianPropertyRow({
         );
 
       case 'document_type':
+        // 文档类型由类型包决定，只读显示
         return (
-          <DocumentTypeSelector
-            value={String(value || 'facts')}
-            onChange={onChange}
-          />
+          <TypePackageDisplay value={String(value || '')} />
         );
 
       case 'function':

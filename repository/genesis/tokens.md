@@ -1,13 +1,9 @@
 ---
-# ============================================================
-# Design Tokens 定义文档
-# Phase 2.5: 语言与显现校正
-# Phase 3.0: Token 角色分类
-# ============================================================
 version: "1.0"
 document_type: facts
-created: 2025-01-01
+created: 2025-01-01T00:00:00.000Z
 author: system
+slug: doc-anfd5j
 ---
 
 # Design Tokens

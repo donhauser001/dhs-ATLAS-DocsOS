@@ -1,5 +1,7 @@
 /**
  * WorkspaceTree - 目录树导航组件
+ * 
+ * 使用 slug 进行导航（/d/:slug），确保浏览器地址栏显示英文 URL
  */
 
 import { useState } from 'react';
@@ -21,8 +23,17 @@ function TreeItem({ node, level }: TreeItemProps) {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(level < 2); // 默认展开前两级
   
-  const currentPath = location.pathname.replace('/workspace/', '').replace('/workspace', '');
-  const isActive = node.path && currentPath === node.path;
+  // 检查当前路径是否匹配
+  const currentPath = location.pathname;
+  const isSlugRoute = currentPath.startsWith('/d/');
+  const currentSlug = isSlugRoute ? currentPath.replace('/d/', '') : null;
+  const currentDocPath = currentPath.replace('/workspace/', '').replace('/workspace', '');
+  
+  // 通过 slug 或 path 判断是否激活
+  const isActive = node.type === 'document' && (
+    (node.slug && currentSlug === node.slug) ||
+    (node.path && currentDocPath === node.path)
+  );
   
   if (node.type === 'directory') {
     return (
@@ -55,10 +66,12 @@ function TreeItem({ node, level }: TreeItemProps) {
     );
   }
   
-  // Document node
+  // Document node - 优先使用 slug 导航
+  const linkTo = node.slug ? `/d/${node.slug}` : `/workspace/${node.path}`;
+  
   return (
     <Link
-      to={`/workspace/${node.path}`}
+      to={linkTo}
       className={cn(
         "flex items-center gap-1 px-2 py-1.5 text-sm rounded-md transition-colors",
         isActive 

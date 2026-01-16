@@ -275,6 +275,9 @@ router.post('/rename', async (req: Request, res: Response) => {
         } catch (indexError) {
             console.warn('[Files] Auth index path update failed (continuing anyway):', indexError);
         }
+
+        // 注：slug 现在存储在文档 frontmatter 中，文件重命名不需要更新 slug
+
         res.json({ success: true, data: { newPath: result.newPath } });
     } else {
         res.status(400).json({ success: false, error: result.error });

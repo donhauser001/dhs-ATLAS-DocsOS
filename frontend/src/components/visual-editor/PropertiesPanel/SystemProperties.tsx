@@ -7,9 +7,9 @@
 import React from 'react';
 import { Lock, Info } from 'lucide-react';
 import { VersionSelector } from '@/components/editor/smart-editor/VersionSelector';
-import { DocumentTypeSelector } from '@/components/editor/smart-editor/DocumentTypeSelector';
 import { FunctionSelector } from '@/components/editor/smart-editor/FunctionSelector';
 import { CapabilitiesField } from '@/components/editor/smart-editor/CapabilitiesField';
+import { TypePackageDisplay } from './TypePackageDisplay';
 
 export interface SystemPropertyValues {
     version?: string;
@@ -20,6 +20,7 @@ export interface SystemPropertyValues {
     'atlas.function'?: string;
     'atlas.capabilities'?: string[];
     'atlas.entity_type'?: string;
+    slug?: string;
 }
 
 export interface SystemPropertiesProps {
@@ -104,14 +105,13 @@ export function SystemProperties({
                     />
                 </div>
 
-                {/* 文档类型 */}
+                {/* 文档类型（来自类型包，只读显示） */}
                 <div className="space-y-1">
-                    <label className="text-xs text-slate-500">文档类型</label>
-                    <DocumentTypeSelector
-                        value={values.document_type || 'facts'}
-                        onChange={(v) => onChange('document_type', v)}
-                        disabled={disabled}
-                    />
+                    <label className="text-xs text-slate-500 flex items-center gap-1">
+                        文档类型
+                        <Lock size={10} className="text-slate-300" />
+                    </label>
+                    <TypePackageDisplay value={values.document_type || ''} />
                 </div>
 
                 {/* 创建时间 */}

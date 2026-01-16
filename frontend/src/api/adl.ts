@@ -18,13 +18,13 @@ export interface Proposal {
   proposed_by: string;
   proposed_at: string;
   target_file: string;
-  
+
   // 认知语义（Phase 1.5 新增）
   /** 变更原因 - 必填 */
   reason: string;
   /** 来源上下文 - 可选 */
   source_context?: string;
-  
+
   ops: Operation[];
   status: 'pending' | 'approved' | 'rejected' | 'executed';
 }
@@ -90,6 +90,35 @@ export async function fetchDocument(path: string): Promise<ADLDocument> {
 }
 
 /**
+ * 根据 slug 获取文档
+ * 返回文档内容和实际路径
+ */
+export async function fetchDocumentBySlug(slug: string): Promise<ADLDocument & { _path: string; _slug: string }> {
+  const res = await fetch(`${API_BASE}/by-slug/${slug}`, {
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch document by slug: ${res.statusText}`);
+  }
+  return res.json();
+}
+
+/**
+ * 获取文档的 slug
+ */
+export async function getDocumentSlug(path: string): Promise<{ path: string; slug: string | null }> {
+  // 对路径进行编码，但保留 /
+  const encodedPath = path.split('/').map(p => encodeURIComponent(p)).join('/');
+  const res = await fetch(`${API_BASE}/slug/${encodedPath}`, {
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to get document slug: ${res.statusText}`);
+  }
+  return res.json();
+}
+
+/**
  * 获取指定 Block
  */
 export async function fetchBlock(anchor: string, docPath: string): Promise<Block> {
@@ -108,8 +137,8 @@ export async function fetchBlock(anchor: string, docPath: string): Promise<Block
  * 通过 Proposal 机制更新 block 中的字段
  */
 export async function updateBlock(
-  docPath: string, 
-  anchor: string, 
+  docPath: string,
+  anchor: string,
   updates: Record<string, unknown>
 ): Promise<{ success: boolean }> {
   // 构建 Proposal 操作

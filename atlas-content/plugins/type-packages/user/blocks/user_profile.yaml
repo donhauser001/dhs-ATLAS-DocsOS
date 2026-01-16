@@ -1,9 +1,9 @@
 # 用户档案数据块
-# 存储用户的基本信息和联系方式
+# 存储用户的基本信息
 
 id: "user_profile"
 name: "用户档案"
-description: "用户的基本信息，包括姓名、头像、联系方式、组织信息等"
+description: "用户的基本信息，包括姓名、头像、组织信息等"
 icon: "user"
 required: true
 enabled: true
@@ -40,43 +40,27 @@ fields:
     component: "date"
     description: "出生日期"
 
-  # === 联系方式 ===
-  - key: "email"
-    label: "邮箱"
-    component: "email"
-    description: "电子邮箱，可用于登录和通知"
-    
-  - key: "phone"
-    label: "手机"
-    component: "phone"
-    description: "手机号码，可用于登录和通知"
-    
-  - key: "mobile"
-    label: "座机"
-    component: "phone"
-    description: "座机号码"
-
   # === 组织信息 ===
-  - key: "title"
-    label: "职位"
-    component: "text"
-    description: "职位或头衔"
-    
   - key: "company"
-    label: "公司"
-    component: "text"
-    description: "所属公司或组织"
+    label: "单位"
+    component: "file"
+    description: "所属单位（关联客户文档）"
     
   - key: "department"
     label: "部门"
     component: "text"
     description: "所属部门"
+    
+  - key: "position"
+    label: "职位"
+    component: "text"
+    description: "职位或头衔"
 
   # === 其他信息 ===
   - key: "address"
-    label: "地址"
+    label: "快递信息"
     component: "textarea"
-    description: "通讯地址或快递信息"
+    description: "快递地址信息"
     
   - key: "tags"
     label: "标签"
@@ -100,8 +84,3 @@ validation:
     condition: "name"
     message: "姓名是必填项"
     level: "error"
-    
-  - name: "contact_required"
-    condition: "email || phone || mobile"
-    message: "请至少填写一种联系方式"
-    level: "warning"

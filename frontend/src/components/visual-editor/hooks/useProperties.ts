@@ -78,6 +78,12 @@ export function useProperties({
     // 只在首次渲染时设置，之后不更新
     // initialFrontmatterRef.current = initialFrontmatter;
 
+    // 存储初始的序列化状态，用于检测是否有真正的变更
+    const initialStateRef = useRef<string | null>(null);
+    
+    // 标记是否已初始化
+    const isInitializedRef = useRef(false);
+
     // 同步到 frontmatter
     const syncToFrontmatter = useCallback(() => {
         if (!onFrontmatterChangeRef.current) return;
@@ -87,6 +93,21 @@ export function useProperties({
             const { key, ...rest } = def;
             propsObj[key] = rest;
         });
+
+        // 序列化当前状态
+        const currentState = JSON.stringify({ props: propsObj, values });
+        
+        // 首次调用时，记录初始状态并跳过
+        if (!isInitializedRef.current) {
+            initialStateRef.current = currentState;
+            isInitializedRef.current = true;
+            return;
+        }
+        
+        // 如果状态与初始状态相同，跳过（避免无意义的更新）
+        if (currentState === initialStateRef.current) {
+            return;
+        }
 
         const newFrontmatter = {
             ...initialFrontmatterRef.current,

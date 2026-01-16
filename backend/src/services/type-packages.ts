@@ -4,7 +4,7 @@
  * Phase 4.1: 从 atlas-content/plugins/type-packages 目录读取类型包
  */
 
-import { readdirSync, readFileSync, existsSync, statSync } from 'fs';
+import { readdirSync, readFileSync, existsSync, statSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import yaml from 'js-yaml';
 import { config } from '../config.js';
@@ -92,7 +92,7 @@ export interface TypePackageInfo {
  */
 export function getAllTypePackages(): TypePackageInfo[] {
     const packagesDir = config.typePackagesDir;
-    
+
     if (!existsSync(packagesDir)) {
         console.warn('[TypePackages] Type packages directory not found:', packagesDir);
         return [];
@@ -103,7 +103,7 @@ export function getAllTypePackages(): TypePackageInfo[] {
 
     for (const entry of entries) {
         const packageDir = join(packagesDir, entry);
-        
+
         // 跳过非目录
         if (!statSync(packageDir).isDirectory()) {
             continue;
@@ -127,7 +127,7 @@ export function getAllTypePackages(): TypePackageInfo[] {
  */
 export function getTypePackage(id: string): TypePackageInfo | null {
     const packageDir = join(config.typePackagesDir, id);
-    
+
     if (!existsSync(packageDir)) {
         return null;
     }
@@ -140,7 +140,7 @@ export function getTypePackage(id: string): TypePackageInfo | null {
  */
 export function getTypePackagesByCategory(): Record<string, { label: string; packages: TypePackageInfo[] }> {
     const allPackages = getAllTypePackages();
-    
+
     const categories: Record<string, { label: string; packages: TypePackageInfo[] }> = {
         business: { label: '业务文档', packages: [] },
         content: { label: '内容文档', packages: [] },
@@ -164,16 +164,22 @@ export function getTypePackagesByCategory(): Record<string, { label: string; pac
  * 加载单个类型包
  */
 function loadTypePackage(packageDir: string, id: string): TypePackageInfo | null {
-    const manifestPath = join(packageDir, 'manifest.yaml');
-    
-    if (!existsSync(manifestPath)) {
-        console.warn(`[TypePackages] No manifest.yaml found for package: ${id}`);
+    const manifestYamlPath = join(packageDir, 'manifest.yaml');
+    const manifestJsonPath = join(packageDir, 'manifest.json');
+
+    let manifest: TypePackageManifest;
+
+    // 优先读取 YAML，其次 JSON
+    if (existsSync(manifestYamlPath)) {
+        const manifestContent = readFileSync(manifestYamlPath, 'utf-8');
+        manifest = yaml.load(manifestContent) as TypePackageManifest;
+    } else if (existsSync(manifestJsonPath)) {
+        const manifestContent = readFileSync(manifestJsonPath, 'utf-8');
+        manifest = JSON.parse(manifestContent) as TypePackageManifest;
+    } else {
+        console.warn(`[TypePackages] No manifest.yaml or manifest.json found for package: ${id}`);
         return null;
     }
-
-    // 读取 manifest
-    const manifestContent = readFileSync(manifestPath, 'utf-8');
-    const manifest = yaml.load(manifestContent) as TypePackageManifest;
 
     // 读取 blocks
     const blocks = loadBlocks(packageDir);
@@ -181,7 +187,7 @@ function loadTypePackage(packageDir: string, id: string): TypePackageInfo | null
     // 读取 functions.yaml 获取默认功能
     let defaultFunction: string | undefined;
     let defaultDisplay: string | undefined;
-    
+
     const functionsPath = join(packageDir, 'functions.yaml');
     if (existsSync(functionsPath)) {
         try {
@@ -225,7 +231,7 @@ function loadTypePackage(packageDir: string, id: string): TypePackageInfo | null
                 id: block.id,
                 name: block.name,
                 description: block.description,
-                required: block.required,
+                required: block.required ?? false,  // 默认为 false
                 enabled: block.enabled !== false,
                 selected: block.enabled !== false,  // 启用的默认选中
             })),
@@ -241,14 +247,14 @@ function loadTypePackage(packageDir: string, id: string): TypePackageInfo | null
  */
 function loadBlocks(packageDir: string): BlockDefinition[] {
     const blocksDir = join(packageDir, 'blocks');
-    
+
     if (!existsSync(blocksDir)) {
         return [];
     }
 
     const blocks: BlockDefinition[] = [];
     const entries = readdirSync(blocksDir);
-    
+
     // 收集所有 YAML 文件（作为基础）
     const yamlFiles = entries.filter(e => e.endsWith('.yaml'));
 
@@ -259,7 +265,7 @@ function loadBlocks(packageDir: string): BlockDefinition[] {
 
         try {
             let block: BlockDefinition;
-            
+
             // 优先读取 JSON（包含用户自定义设置，如 enabled）
             if (existsSync(jsonPath)) {
                 const jsonContent = readFileSync(jsonPath, 'utf-8');
@@ -273,7 +279,7 @@ function loadBlocks(packageDir: string): BlockDefinition[] {
                     enabled: yamlData.enabled !== false,  // 默认启用
                 };
             }
-            
+
             if (block && block.id && block.name) {
                 // 确保 enabled 字段存在
                 block.enabled = block.enabled !== false;
@@ -294,14 +300,18 @@ function loadBlocks(packageDir: string): BlockDefinition[] {
  * 获取类型包的原始 manifest
  */
 export function getTypePackageManifest(id: string): TypePackageManifest | null {
-    const manifestPath = join(config.typePackagesDir, id, 'manifest.yaml');
-    
-    if (!existsSync(manifestPath)) {
-        return null;
+    const manifestYamlPath = join(config.typePackagesDir, id, 'manifest.yaml');
+    const manifestJsonPath = join(config.typePackagesDir, id, 'manifest.json');
+
+    if (existsSync(manifestYamlPath)) {
+        const content = readFileSync(manifestYamlPath, 'utf-8');
+        return yaml.load(content) as TypePackageManifest;
+    } else if (existsSync(manifestJsonPath)) {
+        const content = readFileSync(manifestJsonPath, 'utf-8');
+        return JSON.parse(content) as TypePackageManifest;
     }
 
-    const content = readFileSync(manifestPath, 'utf-8');
-    return yaml.load(content) as TypePackageManifest;
+    return null;
 }
 
 /**
@@ -317,7 +327,7 @@ export function getTypePackageBlocks(id: string): BlockDefinition[] {
  */
 export function getTypePackageTemplate(id: string): string | null {
     const templatePath = join(config.typePackagesDir, id, 'template.md');
-    
+
     if (!existsSync(templatePath)) {
         return null;
     }
@@ -335,15 +345,15 @@ export function getTypePackageTemplate(id: string): string | null {
  */
 export function getBlockFullConfig(packageId: string, blockId: string): any | null {
     const blocksDir = join(config.typePackagesDir, packageId, 'blocks');
-    
+
     if (!existsSync(blocksDir)) {
         return null;
     }
-    
+
     // 首先尝试直接匹配文件名
     let jsonPath = join(blocksDir, `${blockId}.json`);
     let yamlPath = join(blocksDir, `${blockId}.yaml`);
-    
+
     // 检查直接文件名匹配
     if (existsSync(jsonPath)) {
         try {
@@ -353,7 +363,7 @@ export function getBlockFullConfig(packageId: string, blockId: string): any | nu
             console.error(`[TypePackages] Failed to read JSON config for ${blockId}:`, e);
         }
     }
-    
+
     if (existsSync(yamlPath)) {
         try {
             const content = readFileSync(yamlPath, 'utf-8');
@@ -362,10 +372,10 @@ export function getBlockFullConfig(packageId: string, blockId: string): any | nu
             console.error(`[TypePackages] Failed to read YAML config for ${blockId}:`, e);
         }
     }
-    
+
     // 如果直接匹配不到，遍历目录查找匹配的 id
     const entries = readdirSync(blocksDir);
-    
+
     // 优先查找 JSON 文件（包含用户配置）
     for (const entry of entries) {
         if (entry.endsWith('.json')) {
@@ -381,7 +391,7 @@ export function getBlockFullConfig(packageId: string, blockId: string): any | nu
             }
         }
     }
-    
+
     // 回退到 YAML 文件
     for (const entry of entries) {
         if (entry.endsWith('.yaml')) {
@@ -397,7 +407,7 @@ export function getBlockFullConfig(packageId: string, blockId: string): any | nu
             }
         }
     }
-    
+
     return null;
 }
 
@@ -408,18 +418,18 @@ export function getBlockFullConfig(packageId: string, blockId: string): any | nu
  * @param context 上下文信息，用于自动填充特定字段
  */
 function generateAtlasDataBlock(
-    blockConfig: any, 
+    blockConfig: any,
     context?: { title?: string; author?: string }
 ): string {
     const fields = blockConfig.fields || [];
-    
+
     const dataLines: string[] = [];
     const bindingsLines: string[] = [];
-    
+
     for (const field of fields) {
         // Data 行 - 根据字段类型自动填充
         let defaultValue = field.defaultValue ?? field.default ?? '';
-        
+
         // 特殊字段自动填充
         if (context) {
             if (field.key === 'name' && context.title) {
@@ -429,7 +439,7 @@ function generateAtlasDataBlock(
                 defaultValue = context.author;
             }
         }
-        
+
         // 格式化值
         if (typeof defaultValue === 'string') {
             defaultValue = `"${defaultValue}"`;
@@ -441,13 +451,15 @@ function generateAtlasDataBlock(
             defaultValue = defaultValue.toString();
         }
         dataLines.push(`  ${field.key}: ${defaultValue}`);
-        
+
         // Bindings 行 - 只有配置了组件的字段才需要绑定
+        // 绑定目标为组件 ID（约定：comp_${field.key}），而不是组件类型
         if (field.component) {
-            bindingsLines.push(`  ${field.key}: ${field.component}`);
+            const componentId = field.componentId || `comp_${field.key}`;
+            bindingsLines.push(`  ${field.key}: ${componentId}`);
         }
     }
-    
+
     let result = `\`\`\`atlas-data
 type: ${blockConfig.id}
 data:
@@ -459,7 +471,7 @@ ${dataLines.join('\n')}`;
 _bindings:
 ${bindingsLines.join('\n')}`;
     }
-    
+
     result += '\n```';
     return result;
 }
@@ -469,26 +481,26 @@ ${bindingsLines.join('\n')}`;
  */
 function extractComponentsFromTemplate(packageId: string): string {
     const templatePath = join(config.typePackagesDir, packageId, 'template.md');
-    
+
     if (!existsSync(templatePath)) {
         return '';
     }
-    
+
     try {
         const templateContent = readFileSync(templatePath, 'utf-8');
         const frontmatterMatch = templateContent.match(/^---\n([\s\S]*?)\n---/);
-        
+
         if (!frontmatterMatch) {
             return '';
         }
-        
+
         const frontmatterYaml = frontmatterMatch[1];
         const parsed = yaml.load(frontmatterYaml) as any;
-        
+
         if (parsed && parsed._components) {
             // 将 _components 转换回 YAML 字符串
-            return yaml.dump({ _components: parsed._components }, { 
-                indent: 2, 
+            return yaml.dump({ _components: parsed._components }, {
+                indent: 2,
                 lineWidth: -1,
                 quotingType: '"',
                 forceQuotes: false
@@ -497,8 +509,62 @@ function extractComponentsFromTemplate(packageId: string): string {
     } catch (error) {
         console.error(`[TypePackages] Failed to extract components from template:`, error);
     }
-    
+
     return '';
+}
+
+/**
+ * 确保类型包所需的目录存在
+ * 从模板的 _components 中提取所有 directory 配置，并创建这些目录
+ */
+export function ensureTypePackageDirectories(packageId: string): string[] {
+    const templatePath = join(config.typePackagesDir, packageId, 'template.md');
+    const createdDirs: string[] = [];
+
+    if (!existsSync(templatePath)) {
+        return createdDirs;
+    }
+
+    try {
+        const templateContent = readFileSync(templatePath, 'utf-8');
+        const frontmatterMatch = templateContent.match(/^---\n([\s\S]*?)\n---/);
+
+        if (!frontmatterMatch) {
+            return createdDirs;
+        }
+
+        const frontmatterYaml = frontmatterMatch[1];
+        const parsed = yaml.load(frontmatterYaml) as any;
+
+        if (parsed && parsed._components) {
+            // 提取所有组件的 directory 配置
+            const directories = new Set<string>();
+
+            for (const comp of Object.values(parsed._components) as any[]) {
+                if (comp.directory) {
+                    // 移除开头的 / 
+                    const dir = comp.directory.replace(/^\//, '');
+                    if (dir) {
+                        directories.add(dir);
+                    }
+                }
+            }
+
+            // 创建不存在的目录
+            for (const dir of directories) {
+                const fullPath = join(config.repositoryRoot, dir);
+                if (!existsSync(fullPath)) {
+                    mkdirSync(fullPath, { recursive: true });
+                    createdDirs.push(dir);
+                    console.log(`[TypePackages] Created directory: ${dir}`);
+                }
+            }
+        }
+    } catch (error) {
+        console.error(`[TypePackages] Failed to ensure directories for ${packageId}:`, error);
+    }
+
+    return createdDirs;
 }
 
 /**
@@ -514,28 +580,28 @@ export function generateDocument(
     }
 ): string {
     const now = new Date().toISOString().split('T')[0];
-    
+
     // 获取类型包信息
     const pkg = getTypePackage(packageId);
     if (!pkg) {
         throw new Error(`Type package ${packageId} not found`);
     }
-    
+
     // 获取所有可用的数据块配置（已按 order 排序）
     const allBlocks = loadBlocks(join(config.typePackagesDir, packageId));
-    
+
     // 过滤出选中的数据块，并保持 order 排序
     const selectedBlockIds = data.blocks || [];
     const selectedBlocks = allBlocks
         .filter(b => selectedBlockIds.includes(b.id) && b.enabled !== false)
         .sort((a, b) => (a.order || 999) - (b.order || 999));  // 确保按 order 写入文档
-    
+
     // 从模板提取 _components 定义
     const componentsYaml = extractComponentsFromTemplate(packageId);
-    
+
     // 生成 frontmatter
     let frontmatter = `---
-doc-type: ${packageId}
+document_type: ${packageId}
 title: "${data.title}"
 created: "${now}"
 updated: "${now}"
@@ -557,18 +623,18 @@ atlas:
     if (componentsYaml) {
         frontmatter += `\n${componentsYaml}\n`;
     }
-    
+
     frontmatter += `---`;
 
     // 生成文档标题
     const title = `\n# ${data.title}\n`;
-    
+
     // 生成各个数据块
     const blockSections: string[] = [];
-    
+
     // 上下文信息，用于自动填充特定字段
     const context = { title: data.title, author: data.author };
-    
+
     for (const block of selectedBlocks) {
         // 获取完整配置（含字段）
         const fullConfig = getBlockFullConfig(packageId, block.id);
@@ -576,14 +642,14 @@ atlas:
             console.warn(`[TypePackages] Block config not found: ${block.id}`);
             continue;
         }
-        
+
         // 生成数据块标题和内容
         const sectionTitle = `## ${fullConfig.name || block.name}`;
         const atlasDataBlock = generateAtlasDataBlock(fullConfig, context);
-        
+
         blockSections.push(`${sectionTitle}\n\n${atlasDataBlock}`);
     }
-    
+
     // 组合完整文档
     return `${frontmatter}
 ${title}
@@ -604,7 +670,7 @@ export function renderTemplate(
     }
 ): string {
     const now = new Date().toISOString().split('T')[0];
-    
+
     let content = template
         .replace(/\{\{title\}\}/g, data.title)
         .replace(/\{\{author\}\}/g, data.author)
@@ -619,11 +685,11 @@ export function renderTemplate(
     const includePermissions = data.blocks?.includes('access_permissions');
 
     // 处理 {{#if include_xxx}} ... {{/if}} 块
-    content = processConditionalBlock(content, 'include_address', includeAddress);
-    content = processConditionalBlock(content, 'include_social', includeSocial);
-    content = processConditionalBlock(content, 'include_tags', includeTags);
-    content = processConditionalBlock(content, 'include_auth', includeAuth);
-    content = processConditionalBlock(content, 'include_permissions', includePermissions);
+    content = processConditionalBlock(content, 'include_address', includeAddress ?? false);
+    content = processConditionalBlock(content, 'include_social', includeSocial ?? false);
+    content = processConditionalBlock(content, 'include_tags', includeTags ?? false);
+    content = processConditionalBlock(content, 'include_auth', includeAuth ?? false);
+    content = processConditionalBlock(content, 'include_permissions', includePermissions ?? false);
 
     return content;
 }
@@ -633,7 +699,7 @@ export function renderTemplate(
  */
 function processConditionalBlock(content: string, condition: string, include: boolean): string {
     const regex = new RegExp(`\\{\\{#if ${condition}\\}\\}([\\s\\S]*?)\\{\\{/if\\}\\}`, 'g');
-    
+
     if (include) {
         // 保留内容，移除标记
         return content.replace(regex, '$1');

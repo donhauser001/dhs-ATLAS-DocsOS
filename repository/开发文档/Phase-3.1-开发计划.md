@@ -1,3 +1,6 @@
+---
+slug: doc-n8fwyg
+---
 # Phase 3.1 开发计划：Principal + Profile 用户体系
 
 ## 一、阶段定位

@@ -103,6 +103,7 @@ const SYSTEM_LABELS: LabelConfig = {
         { key: 'createdAt', label: '创建时间', icon: 'calendar-plus', isSystem: true },
         { key: 'updatedAt', label: '更新时间', icon: 'calendar-check', isSystem: true },
         { key: 'author', label: '作者', icon: 'user', isSystem: true },
+        { key: 'slug', label: '短链接', icon: 'link', isSystem: true },
       ],
     },
     {

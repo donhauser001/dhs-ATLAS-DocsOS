@@ -1,3 +1,6 @@
+---
+slug: doc-jcnmot
+---
 # Phase 3.3: 功能声明系统 (Function Declaration System)
 
 > **核心理念**：文档的功能身份由文档自己声明，系统通过功能标签决定如何调用数据和渲染界面。

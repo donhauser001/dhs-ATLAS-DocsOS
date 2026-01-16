@@ -37,6 +37,11 @@ import {
   requireProposalCreate,
   requireProposalExecute,
 } from '../middleware/permission.js';
+// Slug 服务（使用 workspace-service 中的 frontmatter 方案）
+import { findDocumentBySlug } from '../services/workspace-service.js';
+import yaml from 'js-yaml';
+// Git 操作
+import simpleGit from 'simple-git';
 
 const router = Router();
 
@@ -72,7 +77,81 @@ router.get('/document', requireAuth, requirePathAccess, (req: Request, res: Resp
     return;
   }
 
-  res.json(content.document);
+  // 从 frontmatter 读取 slug
+  const docSlug = content.document.frontmatter?.slug || null;
+
+  res.json({
+    ...content.document,
+    _slug: docSlug,
+  });
+});
+
+/**
+ * GET /api/adl/by-slug/:slug
+ * 根据 slug 获取文档
+ * 
+ * 从所有文档的 frontmatter 中查找匹配的 slug
+ * 返回文档内容和实际路径
+ */
+router.get('/by-slug/:slug', requireAuth, (req: Request, res: Response) => {
+  const { slug } = req.params;
+
+  if (!slug) {
+    res.status(400).json({ error: 'Missing slug' });
+    return;
+  }
+
+  // 根据 slug 从文档 frontmatter 中查找文档路径
+  const docPath = findDocumentBySlug(slug);
+  if (!docPath) {
+    res.status(404).json({ error: 'Document not found', slug });
+    return;
+  }
+
+  // 检查访问权限
+  if (!canAccessDocument(req.user!, docPath)) {
+    res.status(403).json({ error: 'Access denied', slug });
+    return;
+  }
+
+  // 获取文档内容
+  const content = getDocument(docPath);
+  if (!content) {
+    res.status(404).json({ error: 'Document not found', path: docPath });
+    return;
+  }
+
+  // 返回文档内容和路径信息
+  res.json({
+    ...content.document,
+    _path: docPath,
+    _slug: slug,
+  });
+});
+
+/**
+ * GET /api/adl/slug/:path
+ * 根据文档路径获取 slug
+ * 从文档 frontmatter 中读取 slug
+ * 如果文档没有 slug，返回 null
+ */
+router.get('/slug/*', requireAuth, (req: Request, res: Response) => {
+  const docPath = req.params[0];
+
+  if (!docPath) {
+    res.status(400).json({ error: 'Missing document path' });
+    return;
+  }
+
+  // 从文档 frontmatter 中读取 slug
+  const content = getDocument(docPath);
+  if (!content) {
+    res.json({ path: docPath, slug: null });
+    return;
+  }
+
+  const slug = content.document.frontmatter?.slug;
+  res.json({ path: docPath, slug: slug || null });
 });
 
 /**
@@ -110,9 +189,47 @@ router.put('/document', requireAuth, requirePathAccess, async (req: Request, res
       return;
     }
 
+    // 解析 frontmatter 并确保有 slug
+    let finalContent = content;
+    let documentSlug: string | null = null;
+    
+    const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+    if (frontmatterMatch) {
+      try {
+        const frontmatter = yaml.load(frontmatterMatch[1]) as Record<string, unknown>;
+        const body = frontmatterMatch[2];
+        
+        // 检查是否有 slug
+        if (!frontmatter.slug || typeof frontmatter.slug !== 'string' || !frontmatter.slug.trim()) {
+          // 生成新 slug
+          const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+          let newSlug = 'doc-';
+          for (let i = 0; i < 6; i++) {
+            newSlug += chars.charAt(Math.floor(Math.random() * chars.length));
+          }
+          frontmatter.slug = newSlug;
+          documentSlug = newSlug;
+          
+          // 重新组合内容
+          const newFrontmatter = yaml.dump(frontmatter, {
+            indent: 2,
+            lineWidth: -1,
+            quotingType: '"',
+            forceQuotes: false,
+          });
+          finalContent = `---\n${newFrontmatter}---\n${body}`;
+        } else {
+          documentSlug = frontmatter.slug as string;
+        }
+      } catch (yamlError) {
+        console.warn('[ADL] Failed to parse frontmatter for slug injection:', yamlError);
+        // 保持原内容不变
+      }
+    }
+
     // 写入文件
     const { writeFileSync } = await import('fs');
-    writeFileSync(absolutePath, content, 'utf-8');
+    writeFileSync(absolutePath, finalContent, 'utf-8');
 
     // 更新索引
     const { updateDocumentIndex } = await import('../services/workspace-service.js');
@@ -128,7 +245,6 @@ router.put('/document', requireAuth, requirePathAccess, async (req: Request, res
 
     // Git commit（可选，根据配置）
     try {
-      const { default: simpleGit } = await import('simple-git');
       const git = simpleGit(config.repositoryRoot);
       await git.add(docPath);
       await git.commit(`[Editor] Update ${docPath}`, [docPath]);
@@ -136,7 +252,7 @@ router.put('/document', requireAuth, requirePathAccess, async (req: Request, res
       console.warn('[ADL] Git commit failed (continuing anyway):', gitError);
     }
 
-    res.json({ success: true, path: docPath });
+    res.json({ success: true, path: docPath, slug: documentSlug });
   } catch (error) {
     console.error('[ADL] Failed to save document:', error);
     res.status(500).json({ error: 'Failed to save document', details: String(error) });

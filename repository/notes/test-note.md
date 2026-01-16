@@ -1,8 +1,9 @@
 ---
 version: "1.0"
 document_type: note
-created: 2026-01-03
+created: 2026-01-03T00:00:00.000Z
 author: system
+slug: doc-s6z04w
 ---
 
 # 测试笔记 {#test-note}

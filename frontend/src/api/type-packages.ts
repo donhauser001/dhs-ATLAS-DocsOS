@@ -121,6 +121,7 @@ export async function createDocument(req: CreateDocumentRequest): Promise<Create
         headers: {
             'Content-Type': 'application/json',
         },
+        credentials: 'include',  // 携带认证 cookie
         body: JSON.stringify(req),
     });
     

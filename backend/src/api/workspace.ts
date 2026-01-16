@@ -10,6 +10,7 @@ import {
   getWorkspaceIndex,
   getWorkspaceTree,
   rebuildWorkspaceIndex,
+  ensureAllDocumentSlugs,
   type DocumentInfo,
   type TreeNode,
 } from '../services/workspace-service.js';
@@ -110,6 +111,7 @@ router.get('/tree', requireAuth, async (req: Request, res: Response) => {
  * 手动触发索引重建
  * 
  * Phase 2: 需要认证（只有 admin/staff 可执行，由前端控制显示）
+ * Phase 3: 重建时确保所有文档都有 slug
  */
 router.post('/rebuild', requireAuth, async (req: Request, res: Response) => {
   // Phase 2: 只允许 admin 和 staff 重建索引
@@ -119,11 +121,19 @@ router.post('/rebuild', requireAuth, async (req: Request, res: Response) => {
   }
   
   try {
+    // Phase 3: 先确保所有文档都有 slug
+    const slugResult = ensureAllDocumentSlugs();
+    
+    // 然后重建索引
     const index = await rebuildWorkspaceIndex();
     res.json({ 
       success: true, 
       message: 'Workspace index rebuilt',
       stats: index.stats,
+      slugs: {
+        added: slugResult.added,
+        total: slugResult.total,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to rebuild workspace index', details: String(error) });

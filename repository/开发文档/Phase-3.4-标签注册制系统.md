@@ -1,3 +1,6 @@
+---
+slug: doc-wbccqy
+---
 # Phase 3.4: 标签注册制系统 (Label Registry System)
 
 > **核心理念**：文档使用原始字段名，系统通过标签注册表映射为用户友好的显示名称和图标。

@@ -1,3 +1,6 @@
+---
+slug: doc-t3ltor
+---
 # ADL Spec v1.0
 
 **Atlas Document Language 规范 · 第一版**

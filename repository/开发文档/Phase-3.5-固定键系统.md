@@ -1,3 +1,6 @@
+---
+slug: doc-am8k1s
+---
 # Phase 3.5: 固定键系统 + 智能编辑器 (Fixed Key System + Smart Editor)
 
 > **核心理念**：文档的通用元数据由系统自动管理，用户专注于业务内容，前端智能分区渲染，并提供类 Notion 的编辑体验。

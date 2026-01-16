@@ -59,7 +59,7 @@ function getLucideIcon(name: string | undefined): React.ComponentType<{ classNam
 
 interface DataField {
     key: string;
-    value: string | number | boolean | string[];
+    value: string | number | boolean | string[] | object | null;
 }
 
 // ============================================================
@@ -207,7 +207,7 @@ interface DataBlockEditorProps {
 // ============================================================
 
 interface SortableFieldProps {
-    field: { key: string; value: string | number | boolean | string[] | null };
+    field: { key: string; value: string | number | boolean | string[] | object | null };
     index: number;
     isFixed: boolean;
     isStatusField: boolean;
@@ -218,7 +218,7 @@ interface SortableFieldProps {
     statusOptions: StatusOption[];
     getLabel: (key: string) => string;
     renderFieldIcon: (key: string) => React.ReactNode;
-    getStatusColorClassName: (color: string) => string;
+    getStatusColorClassName: (value: string) => { bg: string; text: string };
     updateFieldValue: (index: number, value: unknown) => void;
     removeField: (index: number) => void;
     onEditField: () => void;
@@ -374,7 +374,7 @@ function SortableField({
                 <div className="flex-1">
                     <FallbackControl
                         componentId={boundComponentId}
-                        value={field.value}
+                        value={typeof field.value === 'boolean' || typeof field.value === 'object' ? String(field.value ?? '') : field.value}
                         onChange={(newValue) => updateFieldValue(index, newValue)}
                     />
                 </div>
@@ -569,7 +569,7 @@ export function DataBlockEditor({
                 // 判断数据结构：schema + data 格式 vs 扁平格式
                 // 如果有 data 字段且是对象，使用 data 字段内容；否则使用扁平结构
                 let userData: Record<string, unknown>;
-                const isDataWrapped = data['data'] && typeof data['data'] === 'object' && !Array.isArray(data['data']);
+                const isDataWrapped = Boolean(data['data'] && typeof data['data'] === 'object' && !Array.isArray(data['data']));
                 setHasDataWrapper(isDataWrapped);
 
                 if (isDataWrapped) {
@@ -673,7 +673,7 @@ export function DataBlockEditor({
         const newFields = [...fields];
 
         // 处理不同类型的值
-        let parsedValue: string | number | boolean | string[] | object | null;
+        let parsedValue: string | number | boolean | string[] | Record<string, unknown> | null;
 
         if (value === null || value === undefined) {
             // null/undefined 转为空字符串
@@ -683,7 +683,7 @@ export function DataBlockEditor({
             parsedValue = value;
         } else if (typeof value === 'object') {
             // 对象类型：直接保存（用于字段组组件如 user-auth）
-            parsedValue = value;
+            parsedValue = value as Record<string, unknown>;
         } else if (typeof value === 'string') {
             // 字符串：尝试转换为布尔
             if (value === 'true') parsedValue = true;
@@ -931,27 +931,28 @@ export function DataBlockEditor({
 
             // 特殊处理 user-auth 类型
             if (componentId === '__atlas_user_auth__' || obj.user_id !== undefined) {
+                const statusValue = obj.status as string | undefined;
                 return (
                     <div className="space-y-1 text-sm">
-                        {obj.username && (
+                        {obj.username != null && (
                             <div className="flex items-center gap-2">
                                 <span className="text-slate-400 text-xs w-16">用户名:</span>
                                 <span className="text-slate-700">{String(obj.username)}</span>
                             </div>
                         )}
-                        {obj.email && (
+                        {obj.email != null && (
                             <div className="flex items-center gap-2">
                                 <span className="text-slate-400 text-xs w-16">邮箱:</span>
                                 <span className="text-slate-700">{String(obj.email)}</span>
                             </div>
                         )}
-                        {obj.phone && (
+                        {obj.phone != null && (
                             <div className="flex items-center gap-2">
                                 <span className="text-slate-400 text-xs w-16">手机:</span>
                                 <span className="text-slate-700">{String(obj.phone)}</span>
                             </div>
                         )}
-                        {obj.role && (
+                        {obj.role != null && (
                             <div className="flex items-center gap-2">
                                 <span className="text-slate-400 text-xs w-16">角色:</span>
                                 <span className="px-1.5 py-0.5 text-xs bg-purple-100 text-purple-600 rounded">
@@ -959,20 +960,20 @@ export function DataBlockEditor({
                                 </span>
                             </div>
                         )}
-                        {obj.status && (
+                        {statusValue != null && (
                             <div className="flex items-center gap-2">
                                 <span className="text-slate-400 text-xs w-16">状态:</span>
                                 <span className={cn(
                                     'px-1.5 py-0.5 text-xs rounded',
-                                    obj.status === 'active' && 'bg-green-100 text-green-600',
-                                    obj.status === 'pending' && 'bg-yellow-100 text-yellow-600',
-                                    obj.status === 'disabled' && 'bg-red-100 text-red-600',
-                                    obj.status === 'locked' && 'bg-orange-100 text-orange-600',
+                                    statusValue === 'active' && 'bg-green-100 text-green-600',
+                                    statusValue === 'pending' && 'bg-yellow-100 text-yellow-600',
+                                    statusValue === 'disabled' && 'bg-red-100 text-red-600',
+                                    statusValue === 'locked' && 'bg-orange-100 text-orange-600',
                                 )}>
-                                    {obj.status === 'active' ? '正常' :
-                                        obj.status === 'pending' ? '待激活' :
-                                            obj.status === 'disabled' ? '已禁用' :
-                                                obj.status === 'locked' ? '已锁定' : String(obj.status)}
+                                    {statusValue === 'active' ? '正常' :
+                                        statusValue === 'pending' ? '待激活' :
+                                            statusValue === 'disabled' ? '已禁用' :
+                                                statusValue === 'locked' ? '已锁定' : statusValue}
                                 </span>
                             </div>
                         )}
@@ -983,14 +984,14 @@ export function DataBlockEditor({
             // 通用对象渲染
             return (
                 <div className="space-y-0.5 text-sm">
-                    {Object.entries(obj).map(([k, v]) => (
-                        v && (
+                    {Object.entries(obj)
+                        .filter(([, v]) => v != null)
+                        .map(([k, v]) => (
                             <div key={k} className="flex items-center gap-2">
                                 <span className="text-slate-400 text-xs">{k}:</span>
                                 <span className="text-slate-700">{String(v)}</span>
                             </div>
-                        )
-                    ))}
+                        ))}
                 </div>
             );
         }

@@ -44,6 +44,9 @@ const TYPE_LABEL_MAP: Record<string, string> = {
     social_accounts: '社交账号',
     tags_notes: '标签备注',
     address_info: '地址信息',
+    // 用户文档类型
+    user_profile: '用户档案',
+    user_auth: '认证信息',
 };
 
 // 类型图标映射
@@ -54,6 +57,9 @@ const TYPE_ICON_MAP: Record<string, string> = {
     contact_tags_notes: 'clipboard-list',
     account_auth: 'briefcase',
     access_permissions: 'file-text',
+    // 用户文档类型
+    user_profile: 'user',
+    user_auth: 'shield-check',
     personal_info: 'user',
     social_accounts: 'globe',
     tags_notes: 'clipboard-list',

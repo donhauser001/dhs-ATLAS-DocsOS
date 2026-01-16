@@ -1,5 +1,5 @@
 ---
-{}
+slug: doc-vljumc
 ---
 
 

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Routes, Route, Link, Navigate } from 'react-router-dom'
 import { GenesisPage } from './pages/genesis'
-import { WorkspacePage, DocumentPage } from './pages/workspace'
+import { WorkspacePage, DocumentPage, SlugDocumentPage } from './pages/workspace'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
@@ -98,6 +98,12 @@ function App() {
             <Route path="/workspace/*" element={
               <ProtectedRoute>
                 <DocumentPage />
+              </ProtectedRoute>
+            } />
+            {/* Slug 路由：/d/:slug - 简洁的英文 URL */}
+            <Route path="/d/:slug" element={
+              <ProtectedRoute>
+                <SlugDocumentPage />
               </ProtectedRoute>
             } />
             {/* Phase 4.2: Person 管理 */}

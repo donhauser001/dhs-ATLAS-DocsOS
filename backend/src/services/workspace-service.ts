@@ -85,6 +85,8 @@ export interface TreeNode {
   type: 'directory' | 'document';
   /** 文件路径（仅文档有） */
   path?: string;
+  /** URL Slug（仅文档有） */
+  slug?: string;
   /** 子节点 */
   children?: TreeNode[];
 }
@@ -280,6 +282,187 @@ export async function updateDocumentIndex(relativePath: string): Promise<void> {
 }
 
 // ============================================================
+// Slug 功能
+// ============================================================
+
+/**
+ * 生成随机 slug
+ * 格式：doc-{6位随机字符}
+ */
+function generateSlug(): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = 'doc-';
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+/**
+ * 从文件内容中提取 frontmatter
+ */
+function extractFrontmatter(content: string): { frontmatter: Record<string, unknown> | null; body: string; raw: string } {
+  const match = content.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+  if (!match) {
+    return { frontmatter: null, body: content, raw: '' };
+  }
+  
+  try {
+    const yaml = require('js-yaml');
+    const frontmatter = yaml.load(match[1]) as Record<string, unknown>;
+    return { frontmatter, body: match[2], raw: match[1] };
+  } catch {
+    return { frontmatter: null, body: content, raw: '' };
+  }
+}
+
+/**
+ * 将 frontmatter 和 body 重新组合为完整内容
+ */
+function composeFrontmatter(frontmatter: Record<string, unknown>, body: string): string {
+  const yaml = require('js-yaml');
+  const frontmatterStr = yaml.dump(frontmatter, { 
+    indent: 2, 
+    lineWidth: -1,
+    quotingType: '"',
+    forceQuotes: false,
+  });
+  return `---\n${frontmatterStr}---\n${body}`;
+}
+
+/**
+ * 收集所有现有的 slug，用于避免重复
+ */
+function collectExistingSlugs(): Set<string> {
+  const slugs = new Set<string>();
+  const mdFiles = scanMarkdownFiles(config.repositoryRoot);
+  
+  for (const filePath of mdFiles) {
+    const relativePath = relative(config.repositoryRoot, filePath);
+    if (relativePath.startsWith('.atlas')) continue;
+    
+    try {
+      const content = readFileSync(filePath, 'utf-8');
+      const { frontmatter } = extractFrontmatter(content);
+      if (frontmatter?.slug && typeof frontmatter.slug === 'string') {
+        slugs.add(frontmatter.slug);
+      }
+    } catch {
+      // 忽略读取错误
+    }
+  }
+  
+  return slugs;
+}
+
+/**
+ * 生成唯一 slug（避免与现有 slug 冲突）
+ */
+function generateUniqueSlug(existingSlugs: Set<string>): string {
+  let slug = generateSlug();
+  let attempts = 0;
+  while (existingSlugs.has(slug) && attempts < 100) {
+    slug = generateSlug();
+    attempts++;
+  }
+  return slug;
+}
+
+/**
+ * 确保所有文档都有 slug
+ * 遍历所有 .md 文件，如果没有 slug 则自动生成并写入
+ * 
+ * @returns 新增 slug 的文档数量
+ */
+export function ensureAllDocumentSlugs(): { added: number; total: number; slugs: Record<string, string> } {
+  console.log('[Workspace] Ensuring all documents have slugs...');
+  
+  // 收集现有 slug
+  const existingSlugs = collectExistingSlugs();
+  const mdFiles = scanMarkdownFiles(config.repositoryRoot);
+  
+  let added = 0;
+  const slugMap: Record<string, string> = {};
+  
+  for (const filePath of mdFiles) {
+    const relativePath = relative(config.repositoryRoot, filePath);
+    if (relativePath.startsWith('.atlas')) continue;
+    
+    try {
+      const content = readFileSync(filePath, 'utf-8');
+      let { frontmatter, body } = extractFrontmatter(content);
+      
+      // 如果没有 frontmatter，为文档创建一个
+      if (!frontmatter) {
+        frontmatter = {};
+        body = content; // 整个内容作为 body
+      }
+      
+      // 如果已有 slug，记录并跳过
+      if (frontmatter.slug && typeof frontmatter.slug === 'string' && frontmatter.slug.trim()) {
+        slugMap[relativePath] = frontmatter.slug;
+        continue;
+      }
+      
+      // 生成新 slug
+      const newSlug = generateUniqueSlug(existingSlugs);
+      existingSlugs.add(newSlug);
+      
+      // 更新 frontmatter
+      frontmatter.slug = newSlug;
+      
+      // 写回文件
+      const newContent = composeFrontmatter(frontmatter, body);
+      writeFileSync(filePath, newContent, 'utf-8');
+      
+      slugMap[relativePath] = newSlug;
+      added++;
+      console.log(`[Workspace] Added slug "${newSlug}" to ${relativePath}`);
+    } catch (error) {
+      console.error(`[Workspace] Failed to process ${relativePath}:`, error);
+    }
+  }
+  
+  console.log(`[Workspace] Slug check complete: ${added} added, ${Object.keys(slugMap).length} total`);
+  
+  return { added, total: Object.keys(slugMap).length, slugs: slugMap };
+}
+
+/**
+ * 根据 slug 查找文档路径
+ */
+export function findDocumentBySlug(slug: string): string | null {
+  const mdFiles = scanMarkdownFiles(config.repositoryRoot);
+  
+  for (const filePath of mdFiles) {
+    const relativePath = relative(config.repositoryRoot, filePath);
+    if (relativePath.startsWith('.atlas')) continue;
+    
+    try {
+      const content = readFileSync(filePath, 'utf-8');
+      const { frontmatter } = extractFrontmatter(content);
+      
+      if (frontmatter?.slug === slug) {
+        return relativePath;
+      }
+    } catch {
+      // 忽略读取错误
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * 列出所有 markdown 文件（导出供其他模块使用）
+ */
+export function listAllMarkdownFiles(): string[] {
+  return scanMarkdownFiles(config.repositoryRoot)
+    .map(f => relative(config.repositoryRoot, f))
+    .filter(p => !p.startsWith('.atlas'));
+}
+
+// ============================================================
 // 辅助函数
 // ============================================================
 
@@ -353,10 +536,26 @@ function extractDocumentInfo(doc: ADLDocument, relativePath: string, mtime: Date
 
 /**
  * 从文档列表构建目录树
+ * 同时读取每个文档的 slug
  */
 function buildTree(documents: DocumentInfo[]): TreeNode[] {
   const root: TreeNode[] = [];
   const nodeMap = new Map<string, TreeNode>();
+  
+  // 收集所有文档的 slug
+  const slugMap = new Map<string, string>();
+  for (const doc of documents) {
+    try {
+      const fullPath = join(config.repositoryRoot, doc.path);
+      const content = readFileSync(fullPath, 'utf-8');
+      const { frontmatter } = extractFrontmatter(content);
+      if (frontmatter?.slug && typeof frontmatter.slug === 'string') {
+        slugMap.set(doc.path, frontmatter.slug);
+      }
+    } catch {
+      // 忽略读取错误
+    }
+  }
   
   // 收集所有路径
   const allPaths = new Set<string>();
@@ -384,6 +583,7 @@ function buildTree(documents: DocumentInfo[]): TreeNode[] {
       name,
       type: isDirectory ? 'directory' : 'document',
       path: isDirectory ? undefined : cleanPath,
+      slug: isDirectory ? undefined : slugMap.get(cleanPath),
       children: isDirectory ? [] : undefined,
     };
     

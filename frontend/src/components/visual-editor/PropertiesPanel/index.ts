@@ -5,6 +5,13 @@
 // 主组件
 export { PropertiesPanel } from './PropertiesPanel';
 
+// 模式面板组件
+export { ReadModePanel } from './ReadModePanel';
+export { EditModePanel } from './EditModePanel';
+export { MetaInfoRow } from './MetaInfoRow';
+export { TechInfoPanel } from './TechInfoPanel';
+export type { DocTypeDisplay, FunctionDisplay, DataBlockStructure } from './TechInfoPanel';
+
 // 阅读模式组件
 export { DocumentInfoCard } from './DocumentInfoCard';
 export type { DocumentInfoCardProps } from './DocumentInfoCard';
@@ -19,6 +26,7 @@ export { SortableCustomProperty } from './SortableCustomProperty';
 export { SystemPropertiesSection } from './SystemPropertiesSection';
 export { CustomPropertiesSection } from './CustomPropertiesSection';
 export { AddPropertyDialog } from './AddPropertyDialog';
+export { TypePackageDisplay, clearTypePackageCache } from './TypePackageDisplay';
 
 // 类型
 export type {

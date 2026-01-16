@@ -1,3 +1,6 @@
+---
+slug: doc-fl9k0z
+---
 # Phase 3.9: 文件管理组件
 
 > **代号**: File Manager Component  

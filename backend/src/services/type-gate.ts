@@ -149,15 +149,15 @@ export function checkTypeGate(
         };
     }
     
-    // 2. 检查是否声明了 doc-type
-    const docType = frontmatter['doc-type'] as string | undefined;
+    // 2. 检查是否声明了 document_type（兼容旧的 doc-type）
+    const docType = (frontmatter['document_type'] || frontmatter['doc-type']) as string | undefined;
     
     if (!docType) {
         return {
             docPath,
             declaredType: null,
             status: 'no-type',
-            message: '未声明 doc-type',
+            message: '未声明 document_type',
             targetIndex: 'quarantine/no-type',
         };
     }
