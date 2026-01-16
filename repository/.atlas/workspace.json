@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2026-01-16T19:20:39.501Z",
+  "generated_at": "2026-01-16T19:29:17.146Z",
   "documents": [
     {
       "path": "ADL Spec v1.0.md",
@@ -109,24 +109,6 @@
         "note"
       ],
       "modified_at": "2026-01-16T18:27:47.550Z"
-    },
-    {
-      "path": "哈哈哈哈.md",
-      "title": "哈哈哈哈",
-      "document_type": "unknown",
-      "block_count": 0,
-      "anchors": [],
-      "types": [],
-      "modified_at": "2026-01-16T18:27:47.551Z"
-    },
-    {
-      "path": "客户/是的分公司的风格.md",
-      "title": "是的分公司的风格",
-      "document_type": "unknown",
-      "block_count": 0,
-      "anchors": [],
-      "types": [],
-      "modified_at": "2026-01-16T18:40:15.769Z"
     },
     {
       "path": "开发文档/Person-类型包重构规划.md",
@@ -583,24 +565,6 @@
       "modified_at": "2026-01-16T18:40:15.779Z"
     },
     {
-      "path": "测试一下.md",
-      "title": "测试一下",
-      "document_type": "unknown",
-      "block_count": 0,
-      "anchors": [],
-      "types": [],
-      "modified_at": "2026-01-16T18:27:47.556Z"
-    },
-    {
-      "path": "测试联系人.md",
-      "title": "测试联系人",
-      "document_type": "unknown",
-      "block_count": 0,
-      "anchors": [],
-      "types": [],
-      "modified_at": "2026-01-16T18:27:47.557Z"
-    },
-    {
       "path": "联系人/安宁.md",
       "title": "安宁",
       "document_type": "user",
@@ -610,15 +574,6 @@
       "modified_at": "2026-01-16T18:27:47.557Z"
     },
     {
-      "path": "联系人/是的分公司的发货的风格和.md",
-      "title": "是的分公司的发货的风格和",
-      "document_type": "unknown",
-      "block_count": 0,
-      "anchors": [],
-      "types": [],
-      "modified_at": "2026-01-16T18:27:47.558Z"
-    },
-    {
       "path": "联系人/标准用户模板.md",
       "title": "标准用户模板",
       "document_type": "unknown",
@@ -626,51 +581,6 @@
       "anchors": [],
       "types": [],
       "modified_at": "2026-01-16T18:27:47.559Z"
-    },
-    {
-      "path": "联系人/测试-2.md",
-      "title": "测试 2",
-      "document_type": "unknown",
-      "block_count": 0,
-      "anchors": [],
-      "types": [],
-      "modified_at": "2026-01-16T18:27:47.559Z"
-    },
-    {
-      "path": "联系人/测试-3.md",
-      "title": "测试 3",
-      "document_type": "unknown",
-      "block_count": 0,
-      "anchors": [],
-      "types": [],
-      "modified_at": "2026-01-16T18:27:47.560Z"
-    },
-    {
-      "path": "联系人/测试一下.md",
-      "title": "测试一下",
-      "document_type": "unknown",
-      "block_count": 0,
-      "anchors": [],
-      "types": [],
-      "modified_at": "2026-01-16T18:27:47.561Z"
-    },
-    {
-      "path": "联系人/测试测试 2.md",
-      "title": "测试测试 2",
-      "document_type": "unknown",
-      "block_count": 0,
-      "anchors": [],
-      "types": [],
-      "modified_at": "2026-01-16T18:27:47.561Z"
-    },
-    {
-      "path": "联系人/用户测试文档.md",
-      "title": "用户测试文档",
-      "document_type": "user",
-      "block_count": 0,
-      "anchors": [],
-      "types": [],
-      "modified_at": "2026-01-16T18:27:47.562Z"
     },
     {
       "path": "视图测试/列表视图测试.md",
@@ -734,15 +644,6 @@
       "anchors": [],
       "types": [],
       "modified_at": "2026-01-16T18:27:47.564Z"
-    },
-    {
-      "path": "联系人/123123123123123.md",
-      "title": "123123123123123",
-      "document_type": "user",
-      "block_count": 0,
-      "anchors": [],
-      "types": [],
-      "modified_at": "2026-01-16T19:20:39.486Z"
     }
   ],
   "directories": [
@@ -759,11 +660,6 @@
     {
       "path": "notes",
       "name": "notes",
-      "document_count": 1
-    },
-    {
-      "path": "客户",
-      "name": "客户",
       "document_count": 1
     },
     {
@@ -789,7 +685,7 @@
     {
       "path": "联系人",
       "name": "联系人",
-      "document_count": 8
+      "document_count": 2
     },
     {
       "path": "视图测试",
@@ -798,10 +694,10 @@
     }
   ],
   "stats": {
-    "total_documents": 76,
+    "total_documents": 65,
     "total_blocks": 26,
     "total_anchors": 26
   },
-  "repo_head": "47bd7321ccfccf7be632f2901b2bbe6db68292f2",
-  "stale": true
+  "repo_head": "aa32e8f19b6aee06a76fef4ece38665897cbee1c",
+  "stale": false
 }

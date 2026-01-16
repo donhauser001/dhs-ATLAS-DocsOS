@@ -1,7 +1,7 @@
 {
   "version": "1.0",
-  "generated_at": "2026-01-16T18:43:42.769Z",
-  "repo_head": "47bd7321ccfccf7be632f2901b2bbe6db68292f2",
+  "generated_at": "2026-01-16T19:29:17.155Z",
+  "repo_head": "aa32e8f19b6aee06a76fef4ece38665897cbee1c",
   "functions": {
     "entity_detail": {
       "documents": [
@@ -17,52 +17,8 @@
           }
         },
         {
-          "path": "哈哈哈哈.md",
-          "title": "哈哈哈哈",
-          "capabilities": [
-            "editable",
-            "searchable",
-            "linkable",
-            "exportable"
-          ],
-          "indexed_fields": {}
-        },
-        {
-          "path": "测试一下.md",
-          "title": "测试一下",
-          "capabilities": [
-            "editable",
-            "searchable",
-            "linkable",
-            "exportable"
-          ],
-          "indexed_fields": {}
-        },
-        {
-          "path": "测试联系人.md",
-          "title": "测试联系人",
-          "capabilities": [
-            "editable",
-            "searchable",
-            "linkable",
-            "exportable"
-          ],
-          "indexed_fields": {}
-        },
-        {
           "path": "联系人/安宁.md",
           "title": "安宁",
-          "capabilities": [
-            "editable",
-            "searchable",
-            "linkable",
-            "exportable"
-          ],
-          "indexed_fields": {}
-        },
-        {
-          "path": "联系人/是的分公司的发货的风格和.md",
-          "title": "是的分公司的发货的风格和",
           "capabilities": [
             "editable",
             "searchable",
@@ -81,64 +37,9 @@
             "exportable"
           ],
           "indexed_fields": {}
-        },
-        {
-          "path": "联系人/测试-2.md",
-          "title": "测试 2",
-          "capabilities": [
-            "editable",
-            "searchable",
-            "linkable",
-            "exportable"
-          ],
-          "indexed_fields": {}
-        },
-        {
-          "path": "联系人/测试-3.md",
-          "title": "测试 3",
-          "capabilities": [
-            "editable",
-            "searchable",
-            "linkable",
-            "exportable"
-          ],
-          "indexed_fields": {}
-        },
-        {
-          "path": "联系人/测试一下.md",
-          "title": "测试一下",
-          "capabilities": [
-            "editable",
-            "searchable",
-            "linkable",
-            "exportable"
-          ],
-          "indexed_fields": {}
-        },
-        {
-          "path": "联系人/测试测试 2.md",
-          "title": "测试测试 2",
-          "capabilities": [
-            "editable",
-            "searchable",
-            "linkable",
-            "exportable"
-          ],
-          "indexed_fields": {}
-        },
-        {
-          "path": "联系人/用户测试文档.md",
-          "title": "用户测试文档",
-          "capabilities": [
-            "editable",
-            "searchable",
-            "linkable",
-            "exportable"
-          ],
-          "indexed_fields": {}
         }
       ],
-      "count": 12
+      "count": 3
     },
     "collection": {
       "documents": [
