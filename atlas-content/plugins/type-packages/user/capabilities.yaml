@@ -1,0 +1,64 @@
+# 用户类型包能力配置
+# 定义用户文档支持的功能能力
+
+version: "1.0"
+
+# 基础能力
+base_capabilities:
+  - editable      # 可编辑
+  - searchable    # 可搜索
+  - linkable      # 可链接
+  - indexable     # 可索引
+  - exportable    # 可导出
+
+# 高级能力
+advanced_capabilities:
+  # 认证相关
+  - id: "authenticatable"
+    name: "可认证"
+    description: "用户可以进行登录认证"
+    requires:
+      - "auth.user_id"
+      - "auth.password_hash"
+      
+  # 邀请相关
+  - id: "invitable"
+    name: "可邀请"
+    description: "可以向用户发送邀请"
+    requires:
+      - "email"
+      
+  # 通知相关
+  - id: "notifiable"
+    name: "可通知"
+    description: "可以向用户发送通知"
+    requires_any:
+      - "email"
+      - "phone"
+
+# 能力组
+capability_groups:
+  # 基础用户
+  - id: "basic_user"
+    name: "基础用户"
+    capabilities:
+      - "editable"
+      - "searchable"
+      - "linkable"
+      
+  # 可登录用户
+  - id: "login_user"
+    name: "可登录用户"
+    extends: "basic_user"
+    capabilities:
+      - "authenticatable"
+      - "invitable"
+      
+  # 完整用户
+  - id: "full_user"
+    name: "完整用户"
+    extends: "login_user"
+    capabilities:
+      - "indexable"
+      - "exportable"
+      - "notifiable"

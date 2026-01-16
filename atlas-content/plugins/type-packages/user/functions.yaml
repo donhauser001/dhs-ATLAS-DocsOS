@@ -1,0 +1,60 @@
+# 用户类型包功能配置
+# 定义用户文档的功能类型
+
+version: "1.0"
+
+# 主功能类型
+primary_function: "entity_detail"
+
+# 支持的功能类型
+functions:
+  # 实体详情 - 默认
+  - id: "entity_detail"
+    name: "实体详情"
+    description: "以详情页形式展示单个用户的完整信息"
+    icon: "user"
+    default: true
+    
+  # 实体列表
+  - id: "entity_list"
+    name: "用户列表"
+    description: "展示用户列表，支持搜索、筛选、排序"
+    icon: "users"
+    
+  # 用户选择器
+  - id: "user_picker"
+    name: "用户选择"
+    description: "用于在其他文档中选择关联用户"
+    icon: "user-plus"
+    
+  # 用户统计
+  - id: "user_stats"
+    name: "用户统计"
+    description: "展示用户相关的统计信息"
+    icon: "bar-chart"
+
+# 功能入口
+function_entries:
+  # 新建用户
+  - id: "create_user"
+    name: "新建用户"
+    function: "entity_detail"
+    icon: "user-plus"
+    action: "create"
+    
+  # 用户管理
+  - id: "manage_users"
+    name: "用户管理"
+    function: "entity_list"
+    icon: "users"
+    action: "list"
+    
+  # 导入用户
+  - id: "import_users"
+    name: "导入用户"
+    icon: "upload"
+    action: "import"
+    accepts:
+      - "csv"
+      - "xlsx"
+      - "vcard"

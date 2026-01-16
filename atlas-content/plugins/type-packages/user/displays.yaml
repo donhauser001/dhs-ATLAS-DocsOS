@@ -1,0 +1,72 @@
+# 用户类型包显示配置
+# 定义用户文档的各种显示方式
+
+version: "1.0"
+
+# 默认显示模式
+default_display: "detail.tab"
+
+# 支持的显示模式
+displays:
+  # 详情页 - 标签页布局
+  - id: "detail.tab"
+    name: "标签页详情"
+    description: "以标签页形式展示用户完整信息"
+    category: "detail"
+    icon: "layout-list"
+    
+  # 详情页 - 卡片布局
+  - id: "detail.card"
+    name: "卡片详情"
+    description: "以卡片形式展示用户信息"
+    category: "detail"
+    icon: "credit-card"
+    
+  # 详情页 - 分栏布局
+  - id: "detail.split"
+    name: "分栏详情"
+    description: "左侧头像+基本信息，右侧详细信息"
+    category: "detail"
+    icon: "columns"
+    
+  # 列表视图
+  - id: "list.table"
+    name: "表格列表"
+    description: "以表格形式展示用户列表"
+    category: "list"
+    icon: "table"
+    columns:
+      - field: "avatar"
+        width: 50
+      - field: "name"
+        width: 120
+      - field: "email"
+        width: 180
+      - field: "phone"
+        width: 130
+      - field: "company"
+        width: 150
+      - field: "department"
+        width: 100
+      - field: "tags"
+        width: 150
+        
+  # 画廊视图
+  - id: "list.gallery"
+    name: "画廊视图"
+    description: "以卡片网格形式展示用户"
+    category: "list"
+    icon: "grid-3x3"
+    card_fields:
+      - "avatar"
+      - "name"
+      - "title"
+      - "company"
+      
+  # 看板视图
+  - id: "list.kanban"
+    name: "看板视图"
+    description: "按状态或部门分组的看板"
+    category: "list"
+    icon: "kanban"
+    group_by: "department"

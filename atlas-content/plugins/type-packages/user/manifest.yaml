@@ -1,0 +1,46 @@
+# 用户类型包声明文件
+# 版本: 1.0.0
+# 由 contact 和 person 类型包合并而来
+
+# === 基础信息 ===
+id: "user"
+name: "用户"
+version: "1.0.0"
+description: "统一的用户信息管理类型包，用于管理系统中的所有用户（联系人、人员、账户）。支持个人信息、组织信息、认证登录等完整功能。"
+author: "atlas_official"
+license: "MIT"
+
+# === 分类与标签 ===
+category: "core"
+subcategory: "principal"
+tags:
+  - 用户
+  - 联系人
+  - 人员
+  - 账户
+  - 主体
+  - 登录
+  - 认证
+
+# === 显示配置 ===
+icon: "user"
+color: "#8B5CF6"
+preview_image: "assets/preview.png"
+
+# === 依赖与兼容 ===
+atlas_version: ">=4.2.0"
+dependencies: []
+conflicts:
+  - contact  # 与旧联系人类型包冲突
+  - person   # 与旧人员类型包冲突
+
+# === 发布信息 ===
+published: true
+created_at: "2026-01-17"
+updated_at: "2026-01-17"
+downloads: 0
+rating: 5.0
+
+# === 核心标识 ===
+is_core: true
+uninstall_warning: "用户类型包是系统核心，卸载后所有用户相关功能将不可用，包括：用户列表、登录、认证等。"

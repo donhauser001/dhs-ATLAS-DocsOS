@@ -1,0 +1,104 @@
+# 用户类型定义
+# 定义文档类型的基本属性
+
+document_type: "user"
+
+# 类型元数据
+metadata:
+  singular: "用户"
+  plural: "用户"
+  description: "系统中的用户，可以是联系人、员工或可登录账户"
+  role: "core_plugin"
+  
+# 标识字段配置
+identity:
+  # 主标题字段
+  title_field: "name"
+  # 副标题字段
+  subtitle_field: "title"
+  # 头像字段
+  avatar_field: "avatar"
+  # 唯一标识字段
+  id_field: "id"
+
+# 索引配置
+indexing:
+  # 启用认证索引
+  auth_index: true
+  auth_index_path: ".atlas/index/auth/auth-users.json"
+  
+  # 可搜索字段
+  searchable:
+    - name
+    - email
+    - phone
+    - mobile
+    - company
+    - department
+    - tags
+    
+  # 可排序字段
+  sortable:
+    - name
+    - company
+    - created_at
+    - updated_at
+    - last_login
+    
+  # 可分组字段
+  groupable:
+    - company
+    - department
+    - tags
+    - role
+    - status
+
+# 状态配置
+status:
+  # 用户状态
+  user_status:
+    - id: "active"
+      name: "正常"
+      color: "#10B981"
+      icon: "check-circle"
+    - id: "inactive"
+      name: "停用"
+      color: "#6B7280"
+      icon: "pause-circle"
+    - id: "suspended"
+      name: "禁用"
+      color: "#EF4444"
+      icon: "ban"
+
+# 显现方式配置
+presentation:
+  # 列表页
+  list:
+    - id: "user_list"
+      name: "用户列表"
+      description: "显示所有用户"
+      
+    - id: "active_users"
+      name: "活跃用户"
+      description: "显示活跃的用户"
+      filter: { status: "active" }
+      
+  # 详情页
+  detail:
+    - id: "user_detail"
+      name: "用户详情"
+      description: "显示用户完整信息"
+      
+  # 操作入口
+  actions:
+    - id: "enable_login"
+      name: "启用登录"
+      description: "为用户启用登录权限"
+      
+    - id: "disable_login"
+      name: "禁用登录"
+      description: "禁用用户登录权限"
+      
+    - id: "reset_password"
+      name: "重置密码"
+      description: "重置用户密码"

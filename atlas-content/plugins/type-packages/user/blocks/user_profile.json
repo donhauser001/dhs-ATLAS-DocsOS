@@ -1,0 +1,29 @@
+{
+  "id": "user_profile",
+  "name": "用户档案",
+  "description": "用户的基本信息，包括姓名、头像、联系方式、组织信息等",
+  "icon": "user",
+  "required": true,
+  "enabled": true,
+  "order": 1,
+  "fields": [
+    { "key": "avatar", "label": "头像", "component": "avatar" },
+    { "key": "name", "label": "姓名", "component": "text", "required": true },
+    { "key": "gender", "label": "性别", "component": "select" },
+    { "key": "birthday", "label": "生日", "component": "date" },
+    { "key": "email", "label": "邮箱", "component": "email" },
+    { "key": "phone", "label": "手机", "component": "phone" },
+    { "key": "mobile", "label": "座机", "component": "phone" },
+    { "key": "title", "label": "职位", "component": "text" },
+    { "key": "company", "label": "公司", "component": "text" },
+    { "key": "department", "label": "部门", "component": "text" },
+    { "key": "address", "label": "地址", "component": "textarea" },
+    { "key": "tags", "label": "标签", "component": "tags" },
+    { "key": "notes", "label": "备注", "component": "textarea" }
+  ],
+  "display": {
+    "icon": "user",
+    "color": "#8B5CF6",
+    "default_expanded": true
+  }
+}

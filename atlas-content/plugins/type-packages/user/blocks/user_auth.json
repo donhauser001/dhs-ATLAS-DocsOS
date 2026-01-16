@@ -1,0 +1,24 @@
+{
+  "id": "user_auth",
+  "name": "认证信息",
+  "description": "用户的登录认证信息，包括用户ID、用户名、密码、角色等",
+  "icon": "shield",
+  "required": false,
+  "enabled": true,
+  "order": 2,
+  "fields": [
+    {
+      "key": "auth",
+      "label": "认证信息",
+      "component": "user-auth",
+      "description": "用户认证信息字段组"
+    }
+  ],
+  "display": {
+    "icon": "shield",
+    "color": "#3B82F6",
+    "default_expanded": false
+  },
+  "sensitive": true,
+  "admin_only": true
+}

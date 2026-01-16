@@ -1,0 +1,57 @@
+# 用户认证数据块
+# 存储用户的登录认证信息
+# 使用 Phase 4.2 开发的 user-auth 组件
+
+id: "user_auth"
+name: "认证信息"
+description: "用户的登录认证信息，包括用户ID、用户名、密码、角色等"
+icon: "shield"
+required: false
+enabled: true
+order: 2
+
+# 字段定义 - 使用 user-auth 字段组组件
+fields:
+  - key: "auth"
+    label: "认证信息"
+    component: "user-auth"
+    description: "用户认证信息字段组"
+    config:
+      showUserId: true
+      showUsername: true
+      showEmail: true
+      showPhone: true
+      showPassword: true
+      showRole: true
+      showStatus: true
+      roleOptions:
+        - value: "admin"
+          label: "管理员"
+        - value: "manager"
+          label: "经理"
+        - value: "staff"
+          label: "员工"
+        - value: "customer"
+          label: "客户"
+        - value: "guest"
+          label: "访客"
+      statusOptions:
+        - value: "active"
+          label: "正常"
+          color: "#10B981"
+        - value: "inactive"
+          label: "停用"
+          color: "#6B7280"
+        - value: "suspended"
+          label: "禁用"
+          color: "#EF4444"
+
+# 显示配置
+display:
+  icon: "shield"
+  color: "#3B82F6"
+  default_expanded: false
+  
+# 特殊标记
+sensitive: true
+admin_only: true

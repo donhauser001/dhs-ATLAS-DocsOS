@@ -1,0 +1,97 @@
+# 用户生命周期工作流
+# 定义用户从创建到停用的状态流转
+
+id: "user_lifecycle"
+name: "用户生命周期"
+description: "管理用户从创建、激活到停用的完整生命周期"
+version: "1.0"
+
+# 状态定义
+states:
+  - id: "draft"
+    name: "草稿"
+    description: "新建的用户，信息不完整"
+    color: "#9CA3AF"
+    icon: "file-text"
+    initial: true
+    
+  - id: "active"
+    name: "正常"
+    description: "已激活的正常用户"
+    color: "#10B981"
+    icon: "check-circle"
+    
+  - id: "inactive"
+    name: "停用"
+    description: "暂时停用的用户"
+    color: "#6B7280"
+    icon: "pause-circle"
+    
+  - id: "suspended"
+    name: "禁用"
+    description: "被禁用的用户"
+    color: "#EF4444"
+    icon: "ban"
+
+# 状态转换
+transitions:
+  # 草稿 → 正常
+  - from: "draft"
+    to: "active"
+    name: "激活"
+    description: "完成信息填写后激活用户"
+    icon: "check"
+    requires:
+      - "name"
+      - "email|phone"
+      
+  # 正常 → 停用
+  - from: "active"
+    to: "inactive"
+    name: "停用"
+    description: "暂时停用用户"
+    icon: "pause"
+    
+  # 停用 → 正常
+  - from: "inactive"
+    to: "active"
+    name: "恢复"
+    description: "恢复停用的用户"
+    icon: "play"
+    
+  # 正常 → 禁用
+  - from: "active"
+    to: "suspended"
+    name: "禁用"
+    description: "禁用用户"
+    icon: "ban"
+    requires_role: ["admin"]
+    
+  # 停用 → 禁用
+  - from: "inactive"
+    to: "suspended"
+    name: "禁用"
+    description: "禁用用户"
+    icon: "ban"
+    requires_role: ["admin"]
+    
+  # 禁用 → 正常
+  - from: "suspended"
+    to: "active"
+    name: "解禁"
+    description: "解除禁用状态"
+    icon: "unlock"
+    requires_role: ["admin"]
+
+# 自动触发器
+triggers:
+  # 创建时自动设为草稿
+  - event: "create"
+    action: "set_state"
+    state: "draft"
+    
+  # 信息完整时自动激活
+  - event: "update"
+    condition: "name && (email || phone) && state === 'draft'"
+    action: "set_state"
+    state: "active"
