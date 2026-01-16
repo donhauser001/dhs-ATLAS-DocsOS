@@ -448,11 +448,12 @@ export function DataBlockEditor({
     const addFieldButtonRef = useRef<HTMLButtonElement>(null);
 
     /**
-     * 四级优先级标签查找
-     * 1. 文档内自定义标签（_labels，最高优先级）
+     * 五级优先级标签查找
+     * 1. 文档内自定义标签（_labels，最高优先级，用户在当前文档自定义）
      * 2. 组件定义的标签（通过 _bindings 映射到 _components）
-     * 3. 标签管理的标签（LabelProvider，全局配置）
-     * 4. 字段键名（兜底）
+     * 3. Schema 标签（类型包/数据块级别定义，如联系人的 title="职位"）
+     * 4. 全局标签管理（LabelProvider，系统级配置）
+     * 5. 字段键名（兜底）
      */
     const getLabel = useCallback((key: string): string => {
         // 1. 最高优先：文档内自定义标签（_labels）
@@ -464,14 +465,18 @@ export function DataBlockEditor({
         if (componentId && documentComponents[componentId]?.label) {
             return documentComponents[componentId].label;
         }
-        // 3. 再次：标签管理的标签（全局配置）
+        // 3. Schema 标签（类型包/数据块级别定义）
+        if (schemaLabels[key]) {
+            return schemaLabels[key];
+        }
+        // 4. 全局标签管理（系统级配置）
         const providerLabel = getLabelFromProvider(key);
         if (providerLabel && providerLabel !== key) {
             return providerLabel;
         }
-        // 4. 兜底：返回字段键名
+        // 5. 兜底：返回字段键名
         return key;
-    }, [fieldLabels, fieldBindings, documentComponents, getLabelFromProvider]);
+    }, [fieldLabels, fieldBindings, documentComponents, schemaLabels, getLabelFromProvider]);
 
     // 计算弹出框位置
     const openFieldSelector = useCallback(() => {
