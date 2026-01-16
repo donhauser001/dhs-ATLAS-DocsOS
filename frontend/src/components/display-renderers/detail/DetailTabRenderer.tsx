@@ -161,7 +161,88 @@ const FieldValueDisplay: React.FC<{
         case 'password':
             return <span className="text-slate-400 font-mono">••••••••</span>;
 
+        case 'object':
+        case 'user-auth':
+            // 用户认证对象渲染
+            if (typeof value === 'object' && value !== null) {
+                const authData = value as Record<string, unknown>;
+                return (
+                    <div className="space-y-1.5">
+                        {authData.username && (
+                            <div className="flex items-center gap-2 text-sm">
+                                <span className="text-slate-400 w-14">用户名:</span>
+                                <span className="text-slate-700">{String(authData.username)}</span>
+                            </div>
+                        )}
+                        {authData.email && (
+                            <div className="flex items-center gap-2 text-sm">
+                                <span className="text-slate-400 w-14">邮箱:</span>
+                                <a href={`mailto:${authData.email}`} className="text-blue-600 hover:text-blue-800 hover:underline">
+                                    {String(authData.email)}
+                                </a>
+                            </div>
+                        )}
+                        {authData.phone && (
+                            <div className="flex items-center gap-2 text-sm">
+                                <span className="text-slate-400 w-14">手机:</span>
+                                <a href={`tel:${authData.phone}`} className="text-blue-600 hover:text-blue-800 hover:underline">
+                                    {String(authData.phone)}
+                                </a>
+                            </div>
+                        )}
+                        {authData.role && (
+                            <div className="flex items-center gap-2 text-sm">
+                                <span className="text-slate-400 w-14">角色:</span>
+                                <span className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded-full text-xs">
+                                    {String(authData.role)}
+                                </span>
+                            </div>
+                        )}
+                        {authData.status && (
+                            <div className="flex items-center gap-2 text-sm">
+                                <span className="text-slate-400 w-14">状态:</span>
+                                <span className={cn(
+                                    'px-2 py-0.5 rounded-full text-xs',
+                                    authData.status === 'active' && 'bg-green-50 text-green-700',
+                                    authData.status === 'pending' && 'bg-yellow-50 text-yellow-700',
+                                    authData.status === 'disabled' && 'bg-red-50 text-red-700',
+                                    authData.status === 'locked' && 'bg-orange-50 text-orange-700',
+                                )}>
+                                    {authData.status === 'active' ? '正常' :
+                                        authData.status === 'pending' ? '待激活' :
+                                            authData.status === 'disabled' ? '已禁用' :
+                                                authData.status === 'locked' ? '已锁定' : String(authData.status)}
+                                </span>
+                            </div>
+                        )}
+                        {/* 如果没有任何字段有值，显示未设置 */}
+                        {!authData.username && !authData.email && !authData.phone && !authData.role && !authData.status && (
+                            <span className="text-slate-400">未设置</span>
+                        )}
+                    </div>
+                );
+            }
+            return <span className="text-slate-400">—</span>;
+
         default:
+            // 处理未知的对象类型
+            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                const obj = value as Record<string, unknown>;
+                const entries = Object.entries(obj).filter(([k, v]) => v !== null && v !== undefined && v !== '');
+                if (entries.length === 0) {
+                    return <span className="text-slate-400">—</span>;
+                }
+                return (
+                    <div className="space-y-1 text-sm">
+                        {entries.map(([k, v]) => (
+                            <div key={k} className="flex items-center gap-2">
+                                <span className="text-slate-400">{k}:</span>
+                                <span className="text-slate-700">{String(v)}</span>
+                            </div>
+                        ))}
+                    </div>
+                );
+            }
             return <span className="text-slate-800">{displayValue}</span>;
     }
 };
@@ -238,10 +319,10 @@ const TabPanel: React.FC<{
     // 渲染字段
     const renderFields = (data: Record<string, unknown>) => {
         const schemaKeys = new Set(section.schema.map(f => f.key));
-        const extraFields = Object.keys(data).filter(key => 
-            !schemaKeys.has(key) && 
+        const extraFields = Object.keys(data).filter(key =>
+            !schemaKeys.has(key) &&
             !key.startsWith('_') &&
-            data[key] !== null && 
+            data[key] !== null &&
             data[key] !== undefined &&
             data[key] !== ''
         );
@@ -285,16 +366,32 @@ const TabPanel: React.FC<{
                     {extraFields.map(key => {
                         const value = data[key];
                         let type = 'text';
-                        if (typeof value === 'boolean') type = 'toggle';
-                        else if (typeof value === 'string') {
+                        let displayValue = '—';
+
+                        if (value === null || value === undefined || value === '') {
+                            displayValue = '—';
+                        } else if (typeof value === 'boolean') {
+                            type = 'toggle';
+                            displayValue = value ? '是' : '否';
+                        } else if (typeof value === 'object' && !Array.isArray(value)) {
+                            // 对象类型 - 可能是 user-auth 等复合组件
+                            type = 'object';
+                            displayValue = '__object__';
+                        } else if (Array.isArray(value)) {
+                            type = 'tags';
+                            displayValue = value.join(', ');
+                        } else if (typeof value === 'string') {
                             if (value.startsWith('data:image') || /\.(jpg|jpeg|png|gif|webp)$/i.test(value)) type = 'image';
                             else if (value.startsWith('[')) type = 'tags';
                             else if (value.includes('@')) type = 'email';
                             else if (/^1\d{10}$/.test(value)) type = 'phone';
+                            displayValue = value;
+                        } else {
+                            displayValue = String(value);
                         }
-                        const displayValue = value === null || value === undefined || value === '' ? '—' : String(value);
+
                         const displayLabel = resolveLabel(key);
-                        
+
                         return (
                             <FieldItem
                                 key={key}
@@ -335,7 +432,7 @@ export const DetailTabRenderer: React.FC<DisplayRendererProps> = ({
 }) => {
     const { getLabel: getLabelFromProvider, getIcon } = useLabels();
     const [activeTab, setActiveTab] = useState(0);
-    
+
     const sections = useMemo(
         () => parseDetailBlocks(bodyContent || '', frontmatter),
         [bodyContent, frontmatter]
@@ -381,7 +478,7 @@ export const DetailTabRenderer: React.FC<DisplayRendererProps> = ({
                     {sections.map((section, index) => {
                         const IconComponent = section.icon ? IconComponents[section.icon] : LucideIcons.FileText;
                         const isActive = index === activeTab;
-                        
+
                         return (
                             <button
                                 key={section.id || index}

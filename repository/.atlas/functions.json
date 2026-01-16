@@ -1,46 +1,24 @@
 {
   "version": "1.0",
-  "generated_at": "2026-01-05T21:25:53.510Z",
-  "repo_head": "5e6507fe2b1db57f0ec345e5b520689d556de628",
+  "generated_at": "2026-01-16T08:51:12.369Z",
+  "repo_head": "a41e2108e9a01e7a22a220d322aae1d6bde8e12b",
   "functions": {
     "entity_detail": {
       "documents": [
         {
-          "path": "132123123123.md",
-          "title": "132123123123",
-          "capabilities": [
-            "editable",
-            "searchable",
-            "linkable",
-            "exportable"
-          ],
-          "indexed_fields": {}
+          "path": "_users/admin.md",
+          "id": "",
+          "title": "系统管理员",
+          "capabilities": [],
+          "indexed_fields": {
+            "id": "",
+            "title": "",
+            "status": "active"
+          }
         },
         {
-          "path": "个方法更何况.md",
-          "title": "{{标题}}",
-          "capabilities": [
-            "editable",
-            "searchable",
-            "linkable",
-            "exportable"
-          ],
-          "indexed_fields": {}
-        },
-        {
-          "path": "哈哈哈.md",
-          "title": "哈哈哈",
-          "capabilities": [
-            "editable",
-            "searchable",
-            "linkable",
-            "exportable"
-          ],
-          "indexed_fields": {}
-        },
-        {
-          "path": "是的分公司的分公司.md",
-          "title": "是的分公司的分公司",
+          "path": "安维平.md",
+          "title": "安维平",
           "capabilities": [
             "editable",
             "searchable",
@@ -70,85 +48,20 @@
             "exportable"
           ],
           "indexed_fields": {}
-        }
-      ],
-      "count": 6
-    },
-    "article": {
-      "documents": [
+        },
         {
-          "path": "atlas-test-402.md",
-          "title": "ATLAS 4.0.2 测试文档",
+          "path": "色弱英特尔同意.md",
+          "title": "色弱英特尔同意",
           "capabilities": [
-            "crud",
-            "export",
-            "share",
-            "comment"
+            "editable",
+            "searchable",
+            "linkable",
+            "exportable"
           ],
           "indexed_fields": {}
         }
       ],
-      "count": 1
-    },
-    "entity_list": {
-      "documents": [
-        {
-          "path": "客户管理.md",
-          "id": "client-management",
-          "title": "客户管理",
-          "capabilities": [
-            "nav.sidebar",
-            "export",
-            "statistics",
-            "print"
-          ],
-          "indexed_fields": {
-            "id": "client-management",
-            "title": "客户管理",
-            "status": "active"
-          },
-          "navigation": {
-            "visible": true,
-            "icon": "building",
-            "label": "客户管理",
-            "order": 20
-          },
-          "entity_type": "client"
-        },
-        {
-          "path": "测试-项目管理.md",
-          "title": "项目管理测试",
-          "capabilities": [
-            "crud",
-            "export",
-            "statistics",
-            "share"
-          ],
-          "indexed_fields": {}
-        },
-        {
-          "path": "用户列表.md",
-          "id": "user-list",
-          "title": "系统用户",
-          "capabilities": [
-            "nav.sidebar"
-          ],
-          "indexed_fields": {
-            "id": "user-list",
-            "title": "系统用户",
-            "status": "active",
-            "source.function": "principal"
-          },
-          "navigation": {
-            "visible": true,
-            "icon": "users",
-            "label": "用户管理",
-            "order": 10
-          },
-          "entity_type": "user"
-        }
-      ],
-      "count": 3
+      "count": 5
     },
     "collection": {
       "documents": [
@@ -256,21 +169,6 @@
     }
   },
   "navigation": {
-    "sidebar": [
-      {
-        "path": "用户列表.md",
-        "icon": "users",
-        "label": "用户管理",
-        "order": 10,
-        "url": "/workspace/用户列表.md"
-      },
-      {
-        "path": "客户管理.md",
-        "icon": "building",
-        "label": "客户管理",
-        "order": 20,
-        "url": "/workspace/客户管理.md"
-      }
-    ]
+    "sidebar": []
   }
 }

@@ -529,7 +529,7 @@ export function DataBlockEditor({
                     }
                 }
                 setSystemFields(sysFields);
-                
+
                 // 从 schema 中提取字段标签映射（插件级别配置）
                 const schemaArray = data['schema'] as Array<{ key: string; label?: string }> | undefined;
                 if (schemaArray && Array.isArray(schemaArray)) {
@@ -543,7 +543,7 @@ export function DataBlockEditor({
                 } else {
                     setSchemaLabels({});
                 }
-                
+
                 // 提取 type 字段（用于同步功能）
                 const typeValue = data['type'];
                 setDataType(typeValue ? String(typeValue) : null);
@@ -553,7 +553,7 @@ export function DataBlockEditor({
                 let userData: Record<string, unknown>;
                 const isDataWrapped = data['data'] && typeof data['data'] === 'object' && !Array.isArray(data['data']);
                 setHasDataWrapper(isDataWrapped);
-                
+
                 if (isDataWrapped) {
                     // schema + data 格式：使用 data 字段的内容
                     userData = data['data'] as Record<string, unknown>;
@@ -600,18 +600,18 @@ export function DataBlockEditor({
     // 同步到 YAML（包含 type、data、_bindings、_status_options 和 _id_config，不再写入 schema）
     const syncToYaml = useCallback((fieldArray: DataField[], bindings: Record<string, string>, statusOpts?: StatusOption[], idCfg?: IdConfig) => {
         const obj: Record<string, unknown> = {};
-        
+
         // 只写入 type 字段，不再写入 schema（schema 是冗余数据）
         if (systemFields.type) {
             obj['type'] = systemFields.type;
         }
-        
+
         // 构建用户数据对象
         const userData: Record<string, unknown> = {};
         for (const field of fieldArray) {
             userData[field.key] = field.value;
         }
-        
+
         // 根据原始格式决定如何写入用户数据
         if (hasDataWrapper) {
             // schema + data 格式：将用户数据包装在 data 字段中
@@ -622,7 +622,7 @@ export function DataBlockEditor({
                 obj[field.key] = field.value;
             }
         }
-        
+
         // 只有当有绑定时才写入 _bindings
         if (Object.keys(bindings).length > 0) {
             obj[INTERNAL_BINDING_KEY] = bindings;
@@ -643,18 +643,21 @@ export function DataBlockEditor({
         onChange(yamlStr.trim());
     }, [onChange, statusOptions, idConfig, systemFields, hasDataWrapper]);
 
-    // 更新字段值（支持字符串、数字、布尔、数组）
+    // 更新字段值（支持字符串、数字、布尔、数组、对象）
     const updateFieldValue = useCallback((index: number, value: unknown) => {
         const newFields = [...fields];
 
         // 处理不同类型的值
-        let parsedValue: string | number | boolean | string[] | null;
+        let parsedValue: string | number | boolean | string[] | object | null;
 
         if (value === null || value === undefined) {
             // null/undefined 转为空字符串
             parsedValue = '';
         } else if (Array.isArray(value)) {
             // 多选组件返回数组，直接保存
+            parsedValue = value;
+        } else if (typeof value === 'object') {
+            // 对象类型：直接保存（用于字段组组件如 user-auth）
             parsedValue = value;
         } else if (typeof value === 'string') {
             // 字符串：尝试转换为布尔
@@ -677,7 +680,7 @@ export function DataBlockEditor({
     // 更新 schema（同步字段的 schema 定义）
     const updateSchema = useCallback((fieldKey: string, action: 'add' | 'remove') => {
         const currentSchema = (systemFields.schema as Array<{ key: string; label?: string; type?: string }>) || [];
-        
+
         if (action === 'add') {
             // 检查是否已存在
             if (!currentSchema.some(s => s.key === fieldKey)) {
@@ -697,12 +700,12 @@ export function DataBlockEditor({
     const reorderSchema = useCallback((newFields: DataField[]) => {
         const currentSchema = (systemFields.schema as Array<{ key: string; label?: string; type?: string }>) || [];
         const schemaMap = new Map(currentSchema.map(s => [s.key, s]));
-        
+
         // 按新字段顺序重排 schema
         const newSchema = newFields
             .map(f => schemaMap.get(f.key))
             .filter((s): s is { key: string; label?: string; type?: string } => s !== undefined);
-        
+
         // 添加 schema 中存在但 fields 中没有的项（保留在末尾）
         const fieldKeys = new Set(newFields.map(f => f.key));
         for (const s of currentSchema) {
@@ -710,7 +713,7 @@ export function DataBlockEditor({
                 newSchema.push(s);
             }
         }
-        
+
         setSystemFields(prev => ({ ...prev, schema: newSchema }));
         return newSchema;
     }, [systemFields.schema]);
@@ -877,18 +880,129 @@ export function DataBlockEditor({
         return <Tag size={14} className="text-slate-300 flex-shrink-0" />;
     };
 
+    // 渲染只读模式下的字段值
+    const renderReadOnlyValue = (value: unknown, componentId?: string) => {
+        // 空值
+        if (value === null || value === undefined || value === '') {
+            return <span className="text-slate-400 italic">未设置</span>;
+        }
+
+        // 数组类型
+        if (Array.isArray(value)) {
+            return (
+                <div className="flex flex-wrap gap-1">
+                    {value.map((item, i) => (
+                        <span key={i} className="px-1.5 py-0.5 text-xs bg-slate-100 text-slate-600 rounded">
+                            {String(item)}
+                        </span>
+                    ))}
+                </div>
+            );
+        }
+
+        // 对象类型（如 user-auth 组件）
+        if (typeof value === 'object') {
+            const obj = value as Record<string, unknown>;
+
+            // 特殊处理 user-auth 类型
+            if (componentId === '__atlas_user_auth__' || obj.user_id !== undefined) {
+                return (
+                    <div className="space-y-1 text-sm">
+                        {obj.username && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-slate-400 text-xs w-16">用户名:</span>
+                                <span className="text-slate-700">{String(obj.username)}</span>
+                            </div>
+                        )}
+                        {obj.email && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-slate-400 text-xs w-16">邮箱:</span>
+                                <span className="text-slate-700">{String(obj.email)}</span>
+                            </div>
+                        )}
+                        {obj.phone && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-slate-400 text-xs w-16">手机:</span>
+                                <span className="text-slate-700">{String(obj.phone)}</span>
+                            </div>
+                        )}
+                        {obj.role && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-slate-400 text-xs w-16">角色:</span>
+                                <span className="px-1.5 py-0.5 text-xs bg-purple-100 text-purple-600 rounded">
+                                    {String(obj.role)}
+                                </span>
+                            </div>
+                        )}
+                        {obj.status && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-slate-400 text-xs w-16">状态:</span>
+                                <span className={cn(
+                                    'px-1.5 py-0.5 text-xs rounded',
+                                    obj.status === 'active' && 'bg-green-100 text-green-600',
+                                    obj.status === 'pending' && 'bg-yellow-100 text-yellow-600',
+                                    obj.status === 'disabled' && 'bg-red-100 text-red-600',
+                                    obj.status === 'locked' && 'bg-orange-100 text-orange-600',
+                                )}>
+                                    {obj.status === 'active' ? '正常' :
+                                        obj.status === 'pending' ? '待激活' :
+                                            obj.status === 'disabled' ? '已禁用' :
+                                                obj.status === 'locked' ? '已锁定' : String(obj.status)}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+
+            // 通用对象渲染
+            return (
+                <div className="space-y-0.5 text-sm">
+                    {Object.entries(obj).map(([k, v]) => (
+                        v && (
+                            <div key={k} className="flex items-center gap-2">
+                                <span className="text-slate-400 text-xs">{k}:</span>
+                                <span className="text-slate-700">{String(v)}</span>
+                            </div>
+                        )
+                    ))}
+                </div>
+            );
+        }
+
+        // 布尔值
+        if (typeof value === 'boolean') {
+            return (
+                <span className={cn(
+                    'px-1.5 py-0.5 text-xs rounded',
+                    value ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-500'
+                )}>
+                    {value ? '是' : '否'}
+                </span>
+            );
+        }
+
+        // 普通值
+        return <span className="text-slate-700">{String(value)}</span>;
+    };
+
     if (readOnly) {
         return (
             <div className="space-y-1">
-                {fields.map((field) => (
-                    <div key={field.key} className="flex items-center gap-3 text-sm py-0.5">
-                        <div className="min-w-[120px] flex items-center gap-1.5">
-                            {renderFieldIcon(field.key)}
-                            <span className="text-slate-500">{getLabel(field.key)}</span>
+                {fields.map((field) => {
+                    const boundComponentId = fieldBindings[field.key];
+                    return (
+                        <div key={field.key} className="flex items-start gap-3 text-sm py-0.5">
+                            <div className="min-w-[120px] flex items-center gap-1.5 pt-0.5">
+                                {renderFieldIcon(field.key)}
+                                <span className="text-slate-500">{getLabel(field.key)}</span>
+                            </div>
+                            <div className="flex-1">
+                                {renderReadOnlyValue(field.value, boundComponentId)}
+                            </div>
                         </div>
-                        <span className="text-slate-700">{String(field.value)}</span>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         );
     }

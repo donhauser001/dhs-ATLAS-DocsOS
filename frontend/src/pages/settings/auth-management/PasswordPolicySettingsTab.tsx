@@ -1,6 +1,6 @@
 /**
- * PasswordPolicySettings - 密码策略设置页面
- * Phase 4.2: 配置密码复杂度和有效期
+ * PasswordPolicySettingsTab - 密码策略选项卡
+ * 配置密码复杂度和有效期
  */
 
 import { useState, useEffect } from 'react';
@@ -8,10 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Save, RotateCcw, KeyRound } from 'lucide-react';
+import { Loader2, Save, RotateCcw } from 'lucide-react';
 import { getUserSettings, updateUserSettings, type PasswordSettings } from '@/api/user-settings';
 
-export function PasswordPolicySettings() {
+export function PasswordPolicySettingsTab() {
   const [settings, setSettings] = useState<PasswordSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -19,7 +19,6 @@ export function PasswordPolicySettings() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // 加载设置
   useEffect(() => {
     loadSettings();
   }, []);
@@ -27,7 +26,7 @@ export function PasswordPolicySettings() {
   async function loadSettings() {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await getUserSettings();
       setSettings(data.password);
@@ -38,9 +37,8 @@ export function PasswordPolicySettings() {
     }
   }
 
-  // 更新字段
   function updateField<K extends keyof PasswordSettings>(
-    field: K, 
+    field: K,
     value: PasswordSettings[K]
   ) {
     if (!settings) return;
@@ -49,14 +47,13 @@ export function PasswordPolicySettings() {
     setSuccess(false);
   }
 
-  // 保存设置
   async function handleSave() {
     if (!settings) return;
-    
+
     setSaving(true);
     setError(null);
     setSuccess(false);
-    
+
     try {
       await updateUserSettings({ password: settings });
       setIsDirty(false);
@@ -69,7 +66,6 @@ export function PasswordPolicySettings() {
     }
   }
 
-  // 重置
   async function handleReset() {
     await loadSettings();
     setIsDirty(false);
@@ -93,17 +89,6 @@ export function PasswordPolicySettings() {
 
   return (
     <div className="p-6 max-w-2xl">
-      {/* 标题 */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-amber-100 rounded-lg">
-          <KeyRound className="h-5 w-5 text-amber-600" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold">密码策略</h2>
-          <p className="text-sm text-muted-foreground">配置密码复杂度和有效期要求</p>
-        </div>
-      </div>
-
       {/* 错误提示 */}
       {error && (
         <div className="mb-6 p-4 bg-destructive/10 text-destructive rounded-lg text-sm">
@@ -137,7 +122,7 @@ export function PasswordPolicySettings() {
         {/* 复杂度要求 */}
         <div className="space-y-4">
           <Label className="text-base">复杂度要求</Label>
-          
+
           <div className="flex items-center justify-between p-4 border rounded-lg">
             <div className="space-y-0.5">
               <Label>要求包含大写字母</Label>
@@ -270,5 +255,8 @@ export function PasswordPolicySettings() {
   );
 }
 
-export default PasswordPolicySettings;
+export default PasswordPolicySettingsTab;
+
+
+
 

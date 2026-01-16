@@ -6,10 +6,10 @@
 import { useParams, Link } from 'react-router-dom';
 import { AuthLayout } from '@/components/auth';
 import { Button } from '@/components/ui/button';
-import { 
-  Clock, 
-  ShieldOff, 
-  Lock, 
+import {
+  Clock,
+  ShieldOff,
+  Lock,
   Calendar,
   Mail,
   Phone,
@@ -100,9 +100,9 @@ const statusConfigs: Record<AccountStatus, StatusConfig> = {
 
 export function AccountStatusPage() {
   const { status } = useParams<{ status: string }>();
-  
+
   const config = statusConfigs[status as AccountStatus];
-  
+
   // 无效状态
   if (!config) {
     return (
@@ -119,9 +119,9 @@ export function AccountStatusPage() {
       </AuthLayout>
     );
   }
-  
+
   const Icon = config.icon;
-  
+
   return (
     <AuthLayout title={config.title}>
       <div className="text-center py-4">
@@ -129,17 +129,17 @@ export function AccountStatusPage() {
         <div className={`w-16 h-16 ${config.bgColor} rounded-full flex items-center justify-center mx-auto mb-4`}>
           <Icon className={`h-8 w-8 ${config.iconColor}`} />
         </div>
-        
+
         {/* 标题和描述 */}
         <h3 className="text-lg font-medium text-slate-900 mb-2">{config.title}</h3>
         <p className="text-slate-600 mb-6">{config.description}</p>
-        
+
         {/* 操作按钮 */}
         <div className="space-y-3 mb-6">
           {config.actions.map((action, idx) => (
             <Link key={idx} to={action.to || '#'} className="block">
-              <Button 
-                variant={action.variant || 'default'} 
+              <Button
+                variant={action.variant || 'default'}
                 className="w-full"
               >
                 {action.label}
@@ -147,7 +147,7 @@ export function AccountStatusPage() {
             </Link>
           ))}
         </div>
-        
+
         {/* 提示信息 */}
         {config.tips && config.tips.length > 0 && (
           <div className="bg-slate-50 rounded-lg p-4 text-left">
@@ -159,7 +159,7 @@ export function AccountStatusPage() {
             </ul>
           </div>
         )}
-        
+
         {/* 联系方式 */}
         <div className="mt-6 pt-6 border-t border-slate-100">
           <p className="text-sm font-medium text-slate-700 mb-3">联系管理员</p>
@@ -178,4 +178,8 @@ export function AccountStatusPage() {
     </AuthLayout>
   );
 }
+
+
+
+
 

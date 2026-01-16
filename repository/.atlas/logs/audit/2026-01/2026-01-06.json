@@ -100,6 +100,93 @@
       "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/2.2.44 Chrome/138.0.7204.251 Electron/37.7.0 Safari/537.36",
       "details": {},
       "success": true
+    },
+    {
+      "id": "mk1o9vxl-fwp6f2",
+      "timestamp": "2026-01-05T21:28:15.081Z",
+      "event_type": "LOGIN_FAILURE",
+      "user_id": null,
+      "username": "admin",
+      "ip_address": "::1",
+      "user_agent": "curl/8.7.1",
+      "details": {
+        "reason": "密码错误"
+      },
+      "success": false
+    },
+    {
+      "id": "mk1o9zs1-yb7ve9",
+      "timestamp": "2026-01-05T21:28:20.065Z",
+      "event_type": "LOGIN_FAILURE",
+      "user_id": null,
+      "username": "admin",
+      "ip_address": "::1",
+      "user_agent": "curl/8.7.1",
+      "details": {
+        "reason": "密码错误"
+      },
+      "success": false
+    },
+    {
+      "id": "mk1oa3dr-3o2a5r",
+      "timestamp": "2026-01-05T21:28:24.735Z",
+      "event_type": "LOGIN_FAILURE",
+      "user_id": null,
+      "username": "admin",
+      "ip_address": "::1",
+      "user_agent": "curl/8.7.1",
+      "details": {
+        "reason": "密码错误"
+      },
+      "success": false
+    },
+    {
+      "id": "mk2149c7-mnrc68",
+      "timestamp": "2026-01-06T03:27:47.527Z",
+      "event_type": "LOGIN_FAILURE",
+      "user_id": null,
+      "username": "admin",
+      "ip_address": "::1",
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/2.2.44 Chrome/138.0.7204.251 Electron/37.7.0 Safari/537.36",
+      "details": {
+        "reason": "密码错误"
+      },
+      "success": false
+    },
+    {
+      "id": "mk214p1m-pgg85y",
+      "timestamp": "2026-01-06T03:28:07.882Z",
+      "event_type": "LOGIN_FAILURE",
+      "user_id": null,
+      "username": "admin",
+      "ip_address": "::1",
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+      "details": {
+        "reason": "密码错误"
+      },
+      "success": false
+    },
+    {
+      "id": "mk214u0t-78bhcg",
+      "timestamp": "2026-01-06T03:28:14.333Z",
+      "event_type": "LOGIN_SUCCESS",
+      "user_id": "U20260105005",
+      "username": "admin",
+      "ip_address": "::1",
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+      "details": {},
+      "success": true
+    },
+    {
+      "id": "mk28qnmw-kopc6d",
+      "timestamp": "2026-01-06T07:01:09.800Z",
+      "event_type": "LOGIN_SUCCESS",
+      "user_id": "U20260105005",
+      "username": "admin",
+      "ip_address": "::1",
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+      "details": {},
+      "success": true
     }
   ]
 }

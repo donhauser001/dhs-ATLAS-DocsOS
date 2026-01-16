@@ -10,7 +10,7 @@ const API_BASE = '/api/audit-logs';
 // 类型定义
 // ============================================================
 
-export type AuditEventType = 
+export type AuditEventType =
   | 'LOGIN_SUCCESS'
   | 'LOGIN_FAILURE'
   | 'LOGOUT'
@@ -73,22 +73,22 @@ export interface AuditStatsResponse {
  */
 export async function getAuditLogs(params: GetAuditLogsParams = {}): Promise<AuditLogsResponse> {
   const query = new URLSearchParams();
-  
+
   if (params.startDate) query.append('startDate', params.startDate);
   if (params.endDate) query.append('endDate', params.endDate);
   if (params.userId) query.append('userId', params.userId);
   if (params.eventType) query.append('eventType', params.eventType);
   if (params.limit) query.append('limit', params.limit.toString());
   if (params.offset) query.append('offset', params.offset.toString());
-  
+
   const res = await fetch(`${API_BASE}?${query.toString()}`, {
     credentials: 'include',
   });
-  
+
   if (!res.ok) {
     throw new Error('获取审计日志失败');
   }
-  
+
   return res.json();
 }
 
@@ -99,11 +99,11 @@ export async function getAuditStats(days: number = 7): Promise<AuditStatsRespons
   const res = await fetch(`${API_BASE}/stats?days=${days}`, {
     credentials: 'include',
   });
-  
+
   if (!res.ok) {
     throw new Error('获取统计失败');
   }
-  
+
   return res.json();
 }
 
@@ -114,11 +114,11 @@ export async function getUserAuditLogs(userId: string, limit: number = 50): Prom
   const res = await fetch(`${API_BASE}/user/${encodeURIComponent(userId)}?limit=${limit}`, {
     credentials: 'include',
   });
-  
+
   if (!res.ok) {
     throw new Error('获取用户日志失败');
   }
-  
+
   return res.json();
 }
 
@@ -129,11 +129,11 @@ export async function getMyAuditLogs(limit: number = 50): Promise<AuditLogsRespo
   const res = await fetch(`${API_BASE}/my?limit=${limit}`, {
     credentials: 'include',
   });
-  
+
   if (!res.ok) {
     throw new Error('获取日志失败');
   }
-  
+
   return res.json();
 }
 
@@ -180,4 +180,8 @@ export function getEventTypeColor(eventType: AuditEventType): string {
   };
   return colors[eventType] || 'text-gray-600';
 }
+
+
+
+
 

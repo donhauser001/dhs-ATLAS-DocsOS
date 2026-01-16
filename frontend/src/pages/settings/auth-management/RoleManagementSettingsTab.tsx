@@ -1,11 +1,6 @@
 /**
- * RoleManagementSettings - 角色管理设置页面
- * 
- * Phase 4.2: 动态角色管理
- * - 查看角色列表
- * - 添加/编辑/删除角色
- * - 设置默认角色
- * - 配置角色权限
+ * RoleManagementSettingsTab - 角色管理选项卡
+ * 配置用户角色和权限
  */
 
 import { useState, useEffect } from 'react';
@@ -152,7 +147,6 @@ function RoleEditor({ open, role, onClose, onSave }: RoleEditorProps) {
     const [saving, setSaving] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
-    // 表单状态
     const [formData, setFormData] = useState<Role>({
         id: '',
         name: '',
@@ -170,7 +164,6 @@ function RoleEditor({ open, role, onClose, onSave }: RoleEditorProps) {
         },
     });
 
-    // 重置表单
     useEffect(() => {
         if (role) {
             setFormData(role);
@@ -195,13 +188,11 @@ function RoleEditor({ open, role, onClose, onSave }: RoleEditorProps) {
         setErrors({});
     }, [role, open]);
 
-    // 更新字段
     const updateField = <K extends keyof Role>(field: K, value: Role[K]) => {
         setFormData(prev => ({ ...prev, [field]: value }));
         setErrors(prev => ({ ...prev, [field]: '' }));
     };
 
-    // 更新权限
     const updatePermission = <K extends keyof RolePermissions>(field: K, value: RolePermissions[K]) => {
         setFormData(prev => ({
             ...prev,
@@ -209,7 +200,6 @@ function RoleEditor({ open, role, onClose, onSave }: RoleEditorProps) {
         }));
     };
 
-    // 验证
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {};
 
@@ -231,7 +221,6 @@ function RoleEditor({ open, role, onClose, onSave }: RoleEditorProps) {
         return Object.keys(newErrors).length === 0;
     };
 
-    // 保存
     const handleSave = async () => {
         if (!validate()) return;
 
@@ -430,14 +419,13 @@ function RoleEditor({ open, role, onClose, onSave }: RoleEditorProps) {
 // 主组件
 // ============================================================
 
-export function RoleManagementSettings() {
+export function RoleManagementSettingsTab() {
     const [roles, setRoles] = useState<Role[]>([]);
     const [defaultRoleId, setDefaultRoleId] = useState<string>('guest');
     const [loading, setLoading] = useState(true);
     const [editingRole, setEditingRole] = useState<Role | null>(null);
     const [showEditor, setShowEditor] = useState(false);
 
-    // 加载角色列表
     async function loadRoles() {
         try {
             setLoading(true);
@@ -455,7 +443,6 @@ export function RoleManagementSettings() {
         loadRoles();
     }, []);
 
-    // 保存角色
     async function handleSaveRole(role: Role) {
         const existing = roles.find(r => r.id === role.id);
         if (existing) {
@@ -466,7 +453,6 @@ export function RoleManagementSettings() {
         await loadRoles();
     }
 
-    // 删除角色
     async function handleDeleteRole(roleId: string) {
         if (!confirm(`确定删除角色 "${roleId}"？此操作不可恢复。`)) return;
         try {
@@ -477,7 +463,6 @@ export function RoleManagementSettings() {
         }
     }
 
-    // 设置默认角色
     async function handleSetDefault(roleId: string) {
         try {
             await setDefaultRole(roleId);
@@ -487,7 +472,6 @@ export function RoleManagementSettings() {
         }
     }
 
-    // 打开编辑弹窗
     function openEditor(role: Role | null) {
         setEditingRole(role);
         setShowEditor(true);
@@ -505,12 +489,9 @@ export function RoleManagementSettings() {
         <div className="p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h2 className="text-lg font-semibold">角色管理</h2>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                        配置系统角色和权限。角色决定用户可以执行的操作。
-                    </p>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                    配置系统角色和权限。角色决定用户可以执行的操作。
+                </p>
                 <Button onClick={() => openEditor(null)}>
                     <Plus className="h-4 w-4 mr-1" />
                     添加角色
@@ -532,7 +513,7 @@ export function RoleManagementSettings() {
             </div>
 
             {/* 角色列表 */}
-            <ScrollArea className="h-[calc(100vh-280px)]">
+            <ScrollArea className="h-[calc(100vh-420px)]">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {roles
                         .sort((a, b) => b.level - a.level)
@@ -563,5 +544,8 @@ export function RoleManagementSettings() {
     );
 }
 
-export default RoleManagementSettings;
+export default RoleManagementSettingsTab;
+
+
+
 

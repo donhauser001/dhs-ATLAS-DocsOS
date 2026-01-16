@@ -109,6 +109,15 @@ export function Control({ component, value, onChange, disabled }: ControlProps) 
     // 加载用户ID
     const [generatingId, setGeneratingId] = useState(false);
 
+    // 字段变更处理（必须在 useEffect 之前定义）
+    const handleFieldChange = useCallback((field: keyof UserAuthValue, fieldValue: string) => {
+        const newValue: UserAuthValue = {
+            ...currentValue,
+            [field]: fieldValue,
+        };
+        onChange(newValue);
+    }, [currentValue, onChange]);
+
     // 加载角色列表
     useEffect(() => {
         async function loadRoles() {
@@ -116,11 +125,6 @@ export function Control({ component, value, onChange, disabled }: ControlProps) 
                 const response = await getRoles();
                 setRoles(response.roles);
                 setDefaultRole(response.default_role);
-
-                // 如果当前没有角色，设置为默认角色
-                if (!currentValue.role) {
-                    handleFieldChange('role', response.default_role);
-                }
             } catch (error) {
                 console.error('Failed to load roles:', error);
             } finally {
@@ -130,14 +134,12 @@ export function Control({ component, value, onChange, disabled }: ControlProps) 
         loadRoles();
     }, []);
 
-    // 字段变更处理
-    const handleFieldChange = useCallback((field: keyof UserAuthValue, fieldValue: string) => {
-        const newValue: UserAuthValue = {
-            ...currentValue,
-            [field]: fieldValue,
-        };
-        onChange(newValue);
-    }, [currentValue, onChange]);
+    // 如果当前没有角色，设置为默认角色
+    useEffect(() => {
+        if (!loadingRoles && !currentValue.role && defaultRole) {
+            handleFieldChange('role', defaultRole);
+        }
+    }, [loadingRoles, currentValue.role, defaultRole, handleFieldChange]);
 
     // 生成用户ID
     const handleGenerateId = useCallback(async () => {

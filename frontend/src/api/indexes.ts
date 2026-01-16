@@ -159,3 +159,7 @@ export async function rebuildAllIndexes(): Promise<{ success: boolean; results: 
   return res.json();
 }
 
+
+
+
+

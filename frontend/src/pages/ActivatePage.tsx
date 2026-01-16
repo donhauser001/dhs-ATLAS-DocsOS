@@ -15,11 +15,11 @@ type PageState = 'verifying' | 'activating' | 'success' | 'invalid';
 export function ActivatePage() {
   const navigate = useNavigate();
   const { token } = useParams<{ token: string }>();
-  
+
   const [pageState, setPageState] = useState<PageState>('verifying');
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
-  
+
   // 验证并激活
   useEffect(() => {
     async function verifyAndActivate() {
@@ -27,38 +27,38 @@ export function ActivatePage() {
         setPageState('invalid');
         return;
       }
-      
+
       try {
         // 验证 Token
         const verifyResult = await verifyActivationToken(token);
-        
+
         if (!verifyResult.valid) {
           setPageState('invalid');
           return;
         }
-        
+
         setEmail(verifyResult.email || '');
         setPageState('activating');
-        
+
         // 激活账户
         const activateResult = await activateAccount(token);
-        
+
         if (activateResult.success) {
           setPageState('success');
         } else {
           setError('激活失败，请重试');
           setPageState('invalid');
         }
-        
+
       } catch (e) {
         setError(e instanceof Error ? e.message : '激活失败');
         setPageState('invalid');
       }
     }
-    
+
     verifyAndActivate();
   }, [token]);
-  
+
   // 验证中
   if (pageState === 'verifying') {
     return (
@@ -70,7 +70,7 @@ export function ActivatePage() {
       </AuthLayout>
     );
   }
-  
+
   // 激活中
   if (pageState === 'activating') {
     return (
@@ -82,7 +82,7 @@ export function ActivatePage() {
       </AuthLayout>
     );
   }
-  
+
   // 激活成功
   if (pageState === 'success') {
     return (
@@ -91,7 +91,7 @@ export function ActivatePage() {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 className="h-8 w-8 text-green-600" />
           </div>
-          
+
           <h3 className="text-lg font-medium text-slate-900 mb-2">账户已激活</h3>
           <p className="text-slate-600 mb-6">
             {email ? (
@@ -102,8 +102,8 @@ export function ActivatePage() {
             <br />
             现在可以使用您的凭证登录了。
           </p>
-          
-          <Button 
+
+          <Button
             className="w-full"
             onClick={() => navigate('/login')}
           >
@@ -113,7 +113,7 @@ export function ActivatePage() {
       </AuthLayout>
     );
   }
-  
+
   // 链接无效
   return (
     <AuthLayout title="链接无效" showBackToLogin>
@@ -121,7 +121,7 @@ export function ActivatePage() {
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <XCircle className="h-8 w-8 text-red-600" />
         </div>
-        
+
         <h3 className="text-lg font-medium text-slate-900 mb-2">激活链接无效</h3>
         <p className="text-slate-600 mb-2">
           {error || '该链接可能已过期、已被使用或无效。'}
@@ -129,7 +129,7 @@ export function ActivatePage() {
         <p className="text-slate-500 text-sm mb-6">
           请重新请求发送激活邮件。
         </p>
-        
+
         <div className="space-y-3">
           <Link to="/pending-activation" className="block">
             <Button className="w-full">重新发送激活邮件</Button>
@@ -142,4 +142,8 @@ export function ActivatePage() {
     </AuthLayout>
   );
 }
+
+
+
+
 

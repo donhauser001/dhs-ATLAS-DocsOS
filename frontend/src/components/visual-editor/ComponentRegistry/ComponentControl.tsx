@@ -50,7 +50,7 @@ export function ComponentControl({
     // 渲染控件
     const controlProps: ControlProps = {
         component,
-        value: value as string | string[] | number | null | undefined,
+        value: value as string | string[] | number | object | null | undefined,
         onChange: (v) => onChange(v),
         disabled,
     };

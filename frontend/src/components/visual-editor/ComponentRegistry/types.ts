@@ -40,7 +40,6 @@ export type ComponentType =
     | 'tags'
     | 'id-generator'
     // Phase 4.3 新增组件
-    | 'password'
     | 'timestamp'
     | 'url'
     | 'color'
@@ -255,27 +254,6 @@ export interface IdGeneratorComponentDefinition extends BaseComponentDefinition 
 // ============================================================
 // Phase 4.3 新增组件定义
 // ============================================================
-
-/** 安全密码组件定义 */
-export interface PasswordComponentDefinition extends BaseComponentDefinition {
-    type: 'password';
-    /** 最小长度 */
-    minLength?: number;
-    /** 要求大写字母 */
-    requireUppercase?: boolean;
-    /** 要求小写字母 */
-    requireLowercase?: boolean;
-    /** 要求数字 */
-    requireNumber?: boolean;
-    /** 要求特殊字符 */
-    requireSpecial?: boolean;
-    /** 显示强度指示器 */
-    showStrengthMeter?: boolean;
-    /** 允许自动生成 */
-    allowGenerate?: boolean;
-    /** 生成密码长度 */
-    generatedLength?: number;
-}
 
 /** 时间戳组件定义 */
 export interface TimestampComponentDefinition extends BaseComponentDefinition {
@@ -583,7 +561,6 @@ export type DocumentComponentDefinition =
     | TagsComponentDefinition
     | IdGeneratorComponentDefinition
     // Phase 4.3 新增组件
-    | PasswordComponentDefinition
     | TimestampComponentDefinition
     | UrlComponentDefinition
     | ColorComponentDefinition

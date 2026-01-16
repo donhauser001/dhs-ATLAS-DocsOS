@@ -9,9 +9,9 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, RefreshCw, Users, Loader2 } from 'lucide-react';
 import { UserStatsCard } from './components/UserStatsCard';
 import { UserTable } from './components/UserTable';
-import { 
-  getAuthIndexStats, 
-  getAuthUsers, 
+import {
+  getAuthIndexStats,
+  getAuthUsers,
   rebuildAuthIndex,
   type AuthIndexStats,
   type UserRecord,
@@ -32,7 +32,7 @@ export function UserManagementPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<Filters>({});
-  
+
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [rebuilding, setRebuilding] = useState(false);
@@ -101,12 +101,12 @@ export function UserManagementPage() {
     setRebuilding(true);
     setError(null);
     setRebuildSuccess(false);
-    
+
     try {
       await rebuildAuthIndex();
       setRebuildSuccess(true);
       setTimeout(() => setRebuildSuccess(false), 3000);
-      
+
       // 刷新数据
       await Promise.all([loadStats(), loadUsers()]);
     } catch (e) {
@@ -144,7 +144,7 @@ export function UserManagementPage() {
             <span className="font-semibold text-lg tracking-tight">用户管理</span>
           </div>
         </div>
-        
+
         <Button
           variant="outline"
           size="sm"
@@ -215,4 +215,8 @@ export function UserManagementPage() {
 }
 
 export default UserManagementPage;
+
+
+
+
 

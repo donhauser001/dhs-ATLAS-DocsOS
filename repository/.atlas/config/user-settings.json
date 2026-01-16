@@ -1,11 +1,11 @@
 {
   "version": "1.0",
-  "updated_at": "2026-01-05T21:08:57.792Z",
+  "updated_at": "2026-01-05T21:28:08.607Z",
   "registration": {
-    "default_status": "pending",
+    "default_status": "active",
     "activation_method": "email",
     "allow_self_register": true,
-    "require_email_verification": true,
+    "require_email_verification": false,
     "user_document_directory": "_users",
     "document_naming": "user_id"
   },

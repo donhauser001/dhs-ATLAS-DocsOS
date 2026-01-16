@@ -1,6 +1,6 @@
 /**
- * RegistrationSettings - 注册设置页面
- * Phase 4.2: 配置新用户注册相关选项
+ * RegistrationSettingsTab - 注册设置选项卡
+ * 配置新用户注册相关选项
  */
 
 import { useState, useEffect } from 'react';
@@ -8,25 +8,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Save, RotateCcw, UserPlus } from 'lucide-react';
-import { getUserSettings, updateUserSettings, type RegistrationSettings as RegistrationSettingsType } from '@/api/user-settings';
+import { Loader2, Save, RotateCcw } from 'lucide-react';
+import { getUserSettings, updateUserSettings, type RegistrationSettings } from '@/api/user-settings';
 
-export function RegistrationSettings() {
-  const [settings, setSettings] = useState<RegistrationSettingsType | null>(null);
+export function RegistrationSettingsTab() {
+  const [settings, setSettings] = useState<RegistrationSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // 加载设置
   useEffect(() => {
     loadSettings();
   }, []);
@@ -34,7 +33,7 @@ export function RegistrationSettings() {
   async function loadSettings() {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await getUserSettings();
       setSettings(data.registration);
@@ -45,10 +44,9 @@ export function RegistrationSettings() {
     }
   }
 
-  // 更新字段
-  function updateField<K extends keyof RegistrationSettingsType>(
-    field: K, 
-    value: RegistrationSettingsType[K]
+  function updateField<K extends keyof RegistrationSettings>(
+    field: K,
+    value: RegistrationSettings[K]
   ) {
     if (!settings) return;
     setSettings({ ...settings, [field]: value });
@@ -56,14 +54,13 @@ export function RegistrationSettings() {
     setSuccess(false);
   }
 
-  // 保存设置
   async function handleSave() {
     if (!settings) return;
-    
+
     setSaving(true);
     setError(null);
     setSuccess(false);
-    
+
     try {
       await updateUserSettings({ registration: settings });
       setIsDirty(false);
@@ -76,7 +73,6 @@ export function RegistrationSettings() {
     }
   }
 
-  // 重置为默认
   async function handleReset() {
     await loadSettings();
     setIsDirty(false);
@@ -100,17 +96,6 @@ export function RegistrationSettings() {
 
   return (
     <div className="p-6 max-w-2xl">
-      {/* 标题 */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-blue-100 rounded-lg">
-          <UserPlus className="h-5 w-5 text-blue-600" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold">注册设置</h2>
-          <p className="text-sm text-muted-foreground">配置新用户注册的相关选项</p>
-        </div>
-      </div>
-
       {/* 错误提示 */}
       {error && (
         <div className="mb-6 p-4 bg-destructive/10 text-destructive rounded-lg text-sm">
@@ -227,9 +212,9 @@ export function RegistrationSettings() {
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground">
-            示例：{settings.document_naming === 'username' ? 'zhangsan.md' : 
-                  settings.document_naming === 'user_id' ? 'U20260106001.md' : 
-                  'zhangsan@example.md'}
+            示例：{settings.document_naming === 'username' ? 'zhangsan.md' :
+              settings.document_naming === 'user_id' ? 'U20260106001.md' :
+                'zhangsan@example.md'}
           </p>
         </div>
 
@@ -265,5 +250,8 @@ export function RegistrationSettings() {
   );
 }
 
-export default RegistrationSettings;
+export default RegistrationSettingsTab;
+
+
+
 

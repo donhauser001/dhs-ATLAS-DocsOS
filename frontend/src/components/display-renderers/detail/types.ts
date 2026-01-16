@@ -82,6 +82,7 @@ const COMPONENT_TYPE_MAP: Record<string, string> = {
     'files': 'files',
     'rating': 'rating',
     'id-card': 'text',
+    'user-auth': 'user-auth',
 };
 
 // 从组件定义构建 FieldSchema
@@ -90,13 +91,13 @@ function buildSchemaFromComponent(
     component: ComponentDefinition
 ): FieldSchema {
     const fieldType = COMPONENT_TYPE_MAP[component.type] || 'text';
-    
+
     const schema: FieldSchema = {
         key,
         label: component.label || key,
         type: fieldType,
     };
-    
+
     // 处理选项类组件
     if (component.options && Array.isArray(component.options)) {
         schema.options = component.options.map(opt => ({
@@ -104,18 +105,18 @@ function buildSchemaFromComponent(
             label: opt.label || opt.value,
         }));
     }
-    
+
     return schema;
 }
 
 // 从 data 对象推断字段 schema（当没有 _bindings 时的兜底）
 function inferSchemaFromData(data: Record<string, unknown>): FieldSchema[] {
     const schema: FieldSchema[] = [];
-    
+
     for (const [key, value] of Object.entries(data)) {
         // 跳过内部字段
         if (key.startsWith('_')) continue;
-        
+
         let type = 'text';
         if (typeof value === 'boolean') {
             type = 'toggle';
@@ -134,14 +135,14 @@ function inferSchemaFromData(data: Record<string, unknown>): FieldSchema[] {
         } else if (Array.isArray(value)) {
             type = 'tags';
         }
-        
+
         schema.push({
             key,
             label: key,
             type,
         });
     }
-    
+
     return schema;
 }
 
@@ -153,7 +154,7 @@ export function parseDetailBlocks(
     const blocks: DetailSection[] = [];
     const regex = /```atlas-data\n([\s\S]*?)```/g;
     let match;
-    
+
     // 获取组件定义
     const components = (frontmatter?._components || {}) as Record<string, ComponentDefinition>;
 
@@ -162,31 +163,31 @@ export function parseDetailBlocks(
             const content = match[1];
             // 使用 yaml 库解析
             const parsed = YAML.parse(content);
-            
+
             if (!parsed || !parsed.type) continue;
-            
+
             // 标准的 detail_section 或 detail_list 类型
             if (parsed.type === 'detail_section' || parsed.type === 'detail_list') {
                 blocks.push(parsed as DetailSection);
                 continue;
             }
-            
+
             // 处理自定义类型（如 contact_personal_info 等）
             const customType = parsed.type as string;
             const bindings = parsed._bindings as Record<string, string> | undefined;
             const data = parsed.data as Record<string, unknown> | undefined;
-            
+
             // 优先使用 schema（如果存在）
             let schema = parsed.schema as FieldSchema[] | undefined;
-            
+
             // 如果没有 schema，从 _bindings + _components 构建
             if (!schema && bindings && data) {
                 schema = [];
-                
+
                 // 按 data 中字段的顺序构建 schema
                 for (const key of Object.keys(data)) {
                     if (key.startsWith('_')) continue;
-                    
+
                     const componentId = bindings[key];
                     if (componentId && components[componentId]) {
                         // 从组件定义构建 schema
@@ -195,7 +196,7 @@ export function parseDetailBlocks(
                         // 没有绑定组件，从值推断类型
                         const value = data[key];
                         let type = 'text';
-                        
+
                         if (typeof value === 'boolean') {
                             type = 'toggle';
                         } else if (typeof value === 'string') {
@@ -209,7 +210,7 @@ export function parseDetailBlocks(
                                 type = 'phone';
                             }
                         }
-                        
+
                         schema.push({
                             key,
                             label: key, // 标签后面可以从标签管理系统获取
@@ -218,12 +219,12 @@ export function parseDetailBlocks(
                     }
                 }
             }
-            
+
             // 如果还是没有 schema，从 data 推断
             if (!schema && data) {
                 schema = inferSchemaFromData(data);
             }
-            
+
             if (schema && data) {
                 const section: DetailSection = {
                     id: customType,
@@ -269,7 +270,7 @@ export function getFieldDisplayValue(
             result.option = option;
             result.displayValue = option?.label || String(value);
             break;
-        
+
         case 'date':
             const date = new Date(value as string);
             result.displayValue = date.toLocaleDateString('zh-CN', {
@@ -278,7 +279,7 @@ export function getFieldDisplayValue(
                 day: 'numeric',
             });
             break;
-        
+
         case 'currency':
             const num = Number(value);
             result.displayValue = new Intl.NumberFormat('zh-CN', {
@@ -286,26 +287,40 @@ export function getFieldDisplayValue(
                 currency: 'CNY',
             }).format(num);
             break;
-        
+
         case 'url':
         case 'link':
             result.displayValue = String(value);
             break;
-        
+
         case 'email':
             result.displayValue = String(value);
             break;
-        
+
         case 'phone':
             result.displayValue = String(value);
             break;
-        
+
         case 'textarea':
             result.displayValue = String(value);
             break;
-        
+
+        case 'user-auth':
+            // 用户认证组件是一个对象，保持原值，由渲染组件处理
+            if (typeof value === 'object' && value !== null) {
+                result.displayValue = '__user_auth_object__'; // 标记为特殊处理
+            } else {
+                result.displayValue = String(value);
+            }
+            break;
+
         default:
-            result.displayValue = String(value);
+            // 处理对象类型的值
+            if (typeof value === 'object' && value !== null) {
+                result.displayValue = '__object__'; // 标记为对象
+            } else {
+                result.displayValue = String(value);
+            }
     }
 
     return result;

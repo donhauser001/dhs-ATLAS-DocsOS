@@ -1,0 +1,16 @@
+{
+  "date": "2026-01-16",
+  "logs": [
+    {
+      "id": "mkgmmk6x-uxcwdp",
+      "timestamp": "2026-01-16T08:38:39.801Z",
+      "event_type": "LOGIN_SUCCESS",
+      "user_id": "U20260105005",
+      "username": "admin",
+      "ip_address": "::1",
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+      "details": {},
+      "success": true
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 /**
- * LoginSettings - 登录设置页面
- * Phase 4.2: 配置用户登录相关选项
+ * LoginSettingsTab - 登录设置选项卡
+ * 配置用户登录相关选项
  */
 
 import { useState, useEffect } from 'react';
@@ -9,8 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Save, RotateCcw, LogIn } from 'lucide-react';
-import { getUserSettings, updateUserSettings, type LoginSettings as LoginSettingsType } from '@/api/user-settings';
+import { Loader2, Save, RotateCcw } from 'lucide-react';
+import { getUserSettings, updateUserSettings, type LoginSettings } from '@/api/user-settings';
 
 const LOGIN_METHOD_OPTIONS = [
   { id: 'username', label: '用户名' },
@@ -18,15 +18,14 @@ const LOGIN_METHOD_OPTIONS = [
   { id: 'phone', label: '手机号' },
 ] as const;
 
-export function LoginSettings() {
-  const [settings, setSettings] = useState<LoginSettingsType | null>(null);
+export function LoginSettingsTab() {
+  const [settings, setSettings] = useState<LoginSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // 加载设置
   useEffect(() => {
     loadSettings();
   }, []);
@@ -34,7 +33,7 @@ export function LoginSettings() {
   async function loadSettings() {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await getUserSettings();
       setSettings(data.login);
@@ -45,10 +44,9 @@ export function LoginSettings() {
     }
   }
 
-  // 更新字段
-  function updateField<K extends keyof LoginSettingsType>(
-    field: K, 
-    value: LoginSettingsType[K]
+  function updateField<K extends keyof LoginSettings>(
+    field: K,
+    value: LoginSettings[K]
   ) {
     if (!settings) return;
     setSettings({ ...settings, [field]: value });
@@ -56,33 +54,30 @@ export function LoginSettings() {
     setSuccess(false);
   }
 
-  // 切换登录方式
   function toggleLoginMethod(method: 'username' | 'email' | 'phone') {
     if (!settings) return;
-    
+
     const methods = [...settings.allowed_methods];
     const index = methods.indexOf(method);
-    
+
     if (index > -1) {
-      // 至少保留一种登录方式
       if (methods.length > 1) {
         methods.splice(index, 1);
       }
     } else {
       methods.push(method);
     }
-    
+
     updateField('allowed_methods', methods);
   }
 
-  // 保存设置
   async function handleSave() {
     if (!settings) return;
-    
+
     setSaving(true);
     setError(null);
     setSuccess(false);
-    
+
     try {
       await updateUserSettings({ login: settings });
       setIsDirty(false);
@@ -95,7 +90,6 @@ export function LoginSettings() {
     }
   }
 
-  // 重置
   async function handleReset() {
     await loadSettings();
     setIsDirty(false);
@@ -119,17 +113,6 @@ export function LoginSettings() {
 
   return (
     <div className="p-6 max-w-2xl">
-      {/* 标题 */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-green-100 rounded-lg">
-          <LogIn className="h-5 w-5 text-green-600" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold">登录设置</h2>
-          <p className="text-sm text-muted-foreground">配置用户登录的相关选项</p>
-        </div>
-      </div>
-
       {/* 错误提示 */}
       {error && (
         <div className="mb-6 p-4 bg-destructive/10 text-destructive rounded-lg text-sm">
@@ -262,5 +245,8 @@ export function LoginSettings() {
   );
 }
 
-export default LoginSettings;
+export default LoginSettingsTab;
+
+
+
 
