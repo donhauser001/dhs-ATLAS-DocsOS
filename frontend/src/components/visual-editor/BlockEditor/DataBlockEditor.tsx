@@ -29,7 +29,6 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useLabels } from '@/providers/LabelProvider';
-import { updateLabelItem, addLabelItem } from '@/api/labels';
 import { FieldSelector } from './FieldSelector';
 import { SaveTemplateDialog } from './SaveTemplateDialog';
 import { FieldSettingsDialog } from './FieldSettingsDialog';
@@ -187,6 +186,8 @@ const INTERNAL_BINDING_KEY = '_bindings';
 const INTERNAL_STATUS_OPTIONS_KEY = '_status_options';
 /** 内部编号配置键名，存储在 YAML 中但不显示为普通字段 */
 const INTERNAL_ID_CONFIG_KEY = '_id_config';
+/** 内部标签映射键名，存储在 YAML 中但不显示为普通字段 */
+const INTERNAL_LABELS_KEY = '_labels';
 
 interface DataBlockEditorProps {
     /** YAML 字符串内容 */
@@ -416,7 +417,7 @@ export function DataBlockEditor({
     onSyncStructure,
     documentComponents = {},
 }: DataBlockEditorProps) {
-    const { getLabel: getLabelFromProvider, getIcon, refresh: refreshLabels } = useLabels();
+    const { getLabel: getLabelFromProvider, getIcon } = useLabels();
     const [fields, setFields] = useState<DataField[]>([]);
     // 数据块类型（从 type 字段提取，用于同步功能）
     const [dataType, setDataType] = useState<string | null>(null);
@@ -428,6 +429,8 @@ export function DataBlockEditor({
     const [hasDataWrapper, setHasDataWrapper] = useState(false);
     // 数据块内部的字段-组件绑定（存储在 YAML 的 _bindings 字段中）
     const [fieldBindings, setFieldBindings] = useState<Record<string, string>>({});
+    // 数据块内部的字段标签映射（存储在 YAML 的 _labels 字段中，文档级别自定义标签）
+    const [fieldLabels, setFieldLabels] = useState<Record<string, string>>({});
     // 数据块级别的状态选项（存储在 YAML 的 _status_options 字段中）
     const [statusOptions, setStatusOptions] = useState<StatusOption[]>(DEFAULT_STATUS_OPTIONS);
     // 数据块级别的编号配置（存储在 YAML 的 _id_config 字段中）
@@ -445,25 +448,30 @@ export function DataBlockEditor({
     const addFieldButtonRef = useRef<HTMLButtonElement>(null);
 
     /**
-     * 三级优先级标签查找
-     * 1. 组件定义的标签（通过 _bindings 映射到 _components）
-     * 2. 标签管理的标签（LabelProvider）
-     * 3. 字段键名（兜底）
+     * 四级优先级标签查找
+     * 1. 文档内自定义标签（_labels，最高优先级）
+     * 2. 组件定义的标签（通过 _bindings 映射到 _components）
+     * 3. 标签管理的标签（LabelProvider，全局配置）
+     * 4. 字段键名（兜底）
      */
     const getLabel = useCallback((key: string): string => {
-        // 1. 优先使用组件定义的标签（通过 fieldBindings 映射到 documentComponents）
+        // 1. 最高优先：文档内自定义标签（_labels）
+        if (fieldLabels[key]) {
+            return fieldLabels[key];
+        }
+        // 2. 其次：组件定义的标签（通过 fieldBindings 映射到 documentComponents）
         const componentId = fieldBindings[key];
         if (componentId && documentComponents[componentId]?.label) {
             return documentComponents[componentId].label;
         }
-        // 2. 其次使用标签管理的标签
+        // 3. 再次：标签管理的标签（全局配置）
         const providerLabel = getLabelFromProvider(key);
         if (providerLabel && providerLabel !== key) {
             return providerLabel;
         }
-        // 3. 兜底：返回字段键名
+        // 4. 兜底：返回字段键名
         return key;
-    }, [fieldBindings, documentComponents, getLabelFromProvider]);
+    }, [fieldLabels, fieldBindings, documentComponents, getLabelFromProvider]);
 
     // 计算弹出框位置
     const openFieldSelector = useCallback(() => {
@@ -504,6 +512,10 @@ export function DataBlockEditor({
                 // 提取 _bindings（组件绑定信息）
                 const bindings = (data[INTERNAL_BINDING_KEY] as Record<string, string>) || {};
                 setFieldBindings(bindings);
+
+                // 提取 _labels（文档内自定义标签映射）
+                const labels = (data[INTERNAL_LABELS_KEY] as Record<string, string>) || {};
+                setFieldLabels(labels);
 
                 // 提取 _status_options（数据块级状态选项）
                 const blockStatusOptions = data[INTERNAL_STATUS_OPTIONS_KEY] as StatusOption[] | undefined;
@@ -575,12 +587,14 @@ export function DataBlockEditor({
             } else {
                 setFields([]);
                 setFieldBindings({});
+                setFieldLabels({});
                 setStatusOptions(DEFAULT_STATUS_OPTIONS);
                 setIdConfig(DEFAULT_ID_CONFIG);
             }
         } catch {
             setFields([]);
             setFieldBindings({});
+            setFieldLabels({});
             setStatusOptions(DEFAULT_STATUS_OPTIONS);
             setIdConfig(DEFAULT_ID_CONFIG);
         }
@@ -598,8 +612,8 @@ export function DataBlockEditor({
         return keys;
     }, [fields, dataType]);
 
-    // 同步到 YAML（包含 type、data、_bindings、_status_options 和 _id_config，不再写入 schema）
-    const syncToYaml = useCallback((fieldArray: DataField[], bindings: Record<string, string>, statusOpts?: StatusOption[], idCfg?: IdConfig) => {
+    // 同步到 YAML（包含 type、data、_bindings、_labels、_status_options 和 _id_config，不再写入 schema）
+    const syncToYaml = useCallback((fieldArray: DataField[], bindings: Record<string, string>, statusOpts?: StatusOption[], idCfg?: IdConfig, labels?: Record<string, string>) => {
         const obj: Record<string, unknown> = {};
 
         // 只写入 type 字段，不再写入 schema（schema 是冗余数据）
@@ -628,6 +642,11 @@ export function DataBlockEditor({
         if (Object.keys(bindings).length > 0) {
             obj[INTERNAL_BINDING_KEY] = bindings;
         }
+        // 只有当有自定义标签时才写入 _labels
+        const currentLabels = labels ?? fieldLabels;
+        if (Object.keys(currentLabels).length > 0) {
+            obj[INTERNAL_LABELS_KEY] = currentLabels;
+        }
         // 写入 _status_options（如果有自定义且不是默认值）
         const opts = statusOpts ?? statusOptions;
         const isDefaultOptions = JSON.stringify(opts) === JSON.stringify(DEFAULT_STATUS_OPTIONS);
@@ -642,7 +661,7 @@ export function DataBlockEditor({
         }
         const yamlStr = yaml.dump(obj, { lineWidth: -1, quotingType: '"', forceQuotes: false });
         onChange(yamlStr.trim());
-    }, [onChange, statusOptions, idConfig, systemFields, hasDataWrapper]);
+    }, [onChange, statusOptions, idConfig, fieldLabels, systemFields, hasDataWrapper]);
 
     // 更新字段值（支持字符串、数字、布尔、数组、对象）
     const updateFieldValue = useCallback((index: number, value: unknown) => {
@@ -1070,29 +1089,12 @@ export function DataBlockEditor({
                     boundComponentId={fieldBindings[editingField.key]}
                     availableComponents={availableComponents}
                     onBindComponent={(componentId) => handleBindComponent(editingField.key, componentId)}
-                    onUpdateLabel={async (newLabel) => {
-                        try {
-                            // 首先尝试更新标签（如果存在）
-                            await updateLabelItem(editingField.key, { label: newLabel });
-                            // 刷新标签缓存
-                            await refreshLabels();
-                        } catch (error) {
-                            // 如果更新失败（标签不存在），尝试创建新标签
-                            if (error instanceof Error && error.message.includes('not found')) {
-                                try {
-                                    // 添加到 identity 分类（系统预定义，一定存在）
-                                    await addLabelItem('identity', {
-                                        key: editingField.key,
-                                        label: newLabel,
-                                    });
-                                    await refreshLabels();
-                                } catch (addError) {
-                                    console.error('创建标签失败:', addError);
-                                }
-                            } else {
-                                console.error('更新标签失败:', error);
-                            }
-                        }
+                    onUpdateLabel={(newLabel) => {
+                        // 更新文档内的标签映射（仅影响当前文档）
+                        const newLabels = { ...fieldLabels, [editingField.key]: newLabel };
+                        setFieldLabels(newLabels);
+                        // 同步到 YAML
+                        syncToYaml(fields, fieldBindings, statusOptions, idConfig, newLabels);
                     }}
                     onClose={() => setEditingFieldIndex(null)}
                 />

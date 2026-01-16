@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "updatedAt": "2026-01-03T16:19:42.817Z",
+  "updatedAt": "2026-01-16T09:07:44.881Z",
   "categories": [
     {
       "id": "core",
@@ -28,7 +28,7 @@
         },
         {
           "key": "title",
-          "label": "标题",
+          "label": "职位",
           "icon": "heading",
           "isSystem": true
         },
