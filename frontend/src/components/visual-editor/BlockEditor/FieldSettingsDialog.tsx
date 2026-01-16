@@ -2,11 +2,12 @@
  * FieldSettingsDialog - 字段设置对话框
  * 
  * 点击数据块字段名时弹出，用于配置字段属性
+ * - 编辑字段标签名称
  * - 绑定/解绑组件
  * - 查看字段信息
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import {
   X,
@@ -16,6 +17,7 @@ import {
   Tag,
   ChevronDown,
   Check,
+  Pencil,
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -49,12 +51,16 @@ export interface FieldSettingsDialogProps {
   fieldKey: string;
   /** 字段当前值 */
   fieldValue: unknown;
+  /** 当前显示的标签名称 */
+  currentLabel: string;
   /** 当前绑定的组件 ID */
   boundComponentId?: string;
   /** 可用的组件列表 */
   availableComponents: DocumentComponentDefinition[];
   /** 绑定组件回调 */
   onBindComponent: (componentId: string | null) => void;
+  /** 更新标签名称回调 */
+  onUpdateLabel?: (newLabel: string) => void;
   /** 关闭对话框 */
   onClose: () => void;
 }
@@ -66,16 +72,27 @@ export interface FieldSettingsDialogProps {
 export function FieldSettingsDialog({
   fieldKey,
   fieldValue,
+  currentLabel,
   boundComponentId,
   availableComponents,
   onBindComponent,
+  onUpdateLabel,
   onClose,
 }: FieldSettingsDialogProps) {
-  const { getLabel, getIcon } = useLabels();
+  const { getIcon } = useLabels();
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(
     boundComponentId || null
   );
   const [showComponentDropdown, setShowComponentDropdown] = useState(false);
+  
+  // 标签编辑状态
+  const [editedLabel, setEditedLabel] = useState(currentLabel);
+  const [isEditingLabel, setIsEditingLabel] = useState(false);
+
+  // 当 currentLabel 变化时同步
+  useEffect(() => {
+    setEditedLabel(currentLabel);
+  }, [currentLabel]);
 
   // 获取选中的组件
   const selectedComponent = useMemo(() => {
@@ -93,11 +110,18 @@ export function FieldSettingsDialog({
   const fieldIconName = getIcon(fieldKey);
   const FieldIcon = getLucideIcon(fieldIconName);
 
+  // 标签是否有变化
+  const labelChanged = editedLabel !== currentLabel && editedLabel.trim() !== '';
+
   // 确认
   const handleConfirm = useCallback(() => {
+    // 如果标签有变化，先更新标签
+    if (labelChanged && onUpdateLabel) {
+      onUpdateLabel(editedLabel.trim());
+    }
     onBindComponent(selectedComponentId);
     onClose();
-  }, [selectedComponentId, onBindComponent, onClose]);
+  }, [selectedComponentId, onBindComponent, onClose, labelChanged, editedLabel, onUpdateLabel]);
 
   // 解绑
   const handleUnbind = useCallback(() => {
@@ -140,13 +164,77 @@ export function FieldSettingsDialog({
                 <Tag size={16} className="text-slate-400" />
               )}
               <span className="text-sm font-medium text-slate-700">
-                {getLabel(fieldKey)}
+                {currentLabel}
               </span>
             </div>
             <div className="text-xs text-slate-400 space-y-1">
               <div>字段键：<code className="px-1 py-0.5 bg-slate-200 rounded text-slate-600">{fieldKey}</code></div>
               <div>当前值：<span className="text-slate-600">{String(fieldValue) || '(空)'}</span></div>
             </div>
+          </div>
+
+          {/* 标签名称编辑 */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              标签名称
+            </label>
+            {isEditingLabel ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={editedLabel}
+                  onChange={(e) => setEditedLabel(e.target.value)}
+                  onBlur={() => {
+                    if (editedLabel.trim() === '') {
+                      setEditedLabel(currentLabel);
+                    }
+                    setIsEditingLabel(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      if (editedLabel.trim() === '') {
+                        setEditedLabel(currentLabel);
+                      }
+                      setIsEditingLabel(false);
+                    }
+                    if (e.key === 'Escape') {
+                      setEditedLabel(currentLabel);
+                      setIsEditingLabel(false);
+                    }
+                  }}
+                  autoFocus
+                  className={cn(
+                    'flex-1 px-3 py-2 text-sm rounded-lg border transition-colors',
+                    'focus:outline-none focus:ring-2 focus:ring-purple-400/30 focus:border-purple-400',
+                    'border-purple-300 bg-white'
+                  )}
+                  placeholder="输入标签名称..."
+                />
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsEditingLabel(true)}
+                className={cn(
+                  'w-full flex items-center justify-between px-3 py-2.5 rounded-lg border transition-colors',
+                  'hover:border-purple-300 hover:bg-purple-50/50',
+                  'border-slate-200 bg-white text-left'
+                )}
+              >
+                <span className={cn(
+                  'text-sm',
+                  editedLabel !== currentLabel ? 'text-purple-600' : 'text-slate-700'
+                )}>
+                  {editedLabel || fieldKey}
+                </span>
+                <Pencil size={14} className="text-slate-400" />
+              </button>
+            )}
+            {labelChanged && (
+              <p className="mt-1.5 text-xs text-purple-600 flex items-center gap-1">
+                <span>标签将从「{currentLabel}」改为「{editedLabel}」</span>
+              </p>
+            )}
           </div>
 
           {/* 组件绑定 */}

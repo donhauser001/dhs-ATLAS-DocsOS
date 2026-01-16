@@ -29,6 +29,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useLabels } from '@/providers/LabelProvider';
+import { updateLabelItem, addLabelItem } from '@/api/labels';
 import { FieldSelector } from './FieldSelector';
 import { SaveTemplateDialog } from './SaveTemplateDialog';
 import { FieldSettingsDialog } from './FieldSettingsDialog';
@@ -415,7 +416,7 @@ export function DataBlockEditor({
     onSyncStructure,
     documentComponents = {},
 }: DataBlockEditorProps) {
-    const { getLabel: getLabelFromProvider, getIcon } = useLabels();
+    const { getLabel: getLabelFromProvider, getIcon, refresh: refreshLabels } = useLabels();
     const [fields, setFields] = useState<DataField[]>([]);
     // 数据块类型（从 type 字段提取，用于同步功能）
     const [dataType, setDataType] = useState<string | null>(null);
@@ -1065,9 +1066,34 @@ export function DataBlockEditor({
                 <FieldSettingsDialog
                     fieldKey={editingField.key}
                     fieldValue={editingField.value}
+                    currentLabel={getLabel(editingField.key)}
                     boundComponentId={fieldBindings[editingField.key]}
                     availableComponents={availableComponents}
                     onBindComponent={(componentId) => handleBindComponent(editingField.key, componentId)}
+                    onUpdateLabel={async (newLabel) => {
+                        try {
+                            // 首先尝试更新标签（如果存在）
+                            await updateLabelItem(editingField.key, { label: newLabel });
+                            // 刷新标签缓存
+                            await refreshLabels();
+                        } catch (error) {
+                            // 如果更新失败（标签不存在），尝试创建新标签
+                            if (error instanceof Error && error.message.includes('not found')) {
+                                try {
+                                    // 添加到 identity 分类（系统预定义，一定存在）
+                                    await addLabelItem('identity', {
+                                        key: editingField.key,
+                                        label: newLabel,
+                                    });
+                                    await refreshLabels();
+                                } catch (addError) {
+                                    console.error('创建标签失败:', addError);
+                                }
+                            } else {
+                                console.error('更新标签失败:', error);
+                            }
+                        }
+                    }}
                     onClose={() => setEditingFieldIndex(null)}
                 />
             )}
